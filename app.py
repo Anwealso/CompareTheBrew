@@ -13,7 +13,7 @@ import random
 from config import Config
 
 # from scrape2 import search
-import scripts.databaseHandler as db
+import db.databaseHandler as db
 
 # Create a new flask application
 app = Flask(__name__)
