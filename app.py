@@ -7,6 +7,7 @@ from flask import jsonify
 from datetime import datetime
 import re
 import json
+import argparse
 from urllib.request import urlopen
 import ipinfo
 import random
@@ -62,6 +63,8 @@ def search_page():
         q: search query (required)
         order: sort order (default: score-desc)
         page: page number (default: 1)
+        price_min: minimum price filter (optional)
+        price_max: maximum price filter (optional)
     """
     search_terms = request.args.get("q", "")
     order_param = request.args.get("order", "score-desc")
@@ -70,11 +73,14 @@ def search_page():
     except ValueError:
         page = 1
 
+    price_min = request.args.get("price_min", "")
+    price_max = request.args.get("price_max", "")
+
     per_page = 16
     sort_key = ORDER_MAP.get(order_param, "DESC_efficiency")
 
     conn = db.create_connection()
-    all_results = db.select_drink_by_smart_search(conn, search_terms, sort_key)
+    all_results = db.select_drink_by_smart_search(conn, search_terms, sort_key, price_min, price_max)
     
     # Insert ads into the full list before paginating, or just into the page?
     # Usually better to insert ads into the full list so they stay in consistent positions,
@@ -103,6 +109,8 @@ def search_page():
         current_page=page,
         total_pages=total_pages,
         total_results=total_results_count,
+        price_min=price_min,
+        price_max=price_max,
     )
 
 
@@ -293,5 +301,7 @@ def api_handler():
 
 # Run the flask application (won't run when the site is being hosted on a server)
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True)
-    #app.run(host='127.0.0.1', port=8000, debug=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', type=int, default=80, help='Port to run the server on')
+    args = parser.parse_args()
+    app.run(host='0.0.0.0', port=args.port, debug=True)
