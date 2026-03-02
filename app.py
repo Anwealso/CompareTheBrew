@@ -64,7 +64,7 @@ def display_bestscore_ResultPage(searchTerms):
 
     # gather metrics info
     metrics(searchTerms)
-    return render_template('results.html', results=tempResults)
+    return render_template('results.html', results=tempResults, search_terms=searchTerms)
 
 
 # --------------------------------------
@@ -89,7 +89,7 @@ def display_worstscore_ResultPage(searchTerms):
 
     # gather metrics info
     metrics(searchTerms)
-    return render_template('results.html', results=tempResults)
+    return render_template('results.html', results=tempResults, search_terms=searchTerms)
 
 
 # --------------------------------------
@@ -115,7 +115,7 @@ def display_bestprice_ResultPage(searchTerms):
     # gather metrics info
     metrics(searchTerms)
 
-    return render_template('results.html', results=tempResults)
+    return render_template('results.html', results=tempResults, search_terms=searchTerms)
 
 # --------------------------------------
 #
@@ -140,7 +140,7 @@ def display_worstprice_ResultPage(searchTerms):
     # gather metrics info
     metrics(searchTerms)
 
-    return render_template('results.html', results=tempResults)
+    return render_template('results.html', results=tempResults, search_terms=searchTerms)
 
 # --------------------------------------
 #
@@ -165,7 +165,7 @@ def display_largest_ResultPage(searchTerms):
     # gather metrics info
     metrics(searchTerms)
 
-    return render_template('results.html', results=tempResults)
+    return render_template('results.html', results=tempResults, search_terms=searchTerms)
 
 # --------------------------------------
 #
@@ -215,7 +215,7 @@ def display_largepercent_ResultPage(searchTerms):
     # gather metrics info
     metrics(searchTerms)
 
-    return render_template('results.html', results=tempResults)
+    return render_template('results.html', results=tempResults, search_terms=searchTerms)
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

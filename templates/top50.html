@@ -132,8 +132,15 @@
                                 <div class="item">
                                     <a class="resultCard" href="{{ result[6] }}">
                                         <div class="cardImage">
+                                            {% if result[11] %}
+                                            <img src="{{ result[11] }}"
+                                                 onerror="this.onerror=null;this.src='/static/images/wine-glass-placeholder.png';"
+                                                 alt="{{ result[2] }} {{ result[3] }}" style="width:96px;height:120px;object-fit:contain;">
+                                            {% else %}
                                             <img src="/static/images/drinkimages/{{ result[-1] }}.png"
-                                                 style="width:96px;height:120px;">
+                                                 onerror="this.onerror=null;this.src='/static/images/wine-glass-placeholder.png';"
+                                                 style="width:96px;height:120px;object-fit:contain;">
+                                            {% endif %}
                                         </div>
                                         <div class="cardContent">
                                             <div class="brand">
