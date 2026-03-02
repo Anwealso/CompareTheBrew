@@ -168,21 +168,19 @@
                                             </div>
                                             <span class="searchLine"></span>
                                             <div class="details" style="white-space: nowrap; display: inline-block;">
-                                                {{ result[7] }}L - {{ '%0.0f'| format(result[9]) }} std.
+                                                {{ (result[7] / 1000) | round(2) }}L - {{ '%0.1f'| format(result[9]) }} std.
                                                 - {{ result[8] }}%
                                             </div>
                                             <div>
                                                 <div class="scorePriceContainer">
                                                     <div class="score responsive_head"
-                                                         style="white-space: nowrap; display: inline-block;">
-                                                        &nbsp{{ '%0.0f'| format(result[10] * 100) }}
+                                                         style="white-space: nowrap; display: inline-flex; align-items: center;">
                                                         <div class="sideways">
-                                                            <img src="/static/images/score.svg"
-                                                                 style="max-height:60%;position:absolute;top: 50%;-webkit-transform:translate(0, -50%);transform:translate(0, -50%);left:0;overflow:visible;"
-                                                                 alt="Score">
+                                                            <img src="/static/images/score.svg" alt="Score">
                                                         </div>
+                                                        {{ '%0.0f'| format(result[10] * 100) }}
                                                         <div class="price">
-                                                            ${{ result[5] }}
+                                                            ${{ '%0.2f'| format(result[5]) }}
                                                         </div>
                                                     </div>
                                                 </div>

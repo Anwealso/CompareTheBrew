@@ -108,22 +108,21 @@
 <div id="content">
     <div id="main" class="mainResults">
         <div>
-            <form id="query" method="POST">
+            <form id="query" method="GET" action="/search">
                 <i id="searchButton" class="material-icons"
                    style="padding:1%;font-size:80px;color:#cda20b;right:0;position:absolute;margin-right:-1%;margin-top:1%;cursor:pointer;">search</i>
-                <input name="searchTerms" id="searchDrink" type="text" class="smallSearch" placeholder="Search..." value="{{ search_terms if search_terms else '' }}">
+                <input name="q" id="searchDrink" type="text" class="smallSearch" placeholder="Search..." value="{{ search_terms if search_terms else '' }}">
+                <input type="hidden" name="order" value="{{ order if order else 'score-desc' }}">
                 <span class="underline smallLine"></span>
             </form>
         </div>
         <div id="options">
             <div class="buttons">
                 <b class="sortbytext">Sort by:</b>
-                <button id='bestscore' type="button" class="buttonSortActive">Best Score</button>
-                <button id='worstscore' type="button" class="buttonSort">Worst Score</button>
-{#                <button type="button" class="buttonSort">Cheapest</button>#}
-                <button id='worstprice' type="button" class="buttonSort">Worst Price</button>
-                <button id='volume' type="button" class="buttonSort">Volume</button>
-{#                <button type="button" class="buttonSort">Smallest Volume</button>#}
+                <a href="/search?q={{ search_terms }}&order=score-desc" class="{% if order == 'score-desc' or not order %}buttonSortActive{% else %}buttonSort{% endif %}">Best Score</a>
+                <a href="/search?q={{ search_terms }}&order=score-asc" class="{% if order == 'score-asc' %}buttonSortActive{% else %}buttonSort{% endif %}">Worst Score</a>
+                <a href="/search?q={{ search_terms }}&order=price-desc" class="{% if order == 'price-desc' %}buttonSortActive{% else %}buttonSort{% endif %}">Worst Price</a>
+                <a href="/search?q={{ search_terms }}&order=size-desc" class="{% if order == 'size-desc' %}buttonSortActive{% else %}buttonSort{% endif %}">Volume</a>
             </div>
             <div id="priceRange">
                 Price range: Slider to be implemented
@@ -196,25 +195,24 @@
                                             </div>
                                             <span class="searchLine"></span>
                                             <div class="details" style="white-space: nowrap; display: inline-block;">
-                                                {{ result[7] }}L - {{ '%0.0f'| format(result[9]) }} std.
+                                                {{ (result[7] / 1000) | round(2) }}L - {{ '%0.1f'| format(result[9]) }} std.
                                                 - {{ result[8] }}%
                                             </div>
                                             <div>
                                                 <div class="scorePriceContainer">
                                                     <div class="score responsive_head"
-                                                         style="white-space: nowrap; display: inline-block;">
-                                                        &nbsp{{ '%0.0f'| format(result[10] * 100) }}
+                                                         style="white-space: nowrap; display: inline-flex; align-items: center;">
                                                         <div class="sideways">
-                                                            <img src="/static/images/score.svg"
-                                                                 style="max-height:60%;position:absolute;top: 50%;-webkit-transform:translate(0, -50%);transform:translate(0, -50%);left:0;overflow:visible;"
-                                                                 alt="Score">
+                                                            <img src="/static/images/score.svg" alt="Score">
                                                         </div>
+                                                        {{ '%0.0f'| format(result[10] * 100) }}
                                                         <div class="price">
-                                                            ${{ result[5] }}
+                                                            ${{ '%0.2f'| format(result[5]) }}
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
+
                                         </div>
                                     </a>
                                 </div>
