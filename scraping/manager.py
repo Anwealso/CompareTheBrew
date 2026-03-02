@@ -14,14 +14,16 @@ class ScrapingManager:
     Central manager for coordinating the scraping pipeline across different retailers.
     Uses a Task Queue system with a progressive iterator approach.
     """
-    def __init__(self, sitemaps_file: str = "scraping/sitemaps.json"):
+    def __init__(self, sitemaps_file: str = "scraping/sitemaps.json", max_retries: int = 3):
         """
-        Initializes the manager with a sitemaps file.
+        Initializes the manager with a sitemaps file and retry limit.
         
         Args:
             sitemaps_file (str): Path to the JSON file containing retailer URLs.
+            max_retries (int): Maximum number of times a task can be attempted before failing.
         """
         self.sitemaps_file = sitemaps_file
+        self.max_retries = max_retries
         self.processors: Dict[str, RetailerProcessor] = {
             "bws": BWSProcessor(),
             "ll": LiquorlandProcessor(),
@@ -89,11 +91,12 @@ class ScrapingManager:
         task_id = task[0]
         url = task[2]
         metadata_str = task[4]
+        current_attempts = task[5] if task[5] is not None else 0
         
         metadata = json.loads(metadata_str) if metadata_str else {}
         processor = self.processors[retailer_name]
         
-        print(f"Processing Task {task_id}: {url}")
+        print(f"Processing Task {task_id} (Attempt {current_attempts + 1}/{self.max_retries}): {url}")
         
         # Increment attempts and set status to in_progress
         increment_task_attempts(conn, task_id)
@@ -119,9 +122,15 @@ class ScrapingManager:
             update_task_status(conn, task_id, 'completed')
         except Exception as e:
             print(f"Error during task {task_id}: {e}")
-            # Move to back of queue by updating its status to pending 
-            # (DBHandler.update_task_status handles moving it to the back)
-            update_task_status(conn, task_id, 'pending', {"error": str(e)})
+            
+            # If we've reached max retries, mark as permanently failed
+            if (current_attempts + 1) >= self.max_retries:
+                print(f"Task {task_id} exceeded max retries ({self.max_retries}). Marking as FAILED.")
+                update_task_status(conn, task_id, 'failed', {"error": str(e)})
+            else:
+                # Move to back of queue by updating its status to pending 
+                # (DBHandler.update_task_status handles moving it to the back)
+                update_task_status(conn, task_id, 'pending', {"error": str(e)})
             
         conn.close()
         return True
