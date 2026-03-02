@@ -204,12 +204,6 @@ def select_image_links(conn):
     return rows
 
 
-# def functionRegex(value, pattern):
-#     print(r"/^" + pattern.lower() + r"| {1}" + pattern.lower() + r"/gm")
-#     c_pattern = re.compile(r"\^" + pattern.lower() + r"| {1}" + pattern.lower() + r"/gm")
-#     return c_pattern.search(value) is not None
-
-
 def select_drink_by_smart_search(conn, terms, thing):
     """Select all drinks that contain any of the search keywords given in their name, brand or type attributes
     
