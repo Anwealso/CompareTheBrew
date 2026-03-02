@@ -218,15 +218,13 @@ input:focus {
 }
 
 #cardsArea {
-	/* column-count: 1;
-	column-gap: 42px; */
-	/* row-count: 1; */
-	row-gap: 42px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 42px;
 }
 
 .item {
-	display: inline-block;
-	margin: 0 0 42px;
+	display: block;
 	width: 100%;
 }
 
@@ -635,8 +633,13 @@ CSS for when the menu is actually open
 	}
 
 	#cardsArea {
-		column-count: 3;
-		/*grid-template-columns: 1fr 1fr 1fr;*/
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px;
+	}
+
+	.item {
+		width: calc((100% - 24px) / 3);
 	}
 
 	.resultCard .ad {
@@ -684,11 +687,10 @@ CSS for when the menu is actually open
 	}
 
 	#cardsArea {
-		column-gap: 12px;
+		gap: 12px;
 	}
 
 	.item {
-		margin: 0 0 12px;
 	}
 
 	#options {
