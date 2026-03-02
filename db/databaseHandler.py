@@ -2,13 +2,14 @@ import sqlite3
 from sqlite3 import Error
 from pathlib import Path
 from scripts.classItem import Item
-from search.intellisearch import *
+from search.intellisearch import build_search_text, intellisearch
 import itertools
 import operator
 import json
 
 
 def get_schema_dir():
+
     """Get the path to the schema directory."""
     return Path(__file__).parent / "schema" / "tables"
 
@@ -59,11 +60,12 @@ def create_entry(conn, task):
     :return:
     """
 
-    sql = ''' INSERT INTO drinks(store,brand,name,type,price,link,ml,percent,stdDrinks,efficiency,image)
-              VALUES(?,?,?,?,?,?,?,?,?,?,?) '''
+    sql = ''' INSERT INTO drinks(store,brand,name,type,price,link,ml,percent,stdDrinks,efficiency,image,search_text)
+              VALUES(?,?,?,?,?,?,?,?,?,?,?,?) '''
     cur = conn.cursor()
     cur.execute(sql, task)
     return cur.lastrowid
+
 
 
 def upsert_source(conn, url, retailer, last_scraped):
@@ -562,10 +564,11 @@ def dbhandler(conn, list, mode, populate):
                 percent = float(drink.percent) if drink.percent is not None else 0.0
                 std_drinks = float(drink.stdDrinks) if drink.stdDrinks is not None else 0.0
                 efficiency = float(drink.efficiency) if drink.efficiency is not None else 0.0
+                search_text = build_search_text(drink.name, drink.brand, drink.type)
                 
                 drink_task = (
                     drink.store, drink.brand, drink.name, drink.type, price, drink.link, ml,
-                    percent, std_drinks, efficiency, drink.image)
+                    percent, std_drinks, efficiency, drink.image, search_text)
                 create_entry(conn, drink_task)
             except Exception as e:
                 print(f"Error inserting drink {drink.name}: {e}")
@@ -584,13 +587,15 @@ def dbhandler(conn, list, mode, populate):
                         percent = float(drink.percent) if drink.percent is not None else 0.0
                         std_drinks = float(drink.stdDrinks) if drink.stdDrinks is not None else 0.0
                         efficiency = float(drink.efficiency) if drink.efficiency is not None else 0.0
+                        search_text = build_search_text(drink.name, drink.brand, drink.type)
                         
                         drink_task = (drink.store, drink.brand, drink.name, drink.type, price, drink.link,
                                     ml, percent, std_drinks, efficiency,
-                                    drink.image)
+                                    drink.image, search_text)
                         create_entry(conn, drink_task)
                     except Exception as e:
                         print(f"Error creating drink {drink.name}: {e}")
+
 
     conn.commit()
 
