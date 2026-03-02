@@ -96,47 +96,61 @@ def get_sources_by_retailer(conn, retailer):
     return cur.fetchall()
 
 
-def add_scrape_task(conn, retailer, url, metadata=None, priority=0):
+def add_scrape_task(conn, retailer, url, metadata=None):
     """
     Add a new scrape task to the queue
     """
     from datetime import datetime
     now = datetime.now().isoformat()
-    sql = ''' INSERT INTO scrape_tasks(retailer, url, status, metadata, priority, created_at, updated_at)
-              VALUES(?,?,?,?,?,?,?) '''
+    sql = ''' INSERT INTO scrape_tasks(retailer, url, status, metadata, created_at, updated_at)
+              VALUES(?,?,?,?,?,?) '''
     cur = conn.cursor()
-    cur.execute(sql, (retailer, url, 'pending', json.dumps(metadata) if metadata else None, priority, now, now))
+    cur.execute(sql, (retailer, url, 'pending', json.dumps(metadata) if metadata else None, now, now))
     conn.commit()
     return cur.lastrowid
 
 
 def get_next_pending_task(conn, retailer=None):
     """
-    Get the next pending task, optionally filtered by retailer
+    Get the next pending task, optionally filtered by retailer.
+    Sorted by updated_at (asc) to ensure failed/re-queued tasks 
+    (with fresh updated_at) move to the back.
     """
     cur = conn.cursor()
     if retailer:
-        cur.execute("SELECT * FROM scrape_tasks WHERE retailer=? AND status='pending' ORDER BY priority DESC, created_at ASC LIMIT 1", (retailer,))
+        cur.execute("SELECT * FROM scrape_tasks WHERE retailer=? AND status='pending' ORDER BY updated_at ASC LIMIT 1", (retailer,))
     else:
-        cur.execute("SELECT * FROM scrape_tasks WHERE status='pending' ORDER BY priority DESC, created_at ASC LIMIT 1")
+        cur.execute("SELECT * FROM scrape_tasks WHERE status='pending' ORDER BY updated_at ASC LIMIT 1")
     return cur.fetchone()
 
 
 def update_task_status(conn, task_id, status, metadata=None):
     """
-    Update the status and metadata of a task
+    Update the status and metadata of a task.
+    If status is 'pending' (retry), update updated_at to move it to the back of the queue.
     """
     from datetime import datetime
     now = datetime.now().isoformat()
-    if metadata:
-        sql = ''' UPDATE scrape_tasks SET status=?, metadata=?, updated_at=? WHERE ID=? '''
-        cur = conn.cursor()
-        cur.execute(sql, (status, json.dumps(metadata), now, task_id))
+    
+    cur = conn.cursor()
+    if status == 'pending':
+        # Move to back of the queue by setting updated_at to NOW.
+        if metadata:
+            sql = ''' UPDATE scrape_tasks SET status=?, metadata=?, updated_at=? WHERE ID=? '''
+            cur.execute(sql, (status, json.dumps(metadata), now, task_id))
+        else:
+            sql = ''' UPDATE scrape_tasks SET status=?, updated_at=? WHERE ID=? '''
+            cur.execute(sql, (status, now, task_id))
     else:
-        sql = ''' UPDATE scrape_tasks SET status=?, updated_at=? WHERE ID=? '''
-        cur = conn.cursor()
-        cur.execute(sql, (status, now, task_id))
+        if metadata:
+            sql = ''' UPDATE scrape_tasks SET status=?, metadata=?, updated_at=? WHERE ID=? '''
+            cur.execute(sql, (status, json.dumps(metadata), now, task_id))
+        else:
+            sql = ''' UPDATE scrape_tasks SET status=?, updated_at=? WHERE ID=? '''
+            cur.execute(sql, (status, now, task_id))
     conn.commit()
+
+
 
 
 def increment_task_attempts(conn, task_id):

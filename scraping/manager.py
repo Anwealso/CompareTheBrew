@@ -14,7 +14,7 @@ class ScrapingManager:
     Central manager for coordinating the scraping pipeline across different retailers.
     Uses a Task Queue system with a progressive iterator approach.
     """
-    def __init__(self, sitemaps_file: str = "sitemaps.json"):
+    def __init__(self, sitemaps_file: str = "scraping/sitemaps.json"):
         """
         Initializes the manager with a sitemaps file.
         
@@ -85,7 +85,7 @@ class ScrapingManager:
             return False
 
         # IDs in SQLite are usually 0-indexed in the cursor result if using SELECT *
-        # Order: ID, retailer, url, status, metadata, priority, created_at, updated_at, attempts
+        # ID, retailer, url, status, metadata, attempts, created_at, updated_at
         task_id = task[0]
         url = task[2]
         metadata_str = task[4]
@@ -119,7 +119,9 @@ class ScrapingManager:
             update_task_status(conn, task_id, 'completed')
         except Exception as e:
             print(f"Error during task {task_id}: {e}")
-            update_task_status(conn, task_id, 'failed', {"error": str(e)})
+            # Move to back of queue by updating its status to pending 
+            # (DBHandler.update_task_status handles moving it to the back)
+            update_task_status(conn, task_id, 'pending', {"error": str(e)})
             
         conn.close()
         return True

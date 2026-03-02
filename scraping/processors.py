@@ -43,13 +43,6 @@ class RetailerProcessor(ABC):
     def get_items(self, url: str, metadata: Optional[dict] = None) -> Tuple[List[Item], Optional[dict]]:
         """
         Extracts items from the given URL.
-        
-        Args:
-            url (str): The URL to scrape.
-            metadata (Optional[dict]): Task metadata (e.g., page number, session state).
-            
-        Returns:
-            Tuple[List[Item], Optional[dict]]: List of extracted items and metadata for the next task if applicable.
         """
         pass
 
@@ -57,9 +50,6 @@ class RetailerProcessor(ABC):
     def discover_tasks(self, url: str) -> List[dict]:
         """
         Initial discovery of tasks for a given seed URL.
-        
-        Returns:
-            List[dict]: A list of task definitions (url, metadata).
         """
         pass
 
@@ -69,11 +59,18 @@ class BWSProcessor(RetailerProcessor):
     """
     def discover_tasks(self, url: str) -> List[dict]:
         """
-        BWS discovery: Find total pages and create all page tasks immediately.
+        BWS discovery: Determines total pagination depth and seeds the queue.
+        
+        This method hits the BWS API with a minimal page size to retrieve the 
+        'TotalProductCount'. It then calculates the number of 1000-item pages 
+        required and returns a list of specific page URLs. If the API reports 0 products or the fetch fails, it returns 
+        at least the seed URL as a single task to prevent silent skips.
         """
         tasks = []
         discovery_url = url.replace("pageSize=1000", "pageSize=1")
         content = self.fetch_url(discovery_url)
+        
+        # Fallback: if fetch fails, queue the original seed URL to try later
         if not content:
             return [{"url": url, "metadata": {"page": 1}}]
 
@@ -83,16 +80,29 @@ class BWSProcessor(RetailerProcessor):
             page_size = 1000
             num_pages = (total_count + page_size - 1) // page_size
             
+            # Ensure at least one page task is created even if total_count is 0
+            if num_pages == 0:
+                num_pages = 1
+                
             for page in range(1, num_pages + 1):
                 page_url = url.replace("pageNumber=1", f"pageNumber={page}")
                 tasks.append({"url": page_url, "metadata": {"page": page}})
         except Exception as e:
             print(f"Error in BWS discovery: {e}")
+            # Fallback on parse error
             tasks.append({"url": url, "metadata": {"page": 1}})
             
         return tasks
 
     def get_items(self, url: str, metadata: Optional[dict] = None) -> Tuple[List[Item], Optional[dict]]:
+        """
+        Parses BWS JSON data to extract drinks.
+        
+        Implements robust extraction that validates the existence of 
+        nested keys and handles numeric conversion/cleaning (e.g. stripping '%' 
+        from ABV or 'Approx' from standard drinks) to prevent NoneType or 
+        ValueError crashes on incomplete product data.
+        """
         result = list()
         content = self.fetch_url(url)
         if not content:
@@ -111,86 +121,91 @@ class BWSProcessor(RetailerProcessor):
         for drink in bundles:
             products = drink.get('Products', [])
             for subdrink in products:
-                # ... Simplified extraction for brevity, keeping the core logic from previous turns ...
+                # Robust extraction logic with defaults
                 parentcode = "None"
                 item_numb = 1.0
                 percent_alcohol = 0.0
                 image_numb = "None"
-                std_drinks = -1.0
+                std_drinks = 0.0
                 link = "None"
                 style = "None"
                 size = 0.0
                 
+                # Iterate through BWS additional details to populate item properties
                 for i in subdrink.get("AdditionalDetails", []):
-                    if i["Name"] == "parentstockcode":
-                        parentcode = i["Value"]
-                    elif i["Name"] == "productunitquantity":
-                        try: item_numb = float(i["Value"])
+                    name = i.get("Name")
+                    val = i.get("Value")
+                    if not val: continue
+                    
+                    if name == "parentstockcode":
+                        parentcode = val
+                    elif name == "productunitquantity":
+                        try: item_numb = float(val)
                         except: item_numb = 1.0
-                    elif i["Name"] == "alcohol%":
-                        try: percent_alcohol = float(i["Value"].replace('%',''))
+                    elif name == "alcohol%":
+                        # Strip '%' and convert to float
+                        try: percent_alcohol = float(str(val).replace('%','').strip())
                         except: percent_alcohol = 0.0
-                    elif i["Name"] == "image1":
-                        image_numb = i["Value"]
-                    elif i["Name"] == "standarddrinks":
-                        try: std_drinks = float(i["Value"].replace('Approx.','').replace('Approx','').split(' ')[0])
-                        except: std_drinks = -1.0
-                    elif i["Name"] == "bwsproducturl":
-                        link = i["Value"]
-                    elif i["Name"] == "standardcategory":
-                        style = i["Value"]
-                    elif i["Name"] == "liquorsize":
-                        sz = i["Value"]
-                        if "Pack" in sz: 
+                    elif name == "image1":
+                        image_numb = val
+                    elif name == "standarddrinks":
+                        # Handle 'Approx.' prefix and trailing text
+                        try: 
+                            std_val = str(val).replace('Approx.','').replace('Approx','').strip().split(' ')[0]
+                            std_drinks = float(std_val)
+                        except: std_drinks = 0.0
+                    elif name == "bwsproducturl":
+                        link = val
+                    elif name == "standardcategory":
+                        style = val
+                    elif name == "liquorsize":
+                        # Parse size, handling 'Pack of X' and 'L' vs 'ml' units
+                        sz = str(val).lower()
+                        if "pack" in sz: 
                             try: sz = sz.split(" ")[2]
                             except: sz = "0"
-                        sz = sz.replace("ml", "").replace("mL", "")
-                        if "L" in sz:
-                            try: size = float(sz.split("L")[0]) * 1000
-                            except: size = 0.0
-                        else:
-                            try: size = float(sz)
-                            except: size = 0.0
+                        sz = sz.replace("ml", "").replace("l", "")
+                        try:
+                            size = float(sz)
+                            if "l" in str(val).lower() and "ml" not in str(val).lower():
+                                size *= 1000 # Convert Liters to milliliters
+                        except: size = 0.0
                         
                 drink_link = f"https://bws.com.au/product/{parentcode}/{link}"
                 image_link = f"https://edgmedia.bws.com.au/bws/media/products/{image_numb}"
                 
-                price = float(subdrink.get("Price", 0))
+                # Safe price conversion
+                price = 0.0
+                try:
+                    p_val = subdrink.get("Price")
+                    if p_val is not None:
+                        price = float(p_val)
+                except: price = 0.0
+                
+                # Calculate efficiency (standard drinks per dollar)
                 efficiency = (std_drinks * item_numb / price) if price > 0 and std_drinks > 0 else 0.0
                 
-                item = Item(store="bws", brand=subdrink["BrandName"], name=subdrink["Name"].strip(), 
+                # Map BWS fields to the common Item class
+                item = Item(store="bws", brand=subdrink.get("BrandName", "Unknown"), name=subdrink.get("Name", "Unknown").strip(), 
                             type=style, price=price, link=drink_link, ml=size, percent=percent_alcohol,
                             std_drinks=std_drinks, numb_items=item_numb, efficiency=efficiency, image=image_link,
                             promotion=subdrink.get('IsOnSpecial', False), old_price=subdrink.get("WasPrice", 0))
                 result.append(item)
                 
-        # BWS doesn't need to return a next_task here because all tasks were pre-discovered
         return result, None
 
 class LiquorlandProcessor(RetailerProcessor):
-    """
-    Processor for Liquorland (Hybrid approach example).
-    """
     def discover_tasks(self, url: str) -> List[dict]:
-        # Only discover the first page
         return [{"url": url, "metadata": {"page": 1}}]
 
     def get_items(self, url: str, metadata: Optional[dict] = None) -> Tuple[List[Item], Optional[dict]]:
         print(f"Liquorland: scraping {url}")
-        # Dummy logic: simulate finding a 'next' page
         page = metadata.get("page", 1) if metadata else 1
         items = [Item(store="ll", brand="LL", name=f"LL {page}-{i}", type="Beer", price=20, link=url, ml=375, percent=4.5, std_drinks=1.3, numb_items=6, efficiency=0.39, image="", promotion=False, old_price=20) for i in range(3)]
-        
-        next_metadata = None
-        if page < 3: # Simulate only 3 pages
-            next_metadata = {"page": page + 1, "next_url": f"{url}?page={page+1}"}
-            
+        next_metadata = {"page": page + 1, "next_url": f"{url}?page={page+1}"} if page < 3 else None
         return items, next_metadata
 
 class FirstChoiceProcessor(RetailerProcessor):
-    """
-    Processor for First Choice (Hybrid approach example).
-    """
     def discover_tasks(self, url: str) -> List[dict]:
         return [{"url": url, "metadata": {"page": 1}}]
 
@@ -198,9 +213,5 @@ class FirstChoiceProcessor(RetailerProcessor):
         print(f"FirstChoice: scraping {url}")
         page = metadata.get("page", 1) if metadata else 1
         items = [Item(store="fc", brand="FC", name=f"FC {page}-{i}", type="Wine", price=15, link=url, ml=750, percent=13, std_drinks=7.7, numb_items=1, efficiency=0.51, image="", promotion=True, old_price=18) for i in range(3)]
-        
-        next_metadata = None
-        if page < 2: # Simulate only 2 pages
-            next_metadata = {"page": page + 1, "next_url": f"{url}?page={page+1}"}
-            
+        next_metadata = {"page": page + 1, "next_url": f"{url}?page={page+1}"} if page < 2 else None
         return items, next_metadata

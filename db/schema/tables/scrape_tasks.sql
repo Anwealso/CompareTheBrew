@@ -13,4 +13,4 @@ CREATE TABLE IF NOT EXISTS "scrape_tasks" (
 
 -- Indices for faster querying of pending tasks
 CREATE INDEX IF NOT EXISTS idx_tasks_retailer_status ON scrape_tasks(retailer, status);
-CREATE INDEX IF NOT EXISTS idx_tasks_priority_created ON scrape_tasks(priority, created_at);
+CREATE INDEX IF NOT EXISTS idx_tasks_created_at ON scrape_tasks(created_at);
