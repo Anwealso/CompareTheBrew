@@ -1,0 +1,2051 @@
+{
+    "litre": [
+        "l",
+        "liter",
+        "litres",
+        "liters",
+        "ltr",
+        "ltrs"
+    ],
+    "ml": [
+        "millilitre",
+        "milliliter",
+        "millilitres",
+        "milliliters",
+        "mls"
+    ],
+    "gallon": [
+        "gal",
+        "gallons"
+    ],
+    "pint": [
+        "pt",
+        "pints"
+    ],
+    "quart": [
+        "qt",
+        "quarts"
+    ],
+    "bottle": [
+        "bottled",
+        "bottles",
+        "btl",
+        "btls"
+    ],
+    "can": [
+        "cans",
+        "tinny",
+        "tinnie",
+        "tinnies"
+    ],
+    "pack": [
+        "packs",
+        "pk",
+        "pks",
+        "carton",
+        "cartons",
+        "ctn",
+        "ctns"
+    ],
+    "case": [
+        "cases",
+        "carton",
+        "cartons"
+    ],
+    "box": [
+        "boxes",
+        "bag",
+        "bags"
+    ],
+    "keg": [
+        "kegs",
+        "barrel",
+        "barrels"
+    ],
+    "cask": [
+        "casks"
+    ],
+    "growler": [
+        "growlers"
+    ],
+    "stubby": [
+        "stubbies"
+    ],
+    "lonneck": [
+        "longneck",
+        "longnecks"
+    ],
+    "slim": [
+        "slimline",
+        "slims"
+    ],
+    "punch": [
+        "punches",
+        "bag in box",
+        "bib"
+    ],
+    "coke": [
+        "coca",
+        "cola",
+        "coca-cola",
+        "coke cola",
+        "coke classic"
+    ],
+    "cokes": [
+        "coca",
+        "cola",
+        "coca-cola"
+    ],
+    "pepsi": [
+        "pepsicola",
+        "pep"
+    ],
+    "dr pepper": [
+        "drpepper",
+        "dr pepper"
+    ],
+    "soda": [
+        "soda",
+        "soda water",
+        "club soda",
+        "sparkling water"
+    ],
+    "tonic": [
+        "tonic",
+        "tonic water",
+        "Indian tonic",
+        "bitter tonic"
+    ],
+    "soda water": [
+        "soda",
+        "sparkling water",
+        "club soda"
+    ],
+    "ginger ale": [
+        "ginger ale",
+        "ginger",
+        "spicy ginger"
+    ],
+    "lemonade": [
+        "lemonade",
+        "lemon soda",
+        "fresh lemonade"
+    ],
+    "bitter": [
+        "bitter",
+        "bitting",
+        "hop bitterness",
+        "ibu"
+    ],
+    "beer": [
+        "beers",
+        "lagers",
+        "ales",
+        "brew"
+    ],
+    "lager": [
+        "lagers",
+        "pilsner",
+        "pils",
+        "pilsener",
+        "draft",
+        "draught"
+    ],
+    "ale": [
+        "ales",
+        "top fermenting"
+    ],
+    "pilsner": [
+        "pils",
+        "pilsener",
+        "pilsner",
+        "continental lager"
+    ],
+    "ipa": [
+        "india pale ale",
+        "ipas",
+        "double ipa",
+        "dipa",
+        "new england ipa",
+        "neipa"
+    ],
+    "pale ale": [
+        "pale ales",
+        "apa",
+        "american pale ale"
+    ],
+    "stout": [
+        "stouts",
+        "guinness",
+        "dry stout",
+        "milk stout",
+        "coffee stout"
+    ],
+    "porter": [
+        "porters",
+        "robust porter",
+        "brown porter"
+    ],
+    "dark": [
+        "dark beer",
+        "dark ale",
+        "dunkel",
+        "schwarzbier"
+    ],
+    "wheat": [
+        "wheat beer",
+        "weissbier",
+        "weizen",
+        "hefeweizen",
+        "witbier"
+    ],
+    "hefeweizen": [
+        "wheat",
+        "weissbier",
+        "weizen",
+        "witbier"
+    ],
+    "witbier": [
+        "wheat",
+        "white beer",
+        "wit"
+    ],
+    "saison": [
+        "farmhouse ale",
+        "saison",
+        "farmhouse"
+    ],
+    "sour": [
+        "sour beer",
+        "gose",
+        " Berliner weisse",
+        "acid beer",
+        "wild ale"
+    ],
+    "gose": [
+        "sour",
+        "spiced gose"
+    ],
+    "lambic": [
+        "lambiek",
+        "fruit lambic",
+        "gueuze"
+    ],
+    "barrel aged": [
+        "barley wine",
+        "barrel aged",
+        "oak aged",
+        "wine aged"
+    ],
+    " imperial": [
+        "imperial",
+        "imp",
+        "strong"
+    ],
+    "session": [
+        "session ale",
+        "session beer",
+        "small beer"
+    ],
+    "low carb": [
+        "low carb",
+        "low carbohydrate",
+        "lite",
+        "light"
+    ],
+    "mid strength": [
+        "mid",
+        "midstrength",
+        "mid strength",
+        "3.5",
+        "mid strength"
+    ],
+    "mid": [
+        "mid strength",
+        "midstrength",
+        "mid"
+    ],
+    "full strength": [
+        "full",
+        "full bodied",
+        "full strength",
+        "strong",
+        "premium"
+    ],
+    "premium beer": [
+        "premium",
+        "premium lager",
+        "super premium"
+    ],
+    "craft beer": [
+        "craft",
+        "artisan",
+        "microbrewery",
+        "independent",
+        "specialty"
+    ],
+    "imported beer": [
+        "imported",
+        "import",
+        "overseas",
+        "international",
+        "foreign"
+    ],
+    "corona": [
+        "corona extra",
+        "corona light"
+    ],
+    "heineken": [
+        "heineken",
+        "heineken lager"
+    ],
+    "stella": [
+        "stella artois",
+        "stella"
+    ],
+    "budweiser": [
+        "bud",
+        "budweiser lager"
+    ],
+    "coors": [
+        "coors light",
+        "coors banquet"
+    ],
+    "carlsberg": [
+        "carlsberg lager"
+    ],
+    "guinness": [
+        "guinness stout",
+        "guinness draft"
+    ],
+    "tooheys": [
+        "tooheys new",
+        "tooheys extra dry",
+        "tooheys 5"
+    ],
+    "xxxx": [
+        "xxxx gold",
+        "xxxx bitter",
+        "xxxx lager"
+    ],
+    "crown": [
+        "crown lager",
+        "crown premium"
+    ],
+    "great northern": [
+        "great northern super",
+        "gn"
+    ],
+    "cascade": [
+        "cascade brewery",
+        "cascade lager"
+    ],
+    "boag's": [
+        "james boag",
+        "boags"
+    ],
+    "coopers": [
+        "coopers original",
+        "coopers spark",
+        "coopers pale"
+    ],
+    "sydney": [
+        "sydney lager"
+    ],
+    "swan": [
+        "swan lager"
+    ],
+    "cider": [
+        "ciders",
+        "cyder",
+        "cider",
+        "apple cider",
+        "pear cider",
+        "cider"
+    ],
+    "apple cider": [
+        "cider",
+        "apple",
+        "hard cider"
+    ],
+    "pear cider": [
+        "perry",
+        "pear",
+        "peary"
+    ],
+    "sweet cider": [
+        "sweet apple cider",
+        "apple cider"
+    ],
+    "dry cider": [
+        "dry apple cider",
+        "brut cider"
+    ],
+    "cider brands": [
+        "strongbow",
+        "bulmers",
+        "carlsberg cider",
+        "apple cider"
+    ],
+    "wine": [
+        "wines",
+        " vino"
+    ],
+    "red wine": [
+        "red",
+        "reds",
+        "red wine",
+        "table wine"
+    ],
+    "white wine": [
+        "white",
+        "whites",
+        "white wine"
+    ],
+    "ros\u00e9 wine": [
+        "rose",
+        "ros\u00e9",
+        "rosado",
+        "pink wine",
+        "blush"
+    ],
+    "sparkling wine": [
+        "sparkling",
+        "fizzy wine",
+        "bubbly",
+        "champagne method"
+    ],
+    "fortified wine": [
+        "fortified",
+        "port",
+        "sherry",
+        "madeira",
+        "marsala",
+        "vermouth"
+    ],
+    "dessert wine": [
+        "dessert",
+        "sweet wine",
+        "late harvest",
+        "noble rot",
+        "sauternes"
+    ],
+    "table wine": [
+        "table",
+        "everyday wine",
+        "dinner wine"
+    ],
+    "cabernet": [
+        "cabernet sauvignon",
+        "cab",
+        "cabernet wine"
+    ],
+    "cabernet sauvignon": [
+        "cabernet",
+        "cab",
+        "cab sav"
+    ],
+    "merlot": [
+        "merlot wine",
+        "merlot red"
+    ],
+    "shiraz": [
+        "syrah",
+        "shiraz wine",
+        "australian shiraz"
+    ],
+    "syrah": [
+        "shiraz",
+        "syrah wine",
+        "french syrah"
+    ],
+    "pinot noir": [
+        "pinot",
+        "burgundy",
+        "pinot wine"
+    ],
+    "malbec": [
+        "malbec wine",
+        "argentinian red"
+    ],
+    "zinfandel": [
+        "zinfandel",
+        "zin",
+        "primitivo"
+    ],
+    "grenache": [
+        "garnacha",
+        "grenache wine"
+    ],
+    "tempranillo": [
+        "tempranillo wine",
+        "spanish red"
+    ],
+    "sangiovese": [
+        "chianti",
+        "sangiovese wine"
+    ],
+    "mourvedre": [
+        "mataro",
+        "monastrell",
+        "mourvedre wine"
+    ],
+    "petite sirah": [
+        "petite sirah",
+        "durif"
+    ],
+    "blaufrankisch": [
+        "blaufrankisch",
+        "lemberger"
+    ],
+    "dolcetto": [
+        "dolcetto wine"
+    ],
+    "barbera": [
+        "barbera wine"
+    ],
+    "chardonnay": [
+        "chardonnay wine",
+        "chardy",
+        "white burgundy"
+    ],
+    "sauvignon blanc": [
+        "sauvignon",
+        "sauvignon wine",
+        "sav",
+        "sb"
+    ],
+    "pinot gris": [
+        "pinot grigio",
+        "pinot grigio wine",
+        "pg"
+    ],
+    "riesling": [
+        "riesling wine",
+        "white riesling",
+        "johnannisberg"
+    ],
+    "gewurztraminer": [
+        "gewurztraminer wine",
+        "gewurz"
+    ],
+    "viognier": [
+        "viognier wine"
+    ],
+    "marsanne": [
+        "marsanne wine"
+    ],
+    "roussanne": [
+        "roussanne wine"
+    ],
+    "grenache blanc": [
+        "grenache blanc wine"
+    ],
+    "vermentino": [
+        "vermentino wine",
+        "favorita"
+    ],
+    "torrontes": [
+        "torrontes wine"
+    ],
+    "albarino": [
+        "albarino wine",
+        "alvarinho"
+    ],
+    "gruner veltliner": [
+        "gruner",
+        "gv",
+        "gruner veltliner"
+    ],
+    "chenin blanc": [
+        "chenin",
+        "steen"
+    ],
+    "s\u00e9millon": [
+        "semillon",
+        "s\u00e9millon wine"
+    ],
+    "m\u00fcller": [
+        "m\u00fcller-thurgau",
+        "muller"
+    ],
+    "champagne": [
+        "champagne",
+        "champers",
+        "methode champenoise",
+        "french sparkling"
+    ],
+    "prosecco": [
+        "prosecco wine",
+        "italian sparkling",
+        "docg"
+    ],
+    "cava": [
+        "cava wine",
+        "spanish sparkling",
+        "cava"
+    ],
+    "m\u00e9thode": [
+        "m\u00e9thode champenoise",
+        "traditional method",
+        "methode"
+    ],
+    "Moscato": [
+        "moscato d'asti",
+        "sweet sparkling",
+        "asti",
+        "sparkling moscato"
+    ],
+    "sparkling rose": [
+        "sparkling ros\u00e9",
+        "sparkling pink",
+        "bubbly rose"
+    ],
+    "ros\u00e9": [
+        "rose",
+        "ros\u00e9 wine",
+        "rosado",
+        "pink wine",
+        "blush"
+    ],
+    "dry ros\u00e9": [
+        "dry rose",
+        "provence style",
+        "extra dry ros\u00e9"
+    ],
+    "sweet ros\u00e9": [
+        "sweet rose",
+        "blush",
+        "white zinfandel"
+    ],
+    "port": [
+        "port wine",
+        "portwine",
+        "vintage port",
+        "ruby port",
+        "tawny port"
+    ],
+    "sherry": [
+        "sherry wine",
+        "jerez",
+        "fino",
+        "oloroso",
+        "amontillado"
+    ],
+    "madeira": [
+        "madeira wine",
+        "malmsey",
+        "sercial",
+        "verdelho"
+    ],
+    "marsala": [
+        "marsala wine",
+        "sicilian dessert wine"
+    ],
+    "vermouth": [
+        "vermouth",
+        "sweet vermouth",
+        "dry vermouth",
+        "bianco"
+    ],
+    "dry": [
+        "dry",
+        "bone dry",
+        "off dry",
+        "sec"
+    ],
+    "sweet": [
+        "sweet",
+        "semi sweet",
+        "off sweet",
+        "dolce"
+    ],
+    "medium": [
+        "medium dry",
+        "medium sweet",
+        "demi-sec",
+        "semi dry"
+    ],
+    "oaked": [
+        "oak",
+        "oaked",
+        "barrel aged",
+        "oak aged",
+        "wood aged"
+    ],
+    "unoaked": [
+        "no oak",
+        "unwooded",
+        "unoaked",
+        "steel fermented"
+    ],
+    "organic wine": [
+        "organic",
+        "biodynamic",
+        "natural wine",
+        "eco"
+    ],
+    "vintage": [
+        "vintage",
+        "year",
+        "aged",
+        "old vintage"
+    ],
+    "non vintage": [
+        "nv",
+        "non vintage",
+        "multi vintage"
+    ],
+    "spirits": [
+        "spirit",
+        "liquor",
+        "hard liquor",
+        "hard drink",
+        "booze"
+    ],
+    "liquor": [
+        "spirits",
+        "liquor",
+        "hard liquor"
+    ],
+    "distilled": [
+        "distilled",
+        "distillation",
+        "distilled spirits"
+    ],
+    "neat": [
+        "neat",
+        "straight",
+        "no ice"
+    ],
+    "on the rocks": [
+        "rocks",
+        "ice",
+        "with ice"
+    ],
+    "shot": [
+        "shots",
+        "shooter",
+        "jigger",
+        "nip"
+    ],
+    "mixed": [
+        "mixed drink",
+        "cocktail",
+        "mixed"
+    ],
+    "vodka": [
+        "vodkas",
+        "vodka spirit",
+        "russian vodka",
+        "polish vodka"
+    ],
+    "russian vodka": [
+        "russian",
+        "russia",
+        "soviet"
+    ],
+    "polish vodka": [
+        "polish",
+        "poland",
+        "zubrowka"
+    ],
+    "australian vodka": [
+        "aussie vodka",
+        "australian spirit"
+    ],
+    "imported vodka": [
+        "imported",
+        "foreign vodka",
+        "european"
+    ],
+    "flavoured vodka": [
+        "flavored vodka",
+        "flavour vodka",
+        "infused vodka",
+        "citrus vodka",
+        "vanilla vodka",
+        "pepper vodka"
+    ],
+    "potato vodka": [
+        "potato",
+        "potato spirit"
+    ],
+    "wheat vodka": [
+        "wheat",
+        "grain vodka"
+    ],
+    "absolut": [
+        "absolut vodka",
+        "absolut blue"
+    ],
+    "grey goose": [
+        "grey goose vodka"
+    ],
+    "smirnoff": [
+        "smirnoff vodka",
+        "smirnoff red"
+    ],
+    "vodka brands": [
+        "absolut",
+        "grey goose",
+        "smirnoff",
+        "ketel one",
+        "skyy",
+        "belvedere",
+        "stolichnaya",
+        "stoli",
+        "svedka",
+        "finlandia",
+        "skyy"
+    ],
+    "gin": [
+        "gins",
+        "gin spirit",
+        "juniper",
+        "genever",
+        "old tom"
+    ],
+    "london dry": [
+        "london dry gin",
+        "dry gin"
+    ],
+    "old tom gin": [
+        "old tom",
+        "tom gin"
+    ],
+    "plymouth gin": [
+        "plymouth",
+        "english gin"
+    ],
+    "australian gin": [
+        "aussie gin",
+        "australian craft gin"
+    ],
+    "imported gin": [
+        "imported gin",
+        "foreign gin"
+    ],
+    "flavoured gin": [
+        "flavored gin",
+        "infused gin",
+        "pink gin",
+        "citrus gin"
+    ],
+    "navy gin": [
+        "navy strength",
+        "proof gin"
+    ],
+    "gordons": [
+        "gordons gin",
+        "gordons dry"
+    ],
+    "tanqueray": [
+        "tanqueray gin",
+        "tanqueray 10"
+    ],
+    "bombay": [
+        "bombay sapphire",
+        "bombay gin"
+    ],
+    "hendrick's": [
+        "hendricks gin",
+        "hendricks"
+    ],
+    "gin brands": [
+        "gordons",
+        "tanqueray",
+        "bombay",
+        "hendricks",
+        "beefeater",
+        "bombay sapphire",
+        "new amsterdam",
+        "seagrams",
+        "gilbey's",
+        "fever tree"
+    ],
+    "rum": [
+        "rums",
+        "rum spirit",
+        "cane spirit",
+        "rackee"
+    ],
+    "white rum": [
+        "white rum",
+        "silver rum",
+        "light rum",
+        "cuban rum"
+    ],
+    "gold rum": [
+        "gold rum",
+        "amber rum",
+        "aged rum"
+    ],
+    "dark rum": [
+        "dark rum",
+        "black rum",
+        "jamaican rum"
+    ],
+    "spiced rum": [
+        "spiced",
+        "spice rum",
+        "flavored rum"
+    ],
+    "coconut rum": [
+        "coconut",
+        "malibu",
+        "rum cream"
+    ],
+    "aged rum": [
+        "aged",
+        "mature rum",
+        "reserva"
+    ],
+    "overproof": [
+        "overproof rum",
+        "high proof",
+        "151",
+        "floater"
+    ],
+    "agricole": [
+        "agricole rum",
+        "rhum agricole",
+        "fresh cane"
+    ],
+    "bacardi": [
+        "bacardi rum",
+        "bacardi white",
+        "bacardi gold"
+    ],
+    "captain morgan": [
+        "captain morgan",
+        "captains"
+    ],
+    "malibu": [
+        "malibu rum",
+        "coconut rum"
+    ],
+    "rum brands": [
+        "bacardi",
+        "captain morgan",
+        "malibu",
+        "havana club",
+        "mount gay",
+        "doorly's",
+        " Appleton estate",
+        "diamant",
+        "foursquare"
+    ],
+    "whiskey": [
+        "whisky",
+        "whiskey",
+        "whisky",
+        "whiskey",
+        "whiskey",
+        "whisky",
+        "whiskey",
+        "whisky"
+    ],
+    "whisky": [
+        "whiskey",
+        "whisky",
+        "whiskey",
+        "whisky"
+    ],
+    "scotch": [
+        "scotch whisky",
+        "scotch",
+        "scotches",
+        "blended scotch",
+        "single malt scotch"
+    ],
+    "scotch whisky": [
+        "scotch",
+        "scotches",
+        "blended scotch"
+    ],
+    "single malt": [
+        "single malt",
+        "single malt whisky",
+        "speyside",
+        "highland",
+        "lowland",
+        "islay"
+    ],
+    "blended whiskey": [
+        "blended whisky",
+        "blended",
+        "blend"
+    ],
+    "bourbon": [
+        "bourbon whiskey",
+        "bourbon",
+        "american whiskey",
+        "kentucky bourbon"
+    ],
+    "tennessee": [
+        "tennessee whiskey",
+        "tennessee bourbon",
+        "sour mash"
+    ],
+    "rye": [
+        "rye whiskey",
+        "american rye",
+        "canadian rye"
+    ],
+    "canadian whiskey": [
+        "canadian whisky",
+        "canadian",
+        "blended canadian"
+    ],
+    "irish whiskey": [
+        "irish whisky",
+        "irish",
+        "irish whiskey",
+        "pot still"
+    ],
+    "japanese whisky": [
+        "japanese whiskey",
+        "japanese",
+        "japan whisky",
+        "nikka",
+        "suntory"
+    ],
+    "australian whisky": [
+        "australian whiskey",
+        "aussie whisky",
+        "aussie whiskey"
+    ],
+    "wheat whiskey": [
+        "wheat whisky",
+        "wheat bourbon"
+    ],
+    "corn whiskey": [
+        "corn whisky",
+        "corn bourbon",
+        "moonshine"
+    ],
+    "single barrel": [
+        "single barrel",
+        "single cask",
+        "hand drawn"
+    ],
+    "small batch": [
+        "small batch",
+        "small batch bourbon",
+        "limited"
+    ],
+    "johnnie walker": [
+        "johnnie walker",
+        "jw",
+        "johnnie",
+        "red label",
+        "black label",
+        "double black",
+        "gold label",
+        "platinum",
+        "blue label",
+        "blue"
+    ],
+    "johnnie": [
+        "johnnie walker",
+        "jw"
+    ],
+    "jameson": [
+        "jameson irish",
+        "jameson whiskey"
+    ],
+    "jack daniels": [
+        "jack daniels",
+        "jack",
+        "jd",
+        "jack daniels whiskey"
+    ],
+    "jack": [
+        "jack daniels",
+        "jack daniels whiskey"
+    ],
+    "jim beam": [
+        "jim beam bourbon",
+        "jim beam white",
+        "jim beam rye"
+    ],
+    "jim": [
+        "jim beam",
+        "jim beam bourbon"
+    ],
+    "glendronach": [
+        "glendronach",
+        "the glendronach"
+    ],
+    "lagavulin": [
+        "lagavulin",
+        "laga"
+    ],
+    "talisker": [
+        "talisker",
+        "talisker 10"
+    ],
+    "glenfiddich": [
+        "glenfiddich",
+        "glenfiddich 15"
+    ],
+    "glenlivet": [
+        "glenlivet",
+        "the gllenlivet"
+    ],
+    "macallan": [
+        "macallan",
+        "the macallan",
+        "macallan 12",
+        "macallan 18"
+    ],
+    "writers tears": [
+        "writers tears",
+        "writers"
+    ],
+    "bushmills": [
+        "bushmills",
+        "bushmills irish"
+    ],
+    "whiskey brands": [
+        "johnnie walker",
+        "jameson",
+        "jack daniels",
+        "jim beam",
+        "glendronach",
+        "lagavulin",
+        "talisker",
+        "glenfiddich",
+        "glenlivet",
+        "macallan",
+        "writers tears",
+        "bushmills",
+        "crown royal",
+        "canadian club",
+        "bulleit",
+        "makers mark",
+        "woodford reserve",
+        "wild turkey",
+        "old pulteney",
+        "balvenie",
+        "ardbeg",
+        "tullamore dew",
+        "powers"
+    ],
+    "tequila": [
+        "tequilas",
+        "tequila spirit",
+        "agave"
+    ],
+    "blanco": [
+        "blanco tequila",
+        "silver tequila",
+        "white tequila",
+        "plata"
+    ],
+    "reposado": [
+        "reposado tequila",
+        "rested tequila"
+    ],
+    "anejo": [
+        "anejo tequila",
+        "aged tequila",
+        "a\u00f1ejo"
+    ],
+    "extra anejo": [
+        "extra anejo",
+        "ultra aged",
+        "ultra",
+        "extra aged"
+    ],
+    "mezcal": [
+        "mezcal",
+        "smoky tequila",
+        "smoky mezcal"
+    ],
+    "tequila brands": [
+        "patron",
+        "jose cuervo",
+        "casamigos",
+        "clase azul",
+        "don julio",
+        "Herradura",
+        "1800",
+        "el jimador",
+        "milagro",
+        "sauza"
+    ],
+    "brandy": [
+        "brandies",
+        "brandy spirit",
+        "eau de vie",
+        "fine"
+    ],
+    "cognac": [
+        "cognac",
+        "french brandy",
+        " VSOP",
+        "XO",
+        "vSOP"
+    ],
+    "armagnac": [
+        "armagnac",
+        "french brandy",
+        "bas armagnac"
+    ],
+    "calvados": [
+        "calvados",
+        "apple brandy",
+        "apple spirit"
+    ],
+    "pisco": [
+        "pisco",
+        "peruvian brandy",
+        "chilean brandy"
+    ],
+    "grappa": [
+        "grappa",
+        "italian brandy",
+        "marc"
+    ],
+    "schnapps": [
+        "schnapps",
+        "schnaps",
+        "fruit brandy",
+        "peach brandy"
+    ],
+    "liqueur": [
+        "liqueurs",
+        "liquor",
+        "sweet spirits",
+        "flavored spirits"
+    ],
+    "coffee liqueur": [
+        "coffee liqueur",
+        "kahlua",
+        "tia maria",
+        "espresso liqueur"
+    ],
+    "kahlua": [
+        "kahlua",
+        "kahlua coffee"
+    ],
+    "creme liqueur": [
+        "creme de",
+        "creme liqueur",
+        "creme"
+    ],
+    "amaretto": [
+        "amaretto",
+        "almond liqueur",
+        "disaronno"
+    ],
+    "triple sec": [
+        "triple sec",
+        "curacao",
+        "cointreau",
+        "blue cura\u00e7ao"
+    ],
+    "curacao": [
+        "curacao",
+        "blue curacao",
+        "triple sec"
+    ],
+    "cointreau": [
+        "cointreau",
+        "orange liqueur"
+    ],
+    "baileys": [
+        "baileys irish cream",
+        "baileys",
+        "irish cream"
+    ],
+    "irish cream": [
+        "baileys",
+        "irish cream",
+        "cream liqueur"
+    ],
+    "chartreuse": [
+        "chartreuse",
+        "green chartreuse",
+        "yellow chartreuse"
+    ],
+    "strega": [
+        "strega",
+        "italian herbal liqueur"
+    ],
+    "campari": [
+        "campari",
+        "bitter",
+        "aperol"
+    ],
+    "aperol": [
+        "aperol",
+        "aperol spritz"
+    ],
+    "sambuca": [
+        "sambuca",
+        "black sambuca",
+        "white sambuca",
+        "anis"
+    ],
+    "ouzo": [
+        "ouzo",
+        "ouzo",
+        "greek anise",
+        "pastis"
+    ],
+    "pastis": [
+        "pastis",
+        "french anise"
+    ],
+    "midori": [
+        "midori",
+        "melon liqueur"
+    ],
+    "blue curacao": [
+        "blue curacao",
+        "curacao",
+        "triple sec"
+    ],
+    "coconut liqueur": [
+        "malibu",
+        "coconut rum",
+        "coconut liqueur"
+    ],
+    "peach schnapps": [
+        "peach schnapps",
+        "peach liqueur",
+        "peach"
+    ],
+    "apple liqueur": [
+        "apple liqueur",
+        "apple schnapps",
+        "sour apple"
+    ],
+    "cherry liqueur": [
+        "cherry liqueur",
+        "cherry brandy",
+        "kirsch",
+        "kirschwasser"
+    ],
+    "raspberry liqueur": [
+        "raspberry liqueur",
+        "framboise",
+        " Chambord",
+        "sloe gin"
+    ],
+    "blackberry liqueur": [
+        "blackberry liqueur",
+        "blackberry brandy",
+        "cr\u00e8me de m\u00fbre"
+    ],
+    "elderflower": [
+        "elderflower liqueur",
+        "st germain",
+        "elderflower"
+    ],
+    "maraschino": [
+        "maraschino",
+        "maraschino liqueur",
+        "luxardo"
+    ],
+    "creme de cacao": [
+        "creme de cacao",
+        "chocolate liqueur"
+    ],
+    "creme de cassis": [
+        "creme de cassis",
+        "blackcurrant liqueur",
+        "cassis"
+    ],
+    "ready to drink": [
+        "rtd",
+        "ready to drink",
+        "premixed",
+        "pre mixed",
+        "pre-mixed",
+        "premix",
+        "ready to drink",
+        "canned cocktail",
+        "bottled cocktail"
+    ],
+    "premixed": [
+        "rtd",
+        "ready to drink",
+        "premixed",
+        "pre mixed"
+    ],
+    "vodka premix": [
+        "vodka rtd",
+        "vodka mixer",
+        "vodka can"
+    ],
+    "rum premix": [
+        "rum rtd",
+        "rum mixer",
+        "rum can"
+    ],
+    "gin premix": [
+        "gin rtd",
+        "gin mixer",
+        "gin can"
+    ],
+    "whiskey premix": [
+        "whiskey rtd",
+        "whiskey mixer",
+        "whiskey can"
+    ],
+    "spirits premix": [
+        "spirit rtd",
+        "spirit premix"
+    ],
+    "vodka cruiser": [
+        "cruiser",
+        "vodka cruiser"
+    ],
+    "mike's": [
+        "mike's hard",
+        "mikes",
+        "mike's lemonade"
+    ],
+    "solo": [
+        "solo",
+        "smirnoff solo"
+    ],
+    "slim can": [
+        "slim can",
+        "slimline can",
+        "slim"
+    ],
+    "cooler": [
+        "coolers",
+        "alcopop",
+        "fruit cooler",
+        "wine cooler"
+    ],
+    "alcopop": [
+        "alcopops",
+        "sweet alcoholic drink",
+        "youth drink"
+    ],
+    "wine cooler": [
+        "wine cooler",
+        "cooler",
+        "fruity wine"
+    ],
+    "hard lemonade": [
+        "hard lemonade",
+        "lemonade alcoholic",
+        "beer lemonade"
+    ],
+    "hard soda": [
+        "hard soda",
+        "alcoholic soda",
+        "fizzy alcohol"
+    ],
+    "sake": [
+        "sake",
+        "saki",
+        "rice wine",
+        "japanese rice wine",
+        "nihonshu"
+    ],
+    "rice wine": [
+        "sake",
+        "mirin",
+        "shaoxing",
+        "huangjiu"
+    ],
+    "soju": [
+        "soju",
+        "korean spirits",
+        "korean rice wine"
+    ],
+    "hoppy": [
+        "hoppy",
+        "hops",
+        "hop",
+        "hoppy beer",
+        "india"
+    ],
+    "malty": [
+        "malty",
+        "malt",
+        "caramel",
+        "toffee",
+        "biscuit"
+    ],
+    "fruity": [
+        "fruity",
+        "fruit forward",
+        "fruit driven"
+    ],
+    "smoky": [
+        "smoky",
+        "smoke",
+        "smoked",
+        "rauchbier"
+    ],
+    "roasty": [
+        "roasty",
+        "roast",
+        "coffee",
+        "chocolate",
+        "dark"
+    ],
+    "creamy": [
+        "creamy",
+        "creamy head",
+        "smooth",
+        "mouthfeel"
+    ],
+    "crisp": [
+        "crisp",
+        "clean",
+        "refreshing",
+        "light"
+    ],
+    "smooth": [
+        "smooth",
+        "easy",
+        "drinkable",
+        "polished"
+    ],
+    "bold": [
+        "bold",
+        "strong",
+        "intense",
+        "powerful"
+    ],
+    "balanced": [
+        "balanced",
+        "harmonious",
+        "well rounded"
+    ],
+    "refreshing": [
+        "refreshing",
+        "crisp",
+        "clean",
+        "thirst quenching"
+    ],
+    "lemon": [
+        "lemon",
+        "lemonade",
+        "lemon zest",
+        "citrus",
+        "lemon flavour"
+    ],
+    "lime": [
+        "lime",
+        "lime zest",
+        "citrus",
+        "lime flavour"
+    ],
+    "orange": [
+        "orange",
+        "orange zest",
+        "citrus",
+        "orange flavour"
+    ],
+    "grapefruit": [
+        "grapefruit",
+        "citrus",
+        "ruby red",
+        "grapefruit flavour"
+    ],
+    "apple": [
+        "apple",
+        "green apple",
+        "red apple",
+        "apple flavour"
+    ],
+    "pear": [
+        "pear",
+        "pear flavour"
+    ],
+    "peach": [
+        "peach",
+        "peach flavour",
+        "stone fruit"
+    ],
+    "apricot": [
+        "apricot",
+        "stone fruit",
+        "apricot flavour"
+    ],
+    "mango": [
+        "mango",
+        "tropical",
+        "mango flavour"
+    ],
+    "pineapple": [
+        "pineapple",
+        "tropical",
+        "pineapple flavour"
+    ],
+    "passionfruit": [
+        "passionfruit",
+        "passion fruit",
+        "tropical",
+        "passionfruit flavour"
+    ],
+    "guava": [
+        "guava",
+        "tropical",
+        "guava flavour"
+    ],
+    "berry": [
+        "berry",
+        "berries",
+        "berry flavour",
+        "mixed berries"
+    ],
+    "strawberry": [
+        "strawberry",
+        "berry",
+        "strawberry flavour"
+    ],
+    "raspberry": [
+        "raspberry",
+        "berry",
+        "raspberry flavour"
+    ],
+    "blueberry": [
+        "blueberry",
+        "berry",
+        "blueberry flavour"
+    ],
+    "blackberry": [
+        "blackberry",
+        "berry",
+        "blackberry flavour"
+    ],
+    "cherry": [
+        "cherry",
+        "cherries",
+        "cherry flavour",
+        "maraschino"
+    ],
+    "plum": [
+        "plum",
+        "stone fruit",
+        "plum flavour"
+    ],
+    "watermelon": [
+        "watermelon",
+        "melon",
+        "watermelon flavour"
+    ],
+    "coconut": [
+        "coconut",
+        "coconut flavour",
+        "tropical"
+    ],
+    "coffee": [
+        "coffee",
+        "espresso",
+        "coffee flavour",
+        "cafe",
+        "caffeinated"
+    ],
+    "chocolate": [
+        "chocolate",
+        "cocoa",
+        "mocha",
+        "chocolate flavour"
+    ],
+    "vanilla": [
+        "vanilla",
+        "vanilla flavour",
+        "madagascar"
+    ],
+    "caramel": [
+        "caramel",
+        "toffee",
+        "butterscotch",
+        "caramel flavour"
+    ],
+    "honey": [
+        "honey",
+        "honeyed",
+        "nectar",
+        "honey flavour",
+        "mead"
+    ],
+    "ginger": [
+        "ginger",
+        "ginger flavour",
+        "spicy"
+    ],
+    "spice": [
+        "spice",
+        "spiced",
+        "christmas",
+        "winter",
+        "spice flavour"
+    ],
+    "cinnamon": [
+        "cinnamon",
+        "spice",
+        "cinnamon flavour"
+    ],
+    "pepper": [
+        "pepper",
+        "black pepper",
+        "spicy",
+        "pepper flavour"
+    ],
+    "chilli": [
+        "chilli",
+        "chili",
+        "hot",
+        "spicy",
+        "chilli flavour"
+    ],
+    "salt": [
+        "salt",
+        "salted",
+        "saltiness",
+        "gose"
+    ],
+    "oak": [
+        "oak",
+        "oaked",
+        "wood",
+        "barrel",
+        "oak flavour"
+    ],
+    "smoke": [
+        "smoke",
+        "smoky",
+        "smoked",
+        "peat",
+        "smoke flavour"
+    ],
+    "peat": [
+        "peat",
+        "peaty",
+        "smoky",
+        "peat flavour"
+    ],
+    "australian": [
+        "aussie",
+        "australian",
+        "aus",
+        "aussie made"
+    ],
+    "new zealand": [
+        "nz",
+        "new zealand",
+        "nz made",
+        "kiwi"
+    ],
+    "american": [
+        "american",
+        "usa",
+        "us made",
+        "american made"
+    ],
+    "british": [
+        "british",
+        "uk",
+        "british made",
+        "english"
+    ],
+    "irish": [
+        "irish",
+        "ireland",
+        "irish made"
+    ],
+    "scottish": [
+        "scottish",
+        "scotland",
+        "scotch",
+        "scottish made"
+    ],
+    "french": [
+        "french",
+        "france",
+        "french made"
+    ],
+    "italian": [
+        "italian",
+        "italy",
+        "italian made"
+    ],
+    "spanish": [
+        "spanish",
+        "spain",
+        "spanish made"
+    ],
+    "german": [
+        "german",
+        "germany",
+        "german made",
+        "deutsch"
+    ],
+    "belgian": [
+        "belgian",
+        "belgium",
+        "belgian made"
+    ],
+    "japanese": [
+        "japanese",
+        "japan",
+        "japanese made"
+    ],
+    "mexican": [
+        "mexican",
+        "mexico",
+        "mexican made"
+    ],
+    "caribbean": [
+        "caribbean",
+        "jamaican",
+        "cuban",
+        "puerto rican"
+    ],
+    "imported": [
+        "imported",
+        "import",
+        "overseas",
+        "international",
+        "foreign"
+    ],
+    "local": [
+        "local",
+        "domestic",
+        "locally made",
+        "australian made"
+    ],
+    "premium": [
+        "premium",
+        "luxury",
+        "upscale",
+        "super premium",
+        "superpremium",
+        "high end",
+        "top shelf"
+    ],
+    "budget": [
+        "budget",
+        "cheap",
+        "economy",
+        "affordable",
+        "entry level",
+        "everyday"
+    ],
+    "mid range": [
+        "mid range",
+        "mid price",
+        "medium price",
+        "moderate"
+    ],
+    "expensive": [
+        "expensive",
+        "pricey",
+        "costly",
+        "high price"
+    ],
+    "sale": [
+        "sale",
+        "special",
+        "deal",
+        "discount",
+        "promo",
+        "promotion",
+        "reduced"
+    ],
+    "value": [
+        "value",
+        "cheap",
+        "budget",
+        "affordable",
+        "economy",
+        "best value"
+    ],
+    "non alcoholic": [
+        "non alcoholic",
+        "na",
+        "n/a",
+        "alcohol free",
+        "zero alcohol",
+        "dealcoholised",
+        "dealcoholized",
+        "no alcohol",
+        "0%"
+    ],
+    "low alcohol": [
+        "low alcohol",
+        "low abv",
+        "light alcohol",
+        "reduced alcohol",
+        "3.5%"
+    ],
+    "low calorie": [
+        "low calorie",
+        "lite",
+        "light",
+        "low cal",
+        "diet"
+    ],
+    "gluten free": [
+        "gluten free",
+        "gf",
+        "gluten-free",
+        "no gluten"
+    ],
+    "vegan": [
+        "vegan",
+        "plant based",
+        "vegetarian",
+        "no animal products"
+    ],
+    "organic": [
+        "organic",
+        "bio",
+        "natural",
+        "sustainable"
+    ],
+    "preservative free": [
+        "preservative free",
+        "no preservatives",
+        "additive free"
+    ],
+    "sulphite free": [
+        "sulphite free",
+        "sulfite free",
+        "no sulphites"
+    ],
+    "fresh": [
+        "fresh",
+        "new",
+        "young",
+        "fresh tasting"
+    ],
+    "aged": [
+        "aged",
+        "mature",
+        "old",
+        "vintage",
+        "matured"
+    ],
+    "light": [
+        "light",
+        "easy",
+        "subtle",
+        "delicate"
+    ],
+    "complex": [
+        "complex",
+        "layered",
+        "nuanced",
+        "sophisticated"
+    ],
+    "mixer": [
+        "mixer",
+        "mix",
+        "mixing",
+        "drink mixer"
+    ],
+    "ice": [
+        "ice",
+        "iced",
+        "chilled",
+        "on the rocks"
+    ],
+    "ginger beer": [
+        "ginger beer",
+        "ginger",
+        "spicy ginger"
+    ],
+    "cola": [
+        "cola",
+        "coke",
+        "pepsi",
+        "soft drink"
+    ],
+    "juice": [
+        "juice",
+        "fruit juice"
+    ],
+    "lime juice": [
+        "lime juice",
+        "fresh lime",
+        "lime"
+    ],
+    "lemon juice": [
+        "lemon juice",
+        "fresh lemon",
+        "lemon"
+    ],
+    "orange juice": [
+        "orange juice",
+        "oj",
+        "fresh orange"
+    ],
+    "cranberry juice": [
+        "cranberry juice",
+        "cranberry",
+        "cran"
+    ],
+    "tomato juice": [
+        "tomato juice",
+        "bloody mary mix"
+    ],
+    "olive": [
+        "olive",
+        "olives",
+        "garnish"
+    ],
+    "twist": [
+        "twist",
+        "peel",
+        "zest",
+        "garnish"
+    ],
+    "glass": [
+        "glass",
+        "glassware",
+        "drinkware"
+    ],
+    "pint glass": [
+        "pint",
+        "pint glass",
+        "english pint"
+    ],
+    "wine glass": [
+        "wine",
+        "wine glass",
+        "burgundy glass",
+        "bordeaux glass"
+    ],
+    "flute": [
+        "flute",
+        "champagne flute",
+        "sparkling flute"
+    ],
+    "cocktail glass": [
+        "cocktail",
+        "martini glass",
+        "cocktail glass"
+    ],
+    "rocks glass": [
+        "rocks",
+        "old fashioned",
+        "tumbler"
+    ],
+    "shot glass": [
+        "shot",
+        "shooter",
+        "nip"
+    ],
+    "beer glass": [
+        "beer glass",
+        "beer stein",
+        "mug",
+        "pint"
+    ]
+}

@@ -1,74 +1,15 @@
+import json
 import re
+from pathlib import Path
 from typing import Optional
+
+SYNONYMS = json.loads((Path(__file__).parent / "search_synonyms.json").read_text())
 
 try:
     from rapidfuzz import fuzz
     RAPIDFUZZ_AVAILABLE = True
 except ImportError:
     RAPIDFUZZ_AVAILABLE = False
-
-
-SYNONYMS = {
-    "coke": ["coca", "cola", "coca-cola", "coke cola"],
-    "cokes": ["coca", "cola", "coca-cola", "coke cola"],
-    "soda": ["soft drink", "fizzy drink", "pop"],
-    "sodas": ["soft drink", "fizzy drink", "pop"],
-    "litre": ["l", "liter", "litre", "litres", "liters", "ltr"],
-    "litre": ["l", "liter", "litre", "litres", "liters", "ltr"],
-    "ml": ["millilitre", "milliliter", "millilitres", "milliliters"],
-    "bottle": ["bottled", "bottles", "btl"],
-    "can": ["cans", "tinny", "tinnie"],
-    "pack": ["packs", "pk", "carton", "cartons", "ctn"],
-    "case": ["cases", "carton", "cartons"],
-    "beer": ["beers", "lagers", "ales"],
-    "spirits": ["spirit", "liquor", "hard liquor"],
-    "wine": ["wines"],
-    "whisky": ["whiskey", "whisky", "whiskeys"],
-    "vodka": ["vodkas"],
-    "rum": ["rums"],
-    "gin": ["gins"],
-    "tequila": ["tequilas"],
-    "cider": ["ciders", "cyder"],
-    "premix": ["ready to drink", "rtd", "premixed", "premixed drinks"],
-    "lite": ["light", "low carb", "low calorie"],
-    "mid": ["mid strength", "midstrength"],
-    "full": ["full strength", "full bodied"],
-    "strength": ["abv", "alcohol by volume"],
-    "sparkling": ["fizzy", "carbonated", "bubbly"],
-    "dry": ["brut", "extra dry"],
-    "sweet": ["sweet", "dessert", "late harvest"],
-    "red": ["reds", "cabernet", "merlot", "shiraz", "pinot noir"],
-    "white": ["whites", "chardonnay", "sauvignon blanc", "pinot gris", "riesling"],
-    "rose": ["rosé", "rosado", "pink"],
-    "apple": ["apples", "apple cider"],
-    "lemon": ["lemonade", "citrus"],
-    "lime": ["citrus"],
-    "orange": ["citrus"],
-    "pineapple": ["tropical"],
-    "passionfruit": ["tropical"],
-    "guava": ["tropical"],
-    "berry": ["berries", "strawberry", "raspberry", "blueberry", "blackberry"],
-    "peach": ["stone fruit"],
-    "apricot": ["stone fruit"],
-    "plum": ["stone fruit"],
-    "coffee": ["espresso", "coffee flavour"],
-    "chocolate": ["cocoa", "mocha"],
-    "vanilla": ["vanilla flavour"],
-    "honey": ["honeyed", "nectar"],
-    "ginger": ["ginger beer", "ginger ale"],
-    "spiced": ["spice", "christmas", "winter"],
-    "oak": ["oaked", "barrel", "wood"],
-    "vintage": ["year", "aged", "old"],
-    "premium": ["premium", "luxury", "upscale", "super premium"],
-    "budget": ["value", "cheap", "economy", "affordable"],
-    "imported": ["import", "overseas", "international"],
-    "local": ["australian", "aussie", "nz", "new zealand"],
-    "craft": ["artisan", "small batch", "independent", "microbrewery"],
-    "organic": ["organic", "bio", "natural"],
-    "non alcoholic": ["na", "n/a", "alcohol free", "zero alcohol", "dealcoholised"],
-    "gluten free": ["gf", "gluten-free"],
-    "vegan": ["vegan", "plant based", "vegetarian"],
-}
 
 
 def tokenize(query: str) -> list[str]:
