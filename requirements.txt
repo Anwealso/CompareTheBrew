@@ -1,4 +1,5 @@
 bs4
 argparse
 flask
+ipinfo
 python-dotenv

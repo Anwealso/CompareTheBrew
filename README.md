@@ -67,8 +67,7 @@ The server provides a search API:
 - Python-dotenv
 - IPInfo
 - SQLite3
-- Selenium (for future scrapers)
 
 ___
 ### Made Possible by:
-Hamish Bultitude | Matt Costello | Alex Nicholson
+Alex Nicholson | Hamish Bultitude | Matt Costello
