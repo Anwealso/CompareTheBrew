@@ -1,11 +1,12 @@
 .cpython
 .pyc
 *.xml
-*.pyc
-*.xml
 .DS_Store
 .idea
-.idea/workspace.xml
-*.xml
 .vscode/launch.json
-.idea/workspace.xml
+.env
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env

@@ -1,6 +1,4 @@
 bs4
-selenium
 argparse
 flask
-fake_useragent
-ipinfo
+python-dotenv

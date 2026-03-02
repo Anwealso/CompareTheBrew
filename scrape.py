@@ -3,15 +3,10 @@
 from urllib.request import Request, urlopen 
 
 # Built-in
-import logging
-import re
-# from threading import Lock
-from random import randint
-from time import sleep
+from config import Config
 import argparse
 from typing import List
 import json
-import csv
 # Custom
 from scripts.databaseHandler import *
 
@@ -19,6 +14,7 @@ from scripts.databaseHandler import *
 store = None
 category = None
 populate = False
+SCRAPING_API_KEY = Config.SCRAPING_API_KEY
 
 def search(search_term: str, store: str) -> List:
     searched_data = list()

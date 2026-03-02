@@ -10,6 +10,7 @@ import json
 from urllib.request import urlopen
 import ipinfo
 import random
+from config import Config
 
 # from scrape2 import search
 import scripts.databaseHandler as db
@@ -242,7 +243,7 @@ def metrics(searchTerms):
         for term in searchTerms:
             query += term
         print(query)
-        access_token = 'a7a5ae20cc1be2'
+        access_token = Config.IPINFO_TOKEN
         handler = ipinfo.getHandler(access_token)
         IP = ""
         if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
