@@ -183,6 +183,21 @@ def rank_results(rows: list[dict], normalized: dict) -> list[tuple]:
     return scored
 
 
+def get_expanded_terms(query: str) -> list[str]:
+    """
+    Get expanded search terms from a query using synonym expansion.
+    Useful when you just need token expansion without running SQL.
+    
+    Args:
+        query: Search query string
+    
+    Returns:
+        List of expanded search terms
+    """
+    normalized = normalize_query(query)
+    return list(normalized["expanded_tokens"])
+
+
 def intellisearch(query: str, db_connection=None) -> list[dict]:
     """
     Perform intelligent search with SQL + Normalized Tokens + Synonym Expansion + Ranking.
@@ -195,6 +210,11 @@ def intellisearch(query: str, db_connection=None) -> list[dict]:
         List of ranked product dictionaries
     """
     normalized = normalize_query(query)
+    
+    # If no DB connection, return expanded terms for use in other queries
+    if not db_connection:
+        sql_query, params = build_search_query(normalized)
+        return list(normalized["expanded_tokens"])
     
     sql_query, params = build_search_query(normalized)
     
