@@ -148,9 +148,9 @@
                             <!-- If this item is a google ad item -->
                             {% if result|length == 1 %}
                                 <div class="item">
-                                    <a class="resultCard ad" href="https://youtube.com"
-                                       style="/*width: 300px; */height:200px;">
-                                    </a>
+                                    <div class="resultCard ad" style="height:200px; justify-content: center; align-items: center;">
+                                        <span style="font-size: 48px; color: #999;">AD</span>
+                                    </div>
                                 </div>
                                 <!-- If this item is a normal drink item -->
                             {% else %}
@@ -226,8 +226,19 @@
         <div class="light">
 
         </div>
+        <div class="pagination" style="display: flex; justify-content: flex-end; align-items: center; margin: 20px 0; font-size: 24px;">
+            {% if current_page > 1 %}
+                <a href="/search?q={{ search_terms }}&order={{ order }}&page={{ current_page - 1 }}" class="buttonSort" style="margin-right: 10px;">&laquo; Previous</a>
+            {% endif %}
+            <span style="color: #722f37; font-weight: bold; margin: 0 15px;">Page {{ current_page }} of {{ total_pages }}</span>
+            {% if current_page < total_pages %}
+                <a href="/search?q={{ search_terms }}&order={{ order }}&page={{ current_page + 1 }}" class="buttonSort" style="margin-left: 10px;">Next &raquo;</a>
+            {% endif %}
+        </div>
+
         <div id="mobileFooter">
             <div id="footerLeft">
+
                 <b>©CompareTheBrew.com.au, 2019.
             </div>
             <div id="footerRight">

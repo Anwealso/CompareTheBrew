@@ -61,22 +61,48 @@ def search_page():
     Args:
         q: search query (required)
         order: sort order (default: score-desc)
+        page: page number (default: 1)
     """
     search_terms = request.args.get("q", "")
     order_param = request.args.get("order", "score-desc")
+    try:
+        page = int(request.args.get("page", 1))
+    except ValueError:
+        page = 1
 
+    per_page = 16
     sort_key = ORDER_MAP.get(order_param, "DESC_efficiency")
 
     conn = db.create_connection()
-    temp_results = db.select_drink_by_smart_search(conn, search_terms, sort_key)
+    all_results = db.select_drink_by_smart_search(conn, search_terms, sort_key)
+    
+    # Insert ads into the full list before paginating, or just into the page?
+    # Usually better to insert ads into the full list so they stay in consistent positions,
+    # but for simplicity and to ensure some ads per page, we can do it per page.
+    # However, the user asked to "randomly insert some advertisement cards".
+    
+    total_results_count = len(all_results)
+    total_pages = (total_results_count + per_page - 1) // per_page
+
+    # Slice for the current page
+    start_idx = (page - 1) * per_page
+    end_idx = start_idx + per_page
+    page_results = all_results[start_idx:end_idx]
+
+    # Insert ads into this page's results
+    if page_results:
+        page_results = insert_ads_amongst_results(page_results)
 
     metrics(search_terms)
 
     return render_template(
         "results.html",
-        results=temp_results,
+        results=page_results,
         search_terms=search_terms,
         order=order_param,
+        current_page=page,
+        total_pages=total_pages,
+        total_results=total_results_count,
     )
 
 
@@ -92,9 +118,9 @@ def legacy_search_redirect(order, searchTerms):
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def insert_ads_amongst_results(tempResults):
-    num_ads = 0  # hom wnay ads are currently added to the list
+    num_ads = 0  # how many ads are currently added to the list
     next_ad_index = 1  # the index we will place the next ad item at
-    drinks_per_ad = 5  # hom many legitimate drinks cards (-1) we will have until we show the next drink card  i.e. 3 = 1 ad per 3 drinks
+    drinks_per_ad = 5  # how many legitimate drinks cards (-1) we will have until we show the next drink card  i.e. 3 = 1 ad per 3 drinks
     while next_ad_index < len(tempResults):  # While we have not yet finished putting ads all through the list
         tempResults.insert(next_ad_index, ['GOOGLE_AD'])  # Add an advertisement item to the list
         num_ads = num_ads + 1  # increment the number of ads we have added to the page
@@ -156,7 +182,7 @@ def display_top50_page():
     # Get results the new way - by querying the database
     conn = db.create_connection()  # connect to the database
     tempResults = db.select_drink_by_smart_search(conn, "beer", 'DESC_efficiency')
-    # insert_ads_amongst_results(tempResults)
+    tempResults = insert_ads_amongst_results(tempResults[:50])
 
     # gather metrics info
     metrics(["beer"])
@@ -167,7 +193,7 @@ def display_top50wine_page():
     # Get results the new way - by querying the database
     conn = db.create_connection()  # connect to the database
     tempResults = db.select_drink_by_smart_search(conn, "wine", 'DESC_efficiency')
-    # insert_ads_amongst_results(tempResults)
+    tempResults = insert_ads_amongst_results(tempResults[:50])
 
     # gather metrics info
     metrics(["wine"])
@@ -178,7 +204,7 @@ def display_top50spirits_page():
     # Get results the new way - by querying the database
     conn = db.create_connection()  # connect to the database
     tempResults = db.select_drink_by_smart_search(conn, "spirits", 'DESC_efficiency')
-    # insert_ads_amongst_results(tempResults)
+    tempResults = insert_ads_amongst_results(tempResults[:50])
 
     # gather metrics info
     metrics(["spirits"])
