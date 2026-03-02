@@ -1,8 +1,11 @@
 import os
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    load_dotenv(os.path.join(basedir, '.env'))
+except ImportError:
+    print("python-dotenv not installed, skipping load_dotenv")
 
-basedir = os.path.abspath(os.path.dirname(__file__))
-load_dotenv(os.path.join(basedir, '.env'))
 
 
 class Config(object):
