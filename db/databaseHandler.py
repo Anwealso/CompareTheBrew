@@ -5,6 +5,8 @@ from intellisearch import *
 import re
 import itertools
 import operator
+import json
+
 
 
 def create_connection():
@@ -26,6 +28,19 @@ def create_connection():
             `last_scraped` TEXT
         )'''
         cur.execute(sql_sources)
+
+        # ScrapeTasks table
+        sql_tasks = ''' CREATE TABLE IF NOT EXISTS "scrape_tasks" (
+            `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
+            `retailer` TEXT,
+            `url` TEXT,
+            `status` TEXT DEFAULT 'pending',
+            `metadata` TEXT,
+            `priority` INTEGER DEFAULT 0,
+            `created_at` TEXT,
+            `updated_at` TEXT
+        )'''
+        cur.execute(sql_tasks)
         
         print("connected to database")
     except Error as e:
@@ -94,6 +109,61 @@ def get_sources_by_retailer(conn, retailer):
     cur = conn.cursor()
     cur.execute("SELECT * FROM sources WHERE retailer=?", (retailer,))
     return cur.fetchall()
+
+
+def add_scrape_task(conn, retailer, url, metadata=None, priority=0):
+    """
+    Add a new scrape task to the queue
+    """
+    from datetime import datetime
+    now = datetime.now().isoformat()
+    sql = ''' INSERT INTO scrape_tasks(retailer, url, status, metadata, priority, created_at, updated_at)
+              VALUES(?,?,?,?,?,?,?) '''
+    cur = conn.cursor()
+    cur.execute(sql, (retailer, url, 'pending', json.dumps(metadata) if metadata else None, priority, now, now))
+    conn.commit()
+    return cur.lastrowid
+
+
+def get_next_pending_task(conn, retailer=None):
+    """
+    Get the next pending task, optionally filtered by retailer
+    """
+    cur = conn.cursor()
+    if retailer:
+        cur.execute("SELECT * FROM scrape_tasks WHERE retailer=? AND status='pending' ORDER BY priority DESC, created_at ASC LIMIT 1", (retailer,))
+    else:
+        cur.execute("SELECT * FROM scrape_tasks WHERE status='pending' ORDER BY priority DESC, created_at ASC LIMIT 1")
+    return cur.fetchone()
+
+
+def update_task_status(conn, task_id, status, metadata=None):
+    """
+    Update the status and metadata of a task
+    """
+    from datetime import datetime
+    now = datetime.now().isoformat()
+    if metadata:
+        sql = ''' UPDATE scrape_tasks SET status=?, metadata=?, updated_at=? WHERE ID=? '''
+        cur = conn.cursor()
+        cur.execute(sql, (status, json.dumps(metadata), now, task_id))
+    else:
+        sql = ''' UPDATE scrape_tasks SET status=?, updated_at=? WHERE ID=? '''
+        cur = conn.cursor()
+        cur.execute(sql, (status, now, task_id))
+    conn.commit()
+
+
+def get_pending_tasks_count(conn, retailer=None):
+    """
+    Get count of pending tasks
+    """
+    cur = conn.cursor()
+    if retailer:
+        cur.execute("SELECT COUNT(*) FROM scrape_tasks WHERE retailer=? AND status='pending'", (retailer,))
+    else:
+        cur.execute("SELECT COUNT(*) FROM scrape_tasks WHERE status='pending'")
+    return cur.fetchone()[0]
 
 
 def create_metric_entry(conn, task):

@@ -1,20 +1,17 @@
 import json
 import os
 from datetime import datetime
-from typing import Dict, List, Type
-from scrapers.processors import RetailerProcessor, BWSProcessor, LiquorlandProcessor, FirstChoiceProcessor
-from scripts.databaseHandler import create_connection, upsert_source, dbhandler
+from typing import Dict, List, Optional
+from scraping.processors import RetailerProcessor, BWSProcessor, LiquorlandProcessor, FirstChoiceProcessor
+from db.databaseHandler import (
+    create_connection, upsert_source, dbhandler, 
+    add_scrape_task, get_next_pending_task, update_task_status, get_pending_tasks_count
+)
 
 class ScrapingManager:
     """
     Central manager for coordinating the scraping pipeline across different retailers.
-    
-    This class handles the following steps:
-    1. Loads retailer "sitemaps" (list of URLs to scrape) from a JSON file.
-    2. Initializes and injects the appropriate Processor for each retailer.
-    3. Iterates through the URLs for a given retailer, extracts items, 
-       and logs the scraping event in the database.
-    4. Saves the extracted item data into the central database.
+    Uses a Task Queue system with a progressive iterator approach.
     """
     def __init__(self, sitemaps_file: str = "sitemaps.json"):
         """
@@ -34,9 +31,6 @@ class ScrapingManager:
     def _load_sitemaps(self) -> Dict[str, List[str]]:
         """
         Loads the sitemaps configuration from disk.
-        
-        Returns:
-            Dict[str, List[str]]: A dictionary mapping retailer keys to lists of URLs.
         """
         if not os.path.exists(self.sitemaps_file):
             print(f"Sitemaps file {self.sitemaps_file} not found. Using default structure.")
@@ -45,13 +39,11 @@ class ScrapingManager:
         with open(self.sitemaps_file, 'r') as f:
             return json.load(f)
 
-    def scrape_retailer(self, retailer_name: str):
+    def discover(self, retailer_name: str):
         """
-        Executes the full scraping pipeline for a single retailer.
-        
-        Args:
-            retailer_name (str): The name or key of the retailer to scrape 
-                                  (e.g., 'bws', 'll', 'fc').
+        Discovery Phase: Hits the retailer's seed URLs once to seed the task queue.
+        For pagination retailers (like BWS), it adds all pages at once.
+        For others, it adds the first page and depends on the processor to find 'next'.
         """
         retailer_name = retailer_name.lower()
         if retailer_name not in self.processors:
@@ -59,48 +51,98 @@ class ScrapingManager:
             return
 
         processor = self.processors[retailer_name]
-        urls = self.sitemaps.get(retailer_name, [])
-
-        if not urls:
-            print(f"No URLs found for retailer: {retailer_name}")
-            return
-
+        seed_urls = self.sitemaps.get(retailer_name, [])
         conn = create_connection()
         if not conn:
-            print("Failed to connect to database.")
             return
 
-        all_items = []
-        now = datetime.now().isoformat()
-
-        for url in urls:
-            print(f"Scraping URL: {url} for retailer: {retailer_name}")
-            
-            # Update Sources table
-            upsert_source(conn, url, retailer_name, now)
-            
-            # Extract items using injected dependency
-            items = processor.get_items(url)
-            print(f"Found {len(items)} items on page.")
-            all_items.extend(items)
-
-        # Write data to database
-        if all_items:
-            # dbhandler(conn, list, mode, populate)
-            # mode "u" updates existing and adds new if populate=True
-            dbhandler(conn, all_items, "u", True)
-            print(f"Successfully processed {len(all_items)} items for {retailer_name}")
-        else:
-            print(f"No items found for {retailer_name}")
-
+        print(f"Starting discovery for {retailer_name}...")
+        for url in seed_urls:
+            tasks = processor.discover_tasks(url)
+            for t in tasks:
+                add_scrape_task(conn, retailer_name, t["url"], t["metadata"])
+                print(f"  - Queued task: {t['url']}")
+        
         conn.close()
 
+    def run_next(self, retailer_name: str) -> bool:
+        """
+        Progressive execution: Pulls ONE task from the queue, processes it, 
+        and handles potentially returned 'next' metadata.
+        """
+        retailer_name = retailer_name.lower()
+        conn = create_connection()
+        if not conn:
+            return False
+
+        task = get_next_pending_task(conn, retailer_name)
+        if not task:
+            # print(f"No pending tasks for {retailer_name}")
+            conn.close()
+            return False
+
+        task_id, r_name, url, status, metadata_str, attempts, created, updated = task
+        metadata = json.loads(metadata_str) if metadata_str else {}
+        processor = self.processors[retailer_name]
+        
+        print(f"Processing Task {task_id}: {url}")
+        update_task_status(conn, task_id, 'in_progress')
+        
+        now = datetime.now().isoformat()
+        # Track that we've hit this URL
+        upsert_source(conn, url, retailer_name, now)
+        
+        try:
+            items, next_metadata = processor.get_items(url, metadata)
+            print(f"Found {len(items)} items.")
+            
+            if items:
+                dbhandler(conn, items, "u", True)
+                
+            # Hybrid Approach: If the processor found a 'next page' (e.g., session-based sites)
+            if next_metadata:
+                next_url = next_metadata.get("next_url", url)
+                add_scrape_task(conn, retailer_name, next_url, next_metadata)
+                print(f"  - Discovered follow-up task: {next_url}")
+                
+            update_task_status(conn, task_id, 'completed')
+        except Exception as e:
+            print(f"Error during task {task_id}: {e}")
+            update_task_status(conn, task_id, 'failed', {"error": str(e)})
+            
+        conn.close()
+        return True
+
+    def process_all(self, retailer_name: str):
+        """Looping run_next until exhaustion."""
+        print(f"Processing all tasks for {retailer_name}...")
+        while self.run_next(retailer_name):
+            pass
 
 if __name__ == "__main__":
-    import sys
-    if len(sys.argv) < 2:
-        print("Usage: python scrapers/manager.py <retailer_name>")
-        sys.exit(1)
+    import argparse
+    parser = argparse.ArgumentParser(description='Task-based Scraping Manager')
+    parser.add_argument('retailer', type=str, help='bws, ll, fc')
+    parser.add_argument('--discover', action='store_true', help='Seed the queue')
+    parser.add_argument('--run', action='store_true', help='Run all pending tasks')
+    parser.add_argument('--next', action='store_true', help='Process only the next single task')
     
+    args = parser.parse_args()
     manager = ScrapingManager()
-    manager.scrape_retailer(sys.argv[1])
+    
+    if args.discover:
+        manager.discover(args.retailer)
+    
+    if args.run:
+        manager.process_all(args.retailer)
+    elif args.next:
+        manager.run_next(args.retailer)
+    elif not args.discover:
+        # Default behavior if no flag: Discover if queue is empty, then run all
+        conn = create_connection()
+        count = get_pending_tasks_count(conn, args.retailer)
+        conn.close()
+        
+        if count == 0:
+            manager.discover(args.retailer)
+        manager.process_all(args.retailer)

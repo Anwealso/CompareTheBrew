@@ -30,13 +30,22 @@ Activate the environment before running any scripts:
 $ source venv/bin/activate
 ```
 
-### 1. Scraping
-Scrape drinks from a specific store and category:
+### 1. Scraping (New Task-Queue Architecture)
+The scraping system has been re-architected into a task-based pipeline.
+Run the full discovery and processing for a retailer:
 ```bash
-$ python3 scrape.py [store] [category]
+$ python3 -m scraping.manager bws
 ```
-- **store**: `bws` (others currently under development)
-- **category**: `beer`, `wine`, `spirits`, or a specific search term.
+Available flags:
+- `--discover`: Seeds the task queue with URLs to scrape
+- `--run`: Processes all pending tasks in the queue
+- `--next`: Processes only the next single task (iterator mode)
+
+Example:
+```bash
+$ python3 -m scraping.manager bws --discover --run
+```
+See `scraping/SCRAPING_GUIDELINES.md` for more details.
 
 ### 2. Web Server
 Launch the Flask application locally:

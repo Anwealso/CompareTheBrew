@@ -7,3 +7,4 @@
 .read tables/metrics.sql
 .read tables/sources.sql
 .read tables/schema_version.sql
+.read tables/scrape_tasks.sql
