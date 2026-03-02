@@ -477,25 +477,41 @@ def dbhandler(conn, list, mode, populate):
     # populate or update mode
     if mode == "p":
         for drink in list:
-            drink_task = (
-                drink.store, drink.brand, drink.name, drink.type, float(drink.price), drink.link, float(drink.ml),
-                float(drink.percent), float(drink.stdDrinks), float(drink.efficiency), drink.image)
-            create_entry(conn, drink_task)
+            try:
+                price = float(drink.price) if drink.price is not None else 0.0
+                ml = float(drink.ml) if drink.ml is not None else 0.0
+                percent = float(drink.percent) if drink.percent is not None else 0.0
+                std_drinks = float(drink.stdDrinks) if drink.stdDrinks is not None else 0.0
+                efficiency = float(drink.efficiency) if drink.efficiency is not None else 0.0
+                
+                drink_task = (
+                    drink.store, drink.brand, drink.name, drink.type, price, drink.link, ml,
+                    percent, std_drinks, efficiency, drink.image)
+                create_entry(conn, drink_task)
+            except Exception as e:
+                print(f"Error inserting drink {drink.name}: {e}")
 
     elif mode == "u":
         # update entries with the same name / add entries who's names do not exist.
         for drink in list:
             if is_drink_in_table(conn, drink):
-                print('//update')
                 update_drink(conn, drink, drink.price)
 
             else:
                 if populate:
-                    print('//create')
-                    drink_task = (drink.store, drink.brand, drink.name, drink.type, float(drink.price), drink.link,
-                                float(drink.ml), float(drink.percent), float(drink.stdDrinks), float(drink.efficiency),
-                                drink.image)
-                    create_entry(conn, drink_task)
+                    try:
+                        price = float(drink.price) if drink.price is not None else 0.0
+                        ml = float(drink.ml) if drink.ml is not None else 0.0
+                        percent = float(drink.percent) if drink.percent is not None else 0.0
+                        std_drinks = float(drink.stdDrinks) if drink.stdDrinks is not None else 0.0
+                        efficiency = float(drink.efficiency) if drink.efficiency is not None else 0.0
+                        
+                        drink_task = (drink.store, drink.brand, drink.name, drink.type, price, drink.link,
+                                    ml, percent, std_drinks, efficiency,
+                                    drink.image)
+                        create_entry(conn, drink_task)
+                    except Exception as e:
+                        print(f"Error creating drink {drink.name}: {e}")
 
     conn.commit()
 
@@ -526,8 +542,7 @@ def delete_all(conn):
     conn.commit()
 
 
-# [[metrics section
-# total searches
+# ------------------ metrics section ------------------
 
 def total_search(conn):
     sql = 'SELECT * FROM metrics'
