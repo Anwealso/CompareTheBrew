@@ -40,182 +40,50 @@ def postSearchTerms():
     print("SEARCH TERMS ENTERED BY USER: " + searchTerms)
 
     # Send the user to the results page
-    return redirect("/results=score-desc/" + searchTerms)
+    return redirect(f"/search?q={searchTerms}&order=score-desc")
 
-# --------------------------------------
-#
-#                 SCORE (best)
-#
-# --------------------------------------
-@app.route("/results=score-desc/<searchTerms>")
-def display_bestscore_ResultPage(searchTerms):
+ORDER_MAP = {
+    "score-desc": "DESC_efficiency",
+    "score-asc": "ASC_efficiency",
+    "price-desc": "DESC_price",
+    "price-asc": "ASC_price",
+    "size-desc": "DESC_ml",
+    "size-asc": "ASC_ml",
+    "percent-desc": "DESC_percent",
+}
+
+
+@app.route("/search")
+def search_page():
     """
-    Displays the search results page given the search terms
+    Unified search page with query parameters.
 
     Args:
-        searchTerms: the searchTerms entered in the search (currently just the initial search terms entered)
-    Returns:
-        the rendered html template for the page
+        q: search query (required)
+        order: sort order (default: score-desc)
     """
-    # Get results the new way - by querying the database
-    conn = db.create_connection() # connect to the database
-    tempResults = db.select_drink_by_smart_search(conn, searchTerms, 'DESC_efficiency')
-    # insert_ads_amongst_results(tempResults)
+    search_terms = request.args.get("q", "")
+    order_param = request.args.get("order", "score-desc")
 
-    # gather metrics info
-    metrics(searchTerms)
-    return render_template('results.html', results=tempResults, search_terms=searchTerms)
+    sort_key = ORDER_MAP.get(order_param, "DESC_efficiency")
 
+    conn = db.create_connection()
+    temp_results = db.select_drink_by_smart_search(conn, search_terms, sort_key)
 
-# --------------------------------------
-#
-#                 SCORE (worst)
-#
-# --------------------------------------
-@app.route("/results=score-asc/<searchTerms>")
-def display_worstscore_ResultPage(searchTerms):
-    """
-    Displays the search results page given the search terms
+    metrics(search_terms)
 
-    Args:
-        searchTerms: the searchTerms entered in the search (currently just the initial search terms entered)
-    Returns:
-        the rendered html template for the page
-    """
-    # Get results the new way - by querying the database
-    conn = db.create_connection()  # connect to the database
-    tempResults = db.select_drink_by_smart_search(conn, searchTerms, 'ASC_efficiency')
-    # insert_ads_amongst_results(tempResults)
-
-    # gather metrics info
-    metrics(searchTerms)
-    return render_template('results.html', results=tempResults, search_terms=searchTerms)
+    return render_template(
+        "results.html",
+        results=temp_results,
+        search_terms=search_terms,
+        order=order_param,
+    )
 
 
-# --------------------------------------
-#
-#                 PRICE (asc)
-#
-# --------------------------------------
-@app.route("/results=price-asc/<searchTerms>")
-def display_bestprice_ResultPage(searchTerms):
-    """
-    Displays the search results page given the search terms
-
-    Args:
-        searchTerms: the searchTerms entered in the search (currently just the initial search terms entered)
-    Returns:
-        the rendered html template for the page
-    """
-    # Get results the new way - by querying the database
-    conn = db.create_connection()  # connect to the database
-    tempResults = db.select_drink_by_smart_search(conn, searchTerms, 'ASC_price')
-    # insert_ads_amongst_results(tempResults)
-
-    # gather metrics info
-    metrics(searchTerms)
-
-    return render_template('results.html', results=tempResults, search_terms=searchTerms)
-
-# --------------------------------------
-#
-#                 PRICE (desc)
-#
-# --------------------------------------
-@app.route("/results=price-desc/<searchTerms>")
-def display_worstprice_ResultPage(searchTerms):
-    """
-    Displays the search results page given the search terms
-
-    Args:
-        searchTerms: the searchTerms entered in the search (currently just the initial search terms entered)
-    Returns:
-        the rendered html template for the page
-    """
-    # Get results the new way - by querying the database
-    conn = db.create_connection()  # connect to the database
-    tempResults = db.select_drink_by_smart_search(conn, searchTerms, 'DESC_price')
-    # insert_ads_amongst_results(tempResults)
-
-    # gather metrics info
-    metrics(searchTerms)
-
-    return render_template('results.html', results=tempResults, search_terms=searchTerms)
-
-# --------------------------------------
-#
-#                 size of drink (desc)
-#
-# --------------------------------------
-@app.route("/results=size-desc/<searchTerms>")
-def display_largest_ResultPage(searchTerms):
-    """
-    Displays the search results page given the search terms
-
-    Args:
-        searchTerms: the searchTerms entered in the search (currently just the initial search terms entered)
-    Returns:
-        the rendered html template for the page
-    """
-    # Get results the new way - by querying the database
-    conn = db.create_connection()  # connect to the database
-    tempResults = db.select_drink_by_smart_search(conn, searchTerms, 'DESC_ml')
-    # insert_ads_amongst_results(tempResults)
-
-    # gather metrics info
-    metrics(searchTerms)
-
-    return render_template('results.html', results=tempResults, search_terms=searchTerms)
-
-# --------------------------------------
-#
-#                 size of drink (asc)
-#
-# --------------------------------------
-@app.route("/results=size-asc/<searchTerms>")
-def display_smallest_ResultPage(searchTerms):
-    """
-    Displays the search results page given the search terms
-
-    Args:
-        searchTerms: the searchTerms entered in the search (currently just the initial search terms entered)
-    Returns:
-        the rendered html template for the page
-    """
-    # Get results the new way - by querying the database
-    conn = db.create_connection()  # connect to the database
-    tempResults = db.select_drink_by_smart_search(conn, searchTerms, 'ASC_ml')
-    # insert_ads_amongst_results(tempResults)
-
-    # gather metrics info
-    metrics(searchTerms)
-
-    return render_template('results.html', results=tempResults)
-
-# --------------------------------------
-#
-#                 pecent (desc)
-#
-# --------------------------------------
-@app.route("/results=percent-desc/<searchTerms>")
-def display_largepercent_ResultPage(searchTerms):
-    """
-    Displays the search results page given the search terms
-
-    Args:
-        searchTerms: the searchTerms entered in the search (currently just the initial search terms entered)
-    Returns:
-        the rendered html template for the page
-    """
-    # Get results the new way - by querying the database
-    conn = db.create_connection()  # connect to the database
-    tempResults = db.select_drink_by_smart_search(conn, searchTerms, 'DESC_percent')
-    # insert_ads_amongst_results(tempResults)
-
-    # gather metrics info
-    metrics(searchTerms)
-
-    return render_template('results.html', results=tempResults, search_terms=searchTerms)
+# Legacy redirects for old URLs
+@app.route("/results=<order>/<searchTerms>")
+def legacy_search_redirect(order, searchTerms):
+    return redirect(f"/search?q={searchTerms}&order={order}")
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -316,26 +184,14 @@ def display_top50spirits_page():
     metrics(["spirits"])
     return render_template('top50.html', results=tempResults)
 
-# # A function to get search terms from the search bar on the results page
-@app.route('/results=score-desc/<arg>', methods=['POST'])
-@app.route('/results=score-asc/<arg>', methods=['POST'])
-@app.route('/results=price-desc/<arg>', methods=['POST'])
-@app.route('/results=size-desc/<arg>', methods=['POST'])
-@app.route("/top50/beer")
-@app.route("/top50/wine")
-@app.route("/top50/spirits")
+# Handle search form submission from results page
+@app.route("/search", methods=["POST"])
+def search_post():
+    """Handle search form submission."""
+    search_terms = request.form.get("searchTerms", "")
+    order = request.form.get("order", "score-desc")
+    return redirect(f"/search?q={search_terms}&order={order}")
 
-def postNewSearchTerms(arg):
-    """
-    ...
-    """
-    print("LOG: INSIDE")
-    # Get the search terms inputted by the user
-    searchTerms = request.form['searchTerms']
-    print("SEARCH TERMS ENTERED BY USER: " + searchTerms)
-
-    # Send the user to the results page
-    return redirect("/results=score-desc/" + searchTerms)
 
 # Route for About Us page
 # @app.route('/about', methods=['GET', 'POST'])
