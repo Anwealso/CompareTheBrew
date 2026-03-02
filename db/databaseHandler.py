@@ -1,47 +1,38 @@
 import sqlite3
 from sqlite3 import Error
+from pathlib import Path
 from scripts.classItem import Item
-from intellisearch import *
+from search.intellisearch import *
 import re
 import itertools
 import operator
 import json
 
 
+def get_schema_dir():
+    """Get the path to the schema directory."""
+    return Path(__file__).parent / "schema" / "tables"
+
+
+def ensure_tables(conn):
+    """Create tables from schema files if they don't exist."""
+    schema_dir = get_schema_dir()
+    cur = conn.cursor()
+    
+    for schema_file in sorted(schema_dir.glob("*.sql")):
+        if schema_file.stem == "schema_version":
+            continue
+        sql = schema_file.read_text()
+        cur.executescript(sql)
+    
+    conn.commit()
+
 
 def create_connection():
     conn = None
     try:
-        conn = sqlite3.connect("database.db")
-
-        sql = ''' CREATE TABLE IF NOT EXISTS "drinks" ( `ID` INTEGER PRIMARY KEY AUTOINCREMENT, `store` TEXT,
-            `brand` BLOB, `name` NUMERIC, `type` TEXT, `price` REAL, `link` TEXT, `ml` REAL, `percent` REAL,
-            `stdDrinks` REAL, `efficiency` REAL, `image` TEXT, `shortimage` TEXT )'''
-        cur = conn.cursor()
-        cur.execute(sql)
-        
-        # Sources table
-        sql_sources = ''' CREATE TABLE IF NOT EXISTS "sources" (
-            `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
-            `url` TEXT UNIQUE,
-            `retailer` TEXT,
-            `last_scraped` TEXT
-        )'''
-        cur.execute(sql_sources)
-
-        # ScrapeTasks table
-        sql_tasks = ''' CREATE TABLE IF NOT EXISTS "scrape_tasks" (
-            `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
-            `retailer` TEXT,
-            `url` TEXT,
-            `status` TEXT DEFAULT 'pending',
-            `metadata` TEXT,
-            `priority` INTEGER DEFAULT 0,
-            `created_at` TEXT,
-            `updated_at` TEXT
-        )'''
-        cur.execute(sql_tasks)
-        
+        conn = sqlite3.connect(str(Path(__file__).parent / "database.db"))
+        ensure_tables(conn)
         print("connected to database")
     except Error as e:
         print(e)
@@ -52,13 +43,8 @@ def create_connection():
 def create_metrics_connection():
     conn = None
     try:
-        conn = sqlite3.connect("database.db")
-
-        sql = ''' CREATE TABLE IF NOT EXISTS "metrics" ( `ID` INTEGER PRIMARY KEY AUTOINCREMENT, `IP` TEXT,
-            `query` TEXT, `datetime` TEXT, `country` TEXT, `region` TEXT, `city` TEXT, `lat` REAL, `long` REAL,
-            `hostname` TEXT, `org` TEXT )'''
-        cur = conn.cursor()
-        cur.execute(sql)
+        conn = sqlite3.connect(str(Path(__file__).parent / "database.db"))
+        ensure_tables(conn)
         print("connected to metrics")
     except Error as e:
         print(e)
