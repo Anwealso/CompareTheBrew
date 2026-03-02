@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: comparethebrew
+Version: 0.1.0
+Summary: Compare drink prices across Australian vendors
+Requires-Python: >=3.10
+Requires-Dist: flask
+Requires-Dist: python-dotenv
+Requires-Dist: beautifulsoup4
+Requires-Dist: ipinfo

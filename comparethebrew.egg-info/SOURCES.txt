@@ -1,0 +1,16 @@
+README.md
+pyproject.toml
+comparethebrew.egg-info/PKG-INFO
+comparethebrew.egg-info/SOURCES.txt
+comparethebrew.egg-info/dependency_links.txt
+comparethebrew.egg-info/requires.txt
+comparethebrew.egg-info/top_level.txt
+db/__init__.py
+db/databaseHandler.py
+db/schema/__init__.py
+scripts/__init__.py
+scripts/classItem.py
+scripts/database_example.py
+scripts/init_db.py
+search/__init__.py
+search/intellisearch.py
