@@ -49,13 +49,40 @@ Or use the provided management scripts:
 - `./killserver.sh`: Stops the server.
 
 ### 3. Database Search CLI
-Search for drinks directly from your terminal:
+Search for drinks directly from your terminal using the intelligent search system:
+
 ```bash
-$ python3 db_search.py whiskey --sort efficiency --order DESC --limit 10
+$ python3 db_search_cli.py whiskey 2l
+$ python3 db_search_cli.py vodka --sort efficiency --order DESC --limit 10
+$ python3 db_search_cli.py "coke" "rum" --sort price --limit 5
 ```
-- **--sort**: `efficiency`, `price`, `percent`, `ml` (default: efficiency)
-- **--order**: `ASC`, `DESC` (default: DESC)
-- **--limit**: Number of results to show (default: 10)
+
+#### Arguments
+- **terms**: One or more search terms (e.g., "whiskey", "vodka party", "coke rum")
+- **--sort**: Sort by `efficiency`, `price`, `percent`, or `ml` (default: efficiency)
+- **--order**: Sort order `ASC` or `DESC` (default: DESC)
+- **--limit**: Number of results to display (default: 10)
+
+#### How It Works
+The search uses:
+- **Tokenization**: Splits queries into searchable tokens
+- **Synonym Expansion**: Matches common terms (e.g., "coke" → "cola", "coca-cola")
+- **Size Extraction**: Parses sizes (e.g., "2l", "500ml") for precise filtering
+- **SQL Query**: Searches the denormalized `search_text` column
+- **Ranking**: Scores results by name match (+5), brand match (+3), size match (+4), fuzzy match
+- **Fuzzy Matching**: Uses rapidfuzz for typo tolerance
+
+#### Examples
+```bash
+# Find cheap whiskey efficiently
+python3 db_search_cli.py whiskey --sort efficiency --order DESC
+
+# Search for specific size
+python3 db_search_cli.py "2l" "beer"
+
+# Combine terms
+python3 db_search_cli.py vodka lime --sort price
+```
 
 ## API Queries
 The server provides a search API:
