@@ -6,7 +6,23 @@ from scrapers.processors import RetailerProcessor, BWSProcessor, LiquorlandProce
 from scripts.databaseHandler import create_connection, upsert_source, dbhandler
 
 class ScrapingManager:
+    """
+    Central manager for coordinating the scraping pipeline across different retailers.
+    
+    This class handles the following steps:
+    1. Loads retailer "sitemaps" (list of URLs to scrape) from a JSON file.
+    2. Initializes and injects the appropriate Processor for each retailer.
+    3. Iterates through the URLs for a given retailer, extracts items, 
+       and logs the scraping event in the database.
+    4. Saves the extracted item data into the central database.
+    """
     def __init__(self, sitemaps_file: str = "sitemaps.json"):
+        """
+        Initializes the manager with a sitemaps file.
+        
+        Args:
+            sitemaps_file (str): Path to the JSON file containing retailer URLs.
+        """
         self.sitemaps_file = sitemaps_file
         self.processors: Dict[str, RetailerProcessor] = {
             "bws": BWSProcessor(),
@@ -16,6 +32,12 @@ class ScrapingManager:
         self.sitemaps = self._load_sitemaps()
 
     def _load_sitemaps(self) -> Dict[str, List[str]]:
+        """
+        Loads the sitemaps configuration from disk.
+        
+        Returns:
+            Dict[str, List[str]]: A dictionary mapping retailer keys to lists of URLs.
+        """
         if not os.path.exists(self.sitemaps_file):
             print(f"Sitemaps file {self.sitemaps_file} not found. Using default structure.")
             return {"bws": [], "ll": [], "fc": []}
@@ -24,6 +46,13 @@ class ScrapingManager:
             return json.load(f)
 
     def scrape_retailer(self, retailer_name: str):
+        """
+        Executes the full scraping pipeline for a single retailer.
+        
+        Args:
+            retailer_name (str): The name or key of the retailer to scrape 
+                                  (e.g., 'bws', 'll', 'fc').
+        """
         retailer_name = retailer_name.lower()
         if retailer_name not in self.processors:
             print(f"No processor found for retailer: {retailer_name}")
@@ -65,6 +94,7 @@ class ScrapingManager:
             print(f"No items found for {retailer_name}")
 
         conn.close()
+
 
 if __name__ == "__main__":
     import sys

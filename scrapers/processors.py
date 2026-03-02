@@ -256,7 +256,20 @@ class BWSProcessor(RetailerProcessor):
 
 
 class LiquorlandProcessor(RetailerProcessor):
+    """
+    Processor for Liquorland.
+    Currently uses a dummy implementation for pipeline demonstration.
+    """
     def get_items(self, url: str) -> List[Item]:
+        """
+        Simulates scraping Liquorland items.
+        
+        Args:
+            url (str): Liquorland URL.
+            
+        Returns:
+            List[Item]: List of dummy Item objects.
+        """
         print(f"Liquorland: simulating scrape for {url}")
         # Dummy data generation to demonstrate the pipeline
         items = []
@@ -269,7 +282,20 @@ class LiquorlandProcessor(RetailerProcessor):
         return items
 
 class FirstChoiceProcessor(RetailerProcessor):
+    """
+    Processor for First Choice Liquor.
+    Currently uses a dummy implementation for pipeline demonstration.
+    """
     def get_items(self, url: str) -> List[Item]:
+        """
+        Simulates scraping First Choice items.
+        
+        Args:
+            url (str): First Choice URL.
+            
+        Returns:
+            List[Item]: List of dummy Item objects.
+        """
         print(f"FirstChoice: simulating scrape for {url}")
         # Dummy data generation to demonstrate the pipeline
         items = []
@@ -280,4 +306,5 @@ class FirstChoiceProcessor(RetailerProcessor):
                 numb_items=1, efficiency=0.51, image="", promotion=True, old_price=18.0
             ))
         return items
+
 
