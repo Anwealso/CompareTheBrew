@@ -1,6 +1,6 @@
 import argparse
 import sys
-from scripts.databaseHandler import create_connection, select_drink_by_smart_search
+from db.databaseHandler import create_connection, select_drink_by_smart_search
 
 def main():
     parser = argparse.ArgumentParser(description='CompareTheBrew Database Search CLI')
