@@ -1,6 +1,12 @@
 import re
 from typing import Optional
 
+try:
+    from rapidfuzz import fuzz
+    RAPIDFUZZ_AVAILABLE = True
+except ImportError:
+    RAPIDFUZZ_AVAILABLE = False
+
 
 SYNONYMS = {
     "coke": ["coca", "cola", "coca-cola", "coke cola"],
@@ -170,6 +176,20 @@ def build_search_query(normalized: dict) -> tuple[str, list]:
     return query, params
 
 
+def fuzz_score(query: str, target: str) -> float:
+    """
+    Calculate fuzzy match score between query and target string.
+    Uses rapidfuzz if available, returns 0 otherwise.
+    """
+    if not RAPIDFUZZ_AVAILABLE or not query or not target:
+        return 0.0
+    
+    partial = fuzz.partial_ratio(query.lower(), target.lower())
+    token_sort = fuzz.token_sort_ratio(query.lower(), target.lower())
+    
+    return max(partial, token_sort) / 100.0
+
+
 def calculate_score(row: dict, normalized: dict) -> float:
     """Calculate relevance score for a result."""
     score = 0.0
@@ -178,6 +198,7 @@ def calculate_score(row: dict, normalized: dict) -> float:
     brand = row.get("brand", "").lower()
     category = row.get("category", "").lower()
     search_text = row.get("search_text", "").lower()
+    original_query = normalized["original"]
     
     if normalized["tokens"]:
         for token in normalized["tokens"]:
@@ -206,6 +227,10 @@ def calculate_score(row: dict, normalized: dict) -> float:
     
     token_count = sum(1 for t in tokens if t in search_text)
     score += token_count * 0.5
+    
+    if RAPIDFUZZ_AVAILABLE:
+        score += fuzz_score(original_query, name) * 3
+        score += fuzz_score(original_query, search_text) * 1.5
     
     return score
 
