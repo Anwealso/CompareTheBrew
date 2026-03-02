@@ -19,7 +19,7 @@ def func():
 
     conn = None
     try:
-        conn = sqlite3.connect("drinks.db")
+        conn = sqlite3.connect("database.db")
         print(sqlite3.version)
     except Error as e:
         print(e)

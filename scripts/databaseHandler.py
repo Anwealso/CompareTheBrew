@@ -10,7 +10,7 @@ import operator
 def create_connection():
     conn = None
     try:
-        conn = sqlite3.connect("drinks.db")
+        conn = sqlite3.connect("database.db")
 
         sql = ''' CREATE TABLE IF NOT EXISTS "drinks" ( `ID` INTEGER PRIMARY KEY AUTOINCREMENT, `store` TEXT,
             `brand` BLOB, `name` NUMERIC, `type` TEXT, `price` REAL, `link` TEXT, `ml` REAL, `percent` REAL,
@@ -27,7 +27,7 @@ def create_connection():
 def create_metrics_connection():
     conn = None
     try:
-        conn = sqlite3.connect("drinks.db")
+        conn = sqlite3.connect("database.db")
 
         sql = ''' CREATE TABLE IF NOT EXISTS "metrics" ( `ID` INTEGER PRIMARY KEY AUTOINCREMENT, `IP` TEXT,
             `query` TEXT, `datetime` TEXT, `country` TEXT, `region` TEXT, `city` TEXT, `lat` REAL, `long` REAL,
