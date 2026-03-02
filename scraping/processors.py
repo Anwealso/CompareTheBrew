@@ -260,26 +260,21 @@ class LiquorlandProcessor(RetailerProcessor):
     Processor for Liquorland.
     Currently uses a dummy implementation for pipeline demonstration.
     """
-    def get_items(self, url: str) -> List[Item]:
-        """
-        Simulates scraping Liquorland items.
+    def discover_tasks(self, url: str) -> List[dict]:
+        # Only discover the first page
+        return [{"url": url, "metadata": {"page": 1}}]
+
+    def get_items(self, url: str, metadata: Optional[dict] = None) -> Tuple[List[Item], Optional[dict]]:
+        print(f"Liquorland: scraping {url}")
+        # Dummy logic: simulate finding a 'next' page
+        page = metadata.get("page", 1) if metadata else 1
+        items = [Item(store="ll", brand="LL", name=f"LL {page}-{i}", type="Beer", price=20, link=url, ml=375, percent=4.5, std_drinks=1.3, numb_items=6, efficiency=0.39, image="", promotion=False, old_price=20) for i in range(3)]
         
-        Args:
-            url (str): Liquorland URL.
+        next_metadata = None
+        if page < 3: # Simulate only 3 pages
+            next_metadata = {"page": page + 1, "next_url": f"{url}?page={page+1}"}
             
-        Returns:
-            List[Item]: List of dummy Item objects.
-        """
-        print(f"Liquorland: simulating scrape for {url}")
-        # Dummy data generation to demonstrate the pipeline
-        items = []
-        for i in range(5):
-            items.append(Item(
-                store="ll", brand="Dummy Brand", name=f"LL Beer {i}", type="Beer",
-                price=20.0, link=url, ml=375, percent=4.5, std_drinks=1.3,
-                numb_items=6, efficiency=0.39, image="", promotion=False, old_price=20.0
-            ))
-        return items
+        return items, next_metadata
 
 class FirstChoiceProcessor(RetailerProcessor):
     """

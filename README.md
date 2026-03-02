@@ -90,28 +90,22 @@ The server provides a search API:
 
 ## Database Management
 
-### Schema Sync Tool
-Keep the schema file in sync with the database:
-
+### Initialize New Database
 ```bash
-# Export current schema to schema/schema.sql
-python3 scripts/sync_schema.py
-
-# Check current schema version
-python3 scripts/sync_schema.py version
-
-# Initialize version tracking
-python3 scripts/sync_schema.py init
+# Create fresh database with all tables and indexes
+python3 scripts/init_db.py
 ```
 
-**Workflow when making DB changes:**
-1. Add migration to `DATABASE_SCHEMA.md`
-2. Apply migration to database
-3. Run `python3 scripts/sync_schema.py` to update `schema/schema.sql`
-4. Commit both files
+### Database Schema
+The SQL files in `db/schema/tables/` are the authoritative source. Edit them to make schema changes.
+
+```bash
+# Initialize database from schema
+python3 scripts/init_db.py
+```
 
 ### Viewing Schema
-- Authoritative SQL: See `schema/schema.sql`
+- Authoritative SQL: See `db/schema/tables/`
 
 ## Dependencies
 - BeautifulSoup4
