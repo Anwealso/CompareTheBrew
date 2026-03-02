@@ -88,12 +88,47 @@ python3 db_search_cli.py vodka lime --sort price
 The server provides a search API:
 `http://localhost:5000/api?term=TERM&order=score_desc`
 
+## Database Management
+
+### Schema Sync Tool
+Keep the schema file in sync with the database:
+
+```bash
+# Export current schema to schema/schema.sql
+python3 scripts/sync_schema.py
+
+# Check current schema version
+python3 scripts/sync_schema.py version
+
+# Initialize version tracking
+python3 scripts/sync_schema.py init
+```
+
+**Workflow when making DB changes:**
+1. Add migration to `DATABASE_SCHEMA.md`
+2. Apply migration to database
+3. Run `python3 scripts/sync_schema.py` to update `schema/schema.sql`
+4. Commit both files
+
+### Viewing Schema
+- Authoritative SQL: See `schema/schema.sql`
+
 ## Dependencies
 - BeautifulSoup4
 - Flask
 - Python-dotenv
 - IPInfo
 - SQLite3
+- Black (for code formatting)
+
+## Code Formatting
+This project uses [Black](https://github.com/psf/black) for Python code formatting.
+
+To format the codebase, run:
+```bash
+$ bash scripts/lint.sh
+```
+Config for Black is located in `pyproject.toml`.
 
 ___
 ### Made Possible by:
