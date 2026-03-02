@@ -17,6 +17,16 @@ def create_connection():
             `stdDrinks` REAL, `efficiency` REAL, `image` TEXT, `shortimage` TEXT )'''
         cur = conn.cursor()
         cur.execute(sql)
+        
+        # Sources table
+        sql_sources = ''' CREATE TABLE IF NOT EXISTS "sources" (
+            `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
+            `url` TEXT UNIQUE,
+            `retailer` TEXT,
+            `last_scraped` TEXT
+        )'''
+        cur.execute(sql_sources)
+        
         print("connected to database")
     except Error as e:
         print(e)
@@ -54,6 +64,36 @@ def create_entry(conn, task):
     cur = conn.cursor()
     cur.execute(sql, task)
     return cur.lastrowid
+
+
+def upsert_source(conn, url, retailer, last_scraped):
+    """
+    Update or insert a source
+    :param conn:
+    :param url:
+    :param retailer:
+    :param last_scraped:
+    :return:
+    """
+    sql = ''' INSERT INTO sources(url, retailer, last_scraped)
+              VALUES(?,?,?)
+              ON CONFLICT(url) DO UPDATE SET last_scraped=excluded.last_scraped '''
+    cur = conn.cursor()
+    cur.execute(sql, (url, retailer, last_scraped))
+    conn.commit()
+    return cur.lastrowid
+
+
+def get_sources_by_retailer(conn, retailer):
+    """
+    Get all sources for a retailer
+    :param conn:
+    :param retailer:
+    :return:
+    """
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM sources WHERE retailer=?", (retailer,))
+    return cur.fetchall()
 
 
 def create_metric_entry(conn, task):
@@ -231,7 +271,8 @@ def select_drink_by_smart_search(conn, terms, thing):
     print(terms)
     # now run intellisense search to get better result parity
     print("-------------------(NEW)-------------------")
-    intelliterms = intellisearch(terms)
+    search_query = " ".join(terms)
+    intelliterms = intellisearch(search_query)
     # print(intelliterms)
 
     # get the category to search by:
@@ -244,8 +285,8 @@ def select_drink_by_smart_search(conn, terms, thing):
     for term in intelliterms:
         term = term.lower()
         cur.execute(
-            "SELECT * FROM drinks WHERE type LIKE '%{}%' OR name LIKE '%{}%' OR brand LIKE '%{}%' ORDER BY {} {}".format(
-                term, term, term, category, order))
+            "SELECT * FROM drinks WHERE search_text LIKE '%{}%' ORDER BY {} {}".format(
+                term, category, order))
 
         rows = cur.fetchall()
         print("FOR " + term)
@@ -253,17 +294,8 @@ def select_drink_by_smart_search(conn, terms, thing):
         print("NUMBER OF ROWS FOUND: " + str(len(rows)))
         # For each row in rows, if the row is not already in the results list add it
         for row in rows:
-            if not (row in results):
-                # print(row[2], row[3], row[4])
-                # print(re.match(r"^"+term+"| {1}"+term, row[2].lower(), re.M))
-                # print(re.match(r"^"+term+"| {1}"+term, row[3], re.M))
-                # print(re.match(r"^"+term+"| {1}"+term, row[4], re.M))
-                if re.search(r'^' + term + '| {1}' + term, row[2].lower(), re.M) or re.search(
-                        r'^' + term + '| {1}' + term, row[3].lower(), re.M) \
-                        or re.search(r'^' + term + '| {1}' + term, row[4].lower(), re.M):
-                    # print("HERE")
-                    # print(row)
-                    results.append(row)
+            if row not in results:
+                results.append(row)
 
     print("NUMBER OF RESULTS FOUND: " + str(len(results)))
 
@@ -447,7 +479,7 @@ def dbhandler(conn, list, mode, populate):
         for drink in list:
             drink_task = (
                 drink.store, drink.brand, drink.name, drink.type, float(drink.price), drink.link, float(drink.ml),
-                float(drink.percent), float(drink.stdDrinks), float(drink.efficiency), drink.link)
+                float(drink.percent), float(drink.stdDrinks), float(drink.efficiency), drink.image)
             create_entry(conn, drink_task)
 
     elif mode == "u":
