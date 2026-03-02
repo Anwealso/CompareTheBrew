@@ -1,60 +1,74 @@
 # CompareTheBrew.me
 🍺🍺 Get the cheapest drink possible across all Aussie alcoholic vendors 🍺🍺
 
-## Setup:
+## Setup & Installation
+
+### 1. Initial Setup
+Create a virtual environment and install dependencies:
 ```bash
 $ bash setup.sh
 ```
+This script will:
+- Create a `venv` directory.
+- Install all required Python packages.
+- Optionally copy ChromeWebDriver to your path.
 
-## API Queries:
-`http://comparethebrew.me/api?term=TERM&order=score_desc`
-
-
-## Run:
-#### SCRAPING
-###### locally
+### 2. Environment Variables
+Copy the example environment file and fill in your API keys:
 ```bash
-$ python3 scrape.py [store] [category] [# pages]
+$ cp .env.example .env
 ```
--> store (bws, others not implemented yet)
+Edit `.env` to include your:
+- `SCRAPING_API_KEY`: Key for third-party scraping services (if needed).
+- `IPINFO_TOKEN`: Token for location-based search tracking.
 
--> category (beer, wine, spirits)
+## Usage
 
--> # pages (0 for all)
-
-###### lightsail instance (done automatically via `cron`)
+### Virtual Environment
+Activate the environment before running any scripts:
 ```bash
-$ pipeline.sh
+$ source venv/bin/activate
 ```
 
+### 1. Scraping
+Scrape drinks from a specific store and category:
+```bash
+$ python3 scrape.py [store] [category]
+```
+- **store**: `bws` (others currently under development)
+- **category**: `beer`, `wine`, `spirits`, or a specific search term.
 
-#### WEB SERVER
-###### locally
+### 2. Web Server
+Launch the Flask application locally:
 ```bash
 $ python3 app.py
 ```
-###### lightsail instance
-```bash
-$ ./startserver.sh
-```
-```bash
-$ ./seeserver.sh
-```
-```bash
-$ ./killserver.sh
-```
+Or use the provided management scripts:
+- `./startserver.sh`: Starts the server using the virtual environment.
+- `./seeserver.sh`: Lists active server processes.
+- `./killserver.sh`: Stops the server.
 
-## Dependancies (installed in setup)
+### 3. Database Search CLI
+Search for drinks directly from your terminal:
+```bash
+$ python3 db_search.py whiskey --sort efficiency --order DESC --limit 10
+```
+- **--sort**: `efficiency`, `price`, `percent`, `ml` (default: efficiency)
+- **--order**: `ASC`, `DESC` (default: DESC)
+- **--limit**: Number of results to show (default: 10)
+
+## API Queries
+The server provides a search API:
+`http://localhost:5000/api?term=TERM&order=score_desc`
+
+## Dependencies
 - BeautifulSoup4
-- Selenium
-- ChromeWebDriver (headless)
-- flask
-- sqlite3
+- Flask
+- Python-dotenv
+- IPInfo
+- SQLite3
+- Selenium (for future scrapers)
 
 ___
 ### Made Possible by:
-Hamish Bultitude
-
-Matt Costello
-
-Alex Nicholson
+Hamish Bultitude | Matt Costello | Alex Nicholson

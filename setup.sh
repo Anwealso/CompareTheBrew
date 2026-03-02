@@ -1,4 +1,11 @@
-# Install the required packages
-pip3 install -r requirements.txt
-# Add the ChromeWebDriver to PATH
-cp ./webdriver/chromedriver /usr/local/bin
+#!/bin/bash
+
+# Create a virtual environment
+python3 -m venv venv
+
+# Activate the virtual environment and install requirements
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+
+echo "Setup complete. To activate the virtual environment, run: source venv/bin/activate"
