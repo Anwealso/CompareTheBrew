@@ -3,7 +3,6 @@ from sqlite3 import Error
 from pathlib import Path
 from scripts.classItem import Item
 from search.intellisearch import *
-import re
 import itertools
 import operator
 import json
@@ -137,6 +136,16 @@ def update_task_status(conn, task_id, status, metadata=None):
         sql = ''' UPDATE scrape_tasks SET status=?, updated_at=? WHERE ID=? '''
         cur = conn.cursor()
         cur.execute(sql, (status, now, task_id))
+    conn.commit()
+
+
+def increment_task_attempts(conn, task_id):
+    """
+    Increment the attempts count for a task
+    """
+    sql = ''' UPDATE scrape_tasks SET attempts = attempts + 1 WHERE ID = ? '''
+    cur = conn.cursor()
+    cur.execute(sql, (task_id,))
     conn.commit()
 
 

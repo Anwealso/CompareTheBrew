@@ -5,7 +5,8 @@ from typing import Dict, List, Optional
 from scraping.processors import RetailerProcessor, BWSProcessor, LiquorlandProcessor, FirstChoiceProcessor
 from db.databaseHandler import (
     create_connection, upsert_source, dbhandler, 
-    add_scrape_task, get_next_pending_task, update_task_status, get_pending_tasks_count
+    add_scrape_task, get_next_pending_task, update_task_status, get_pending_tasks_count,
+    increment_task_attempts
 )
 
 class ScrapingManager:
@@ -58,7 +59,9 @@ class ScrapingManager:
 
         print(f"Starting discovery for {retailer_name}...")
         for url in seed_urls:
+            print(f"Discovering from: {url}")
             tasks = processor.discover_tasks(url)
+            print(f"Found {len(tasks)} tasks.")
             for t in tasks:
                 add_scrape_task(conn, retailer_name, t["url"], t["metadata"])
                 print(f"  - Queued task: {t['url']}")
@@ -81,11 +84,19 @@ class ScrapingManager:
             conn.close()
             return False
 
-        task_id, r_name, url, status, metadata_str, attempts, created, updated = task
+        # IDs in SQLite are usually 0-indexed in the cursor result if using SELECT *
+        # Order: ID, retailer, url, status, metadata, priority, created_at, updated_at, attempts
+        task_id = task[0]
+        url = task[2]
+        metadata_str = task[4]
+        
         metadata = json.loads(metadata_str) if metadata_str else {}
         processor = self.processors[retailer_name]
         
         print(f"Processing Task {task_id}: {url}")
+        
+        # Increment attempts and set status to in_progress
+        increment_task_attempts(conn, task_id)
         update_task_status(conn, task_id, 'in_progress')
         
         now = datetime.now().isoformat()
