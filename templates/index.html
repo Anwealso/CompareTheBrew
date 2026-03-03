@@ -126,23 +126,32 @@
                     <div class="cardImage">
                         {% if result[11] %}
                         <img src="{{ result[11] }}"
-                             alt="{{ result[2] }} {{ result[3] }}" style="width:96px;height:120px;object-fit:contain;">
+                             alt="{{ result[2] }} {{ result[3] }}" style="width:60px;height:80px;object-fit:contain;">
                         {% else %}
                         <img src="/static/images/drinkimages/{{ result[12] }}.png"
-                             alt="{{ result[2] }} {{ result[3] }}" style="width:96px;height:120px;">
+                             alt="{{ result[2] }} {{ result[3] }}" style="width:60px;height:80px;object-fit:contain;">
                         {% endif %}
                     </div>
                     <div class="cardContent">
+                        {% set brand_name = result[2] %}
+                        {% set full_name = result[3] %}
+                        {% if brand_name and brand_name in full_name %}
                         <div class="brand">
-                            {{ result[1] }}
+                            {{ brand_name }}
                         </div>
+                        <div class="name">
+                            {{ full_name.replace(brand_name, '').strip() }}
+                        </div>
+                        {% else %}
+                        <div class="brand">
+                            {{ brand_name }}
+                        </div>
+                        <div class="name">
+                            {{ full_name }}
+                        </div>
+                        {% endif %}
                         <div class="medal">
                             🏆
-                        </div>
-                        <div>
-                            <div class="name">
-                                {{ result[2] }} {{ result[3] }}
-                            </div>
                         </div>
                         <span class="searchLine"></span>
                         <div class="indexdetails">
