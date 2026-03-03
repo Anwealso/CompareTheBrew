@@ -446,6 +446,20 @@ a {
 	text-decoration: none;
 }
 
+#siteLogo {
+	position: fixed;
+	top: 50px;
+	right: 50px;
+	font-size: 24px;
+	font-weight: bold;
+	color: #cda20b;
+	z-index: 100;
+}
+
+#siteLogo:hover {
+	color: #722f37;
+}
+
 /* START of hamburger menu CSS*/
 
 #menuToggle {
@@ -754,10 +768,24 @@ CSS for when the menu is actually open
 }
 
 /* Phone */
+@media (max-width: 767px) {
+	#siteLogo {
+		top: 15px;
+		right: 15px;
+		font-size: 18px;
+	}
+}
+
 @media (min-width: 768px) and (max-width: 999px) {
 	.item {
-		flex: 0 0 210px;
-		max-width: 210px;
+		flex: 0 0 195px;
+		max-width: 195px;
+	}
+
+	#siteLogo {
+		top: 20px;
+		right: 20px;
+		font-size: 20px;
 	}
 }
 

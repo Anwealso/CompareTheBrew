@@ -218,6 +218,20 @@ a {
     text-decoration: none;
 }
 
+#siteLogo {
+	position: fixed;
+	top: 50px;
+	right: 50px;
+	font-size: 24px;
+	font-weight: bold;
+	color: #722f37;
+	z-index: 100;
+}
+
+#siteLogo:hover {
+	color: #cda20b;
+}
+
 .item {
     display: inline-block;
     margin: 0 0 42px;
@@ -580,6 +594,23 @@ CSS for when the menu is actually open
 
 
 /* END of hamburger menu CSS */
+
+/* Responsive logo */
+@media (max-width: 767px) {
+	#siteLogo {
+		top: 15px;
+		right: 15px;
+		font-size: 18px;
+	}
+}
+
+@media (min-width: 768px) and (max-width: 999px) {
+	#siteLogo {
+		top: 20px;
+		right: 20px;
+		font-size: 20px;
+	}
+}
 
 @media (min-width: 1000px) {
     #main {

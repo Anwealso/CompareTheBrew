@@ -2,10 +2,10 @@
     font-family: 'louis_george_cafe';
     src: url('louis_george_cafe/louis_george_cafe_bold-webfont.eot');
     src: url('louis_george_cafe/louis_geo/rge_cafe_bold-webfont.eot?#iefix') format('embedded-opentype'),
-    url('louis_george_cafe/louis_george_cafe_bold-webfont.woff2') format('woff2'),
-    url('louis_george_cafe/louis_george_cafe_bold-webfont.woff') format('woff'),
-    url('louis_george_cafe/louis_george_cafe_bold-webfont.ttf') format('truetype'),
-    url('louis_george_cafe/louis_george_cafe_bold-webfont.svg#louis_george_cafebold') format('svg');
+        url('louis_george_cafe/louis_george_cafe_bold-webfont.woff2') format('woff2'),
+        url('louis_george_cafe/louis_george_cafe_bold-webfont.woff') format('woff'),
+        url('louis_george_cafe/louis_george_cafe_bold-webfont.ttf') format('truetype'),
+        url('louis_george_cafe/louis_george_cafe_bold-webfont.svg#louis_george_cafebold') format('svg');
     font-weight: bold;
     font-style: normal;
 
@@ -15,10 +15,10 @@
     font-family: 'louis_george_cafe';
     src: url('louis_george_cafe/louis_george_cafe-webfont.eot');
     src: url('louis_george_cafe/louis_george_cafe-webfont.eot?#iefix') format('embedded-opentype'),
-    url('louis_george_cafe/louis_george_cafe-webfont.woff2') format('woff2'),
-    url('louis_george_cafe/louis_george_cafe-webfont.woff') format('woff'),
-    url('louis_george_cafe/louis_george_cafe-webfont.ttf') format('truetype'),
-    url('louis_george_cafe/louis_george_cafe-webfont.svg#louis_george_caferegular') format('svg');
+        url('louis_george_cafe/louis_george_cafe-webfont.woff2') format('woff2'),
+        url('louis_george_cafe/louis_george_cafe-webfont.woff') format('woff'),
+        url('louis_george_cafe/louis_george_cafe-webfont.ttf') format('truetype'),
+        url('louis_george_cafe/louis_george_cafe-webfont.svg#louis_george_caferegular') format('svg');
     font-weight: normal;
     font-style: normal;
 
@@ -42,9 +42,7 @@ body {
     color: #722f37;
 }
 
-#content {
-
-}
+#content {}
 
 #main {
     font-size: 30px;
@@ -131,11 +129,12 @@ input[type="search"]::-webkit-search-results-decoration {
     left: -5.5%;
 }
 
-textarea:focus, input:focus {
+textarea:focus,
+input:focus {
     outline: none;
 }
 
-#searchDrink:focus + .underline {
+#searchDrink:focus+.underline {
     transition: height .075s ease-in-out;
     height: 10px;
 }
@@ -163,20 +162,25 @@ textarea:focus, input:focus {
     float: left;
 }
 
-::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+::placeholder {
+    /* Chrome, Firefox, Opera, Safari 10.1+ */
     color: #cda20b;
-    opacity: 1; /* Firefox */
+    opacity: 1;
+    /* Firefox */
 }
 
-:-ms-input-placeholder { /* Internet Explorer 10-11 */
+:-ms-input-placeholder {
+    /* Internet Explorer 10-11 */
     color: #cda20b;
 }
 
-::-ms-input-placeholder { /* Microsoft Edge */
+::-ms-input-placeholder {
+    /* Microsoft Edge */
     color: #cda20b;
 }
 
-::-moz-selection { /* Code for Firefox */
+::-moz-selection {
+    /* Code for Firefox */
     background: #ffdc52;
 }
 
@@ -202,6 +206,20 @@ textarea:focus, input:focus {
 /* ___BEGIN___ section for styles for the drink of the day card */
 a {
     text-decoration: none;
+}
+
+#siteLogo {
+    position: fixed;
+    top: 50px;
+    right: 50px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #cda20b;
+    z-index: 100;
+}
+
+#siteLogo:hover {
+    color: #722f37;
 }
 
 .item {
@@ -323,11 +341,16 @@ a {
     /* Alex's adjusted font size to make the text fit into the card */
     font-size: 3.0vw;
     color: #722f37;
-    -webkit-transform: scale(1, 1.1); /* Safari and Chrome */
-    -moz-transform: scale(1, 1.1); /* Firefox */
-    -ms-transform: scale(1, 1.1); /* IE 9 */
-    -o-transform: scale(1, 1.1); /* Opera */
-    transform: scale(1, 1.1); /* W3C */
+    -webkit-transform: scale(1, 1.1);
+    /* Safari and Chrome */
+    -moz-transform: scale(1, 1.1);
+    /* Firefox */
+    -ms-transform: scale(1, 1.1);
+    /* IE 9 */
+    -o-transform: scale(1, 1.1);
+    /* Opera */
+    transform: scale(1, 1.1);
+    /* W3C */
 }
 
 .price {
@@ -385,13 +408,15 @@ a {
 
     cursor: pointer;
 
-    opacity: 0; /* hide this */
-    z-index: 2; /* and place it over the hamburger */
+    opacity: 0;
+    /* hide this */
+    z-index: 2;
+    /* and place it over the hamburger */
 
     -webkit-touch-callout: none;
 }
 
-#slide:hover ~ span {
+#slide:hover~span {
     background: #cda20b;
 }
 
@@ -413,8 +438,8 @@ a {
     transform-origin: 4px 0px;
 
     transition: transform 0.5s cubic-bezier(0.77, 0.2, 0.05, 1.0),
-    background 0.5s cubic-bezier(0.77, 0.2, 0.05, 1.0),
-    opacity 0.55s ease;
+        background 0.5s cubic-bezier(0.77, 0.2, 0.05, 1.0),
+        opacity 0.55s ease;
 }
 
 #menuToggle span:first-child {
@@ -428,7 +453,7 @@ a {
 /* 
  Animation to move top line into cross
  */
-#menuToggle input:checked ~ span {
+#menuToggle input:checked~span {
     opacity: 1;
     transform: rotate(45deg) translate(-2px, -1px);
     background: #cda20b;
@@ -437,7 +462,7 @@ a {
 /*
  Fade out the middle line 
  */
-#menuToggle input:checked ~ span:nth-last-child(3) {
+#menuToggle input:checked~span:nth-last-child(3) {
     opacity: 0;
     transform: rotate(0deg) scale(0.2, 0.2);
 }
@@ -445,7 +470,7 @@ a {
 /*
  Animation to move bottom line into cross
  */
-#menuToggle input:checked ~ span:nth-last-child(2) {
+#menuToggle input:checked~span:nth-last-child(2) {
     transform: rotate(-45deg) translate(0, -1px);
 }
 
@@ -478,7 +503,7 @@ CSS for when the menu is actually open
     font-size: 90px;
 }
 
-#menuToggle input:checked ~ ul {
+#menuToggle input:checked~ul {
     transform: none;
 }
 
@@ -502,12 +527,29 @@ CSS for when the menu is actually open
     cursor: pointer;
 }
 
-#menuToggle input:checked + .shadow {
+#menuToggle input:checked+.shadow {
     display: inline;
 }
 
 
 /* END of hamburger menu CSS */
+
+/* Responsive logo */
+@media (max-width: 767px) {
+    #siteLogo {
+        top: 15px;
+        right: 15px;
+        font-size: 18px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 999px) {
+    #siteLogo {
+        top: 20px;
+        right: 20px;
+        font-size: 20px;
+    }
+}
 
 @media (min-width: 1000px) {
     #main {
@@ -548,11 +590,11 @@ CSS for when the menu is actually open
         transform-origin: 4px 0px;
 
         transition: transform 0.5s cubic-bezier(0.77, 0.2, 0.05, 1.0),
-        background 0.5s cubic-bezier(0.77, 0.2, 0.05, 1.0),
-        opacity 0.55s ease;
+            background 0.5s cubic-bezier(0.77, 0.2, 0.05, 1.0),
+            opacity 0.55s ease;
     }
 
-    #slide:hover ~ span {
+    #slide:hover~span {
         background: #ffdc52;
     }
 
@@ -569,7 +611,7 @@ CSS for when the menu is actually open
         border-radius: 25px;
     }
 
-    #searchDrink:focus + .underline {
+    #searchDrink:focus+.underline {
         height: 4px;
     }
 
