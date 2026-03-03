@@ -56,7 +56,7 @@
     font-size: 1.5em
 }
 
-.light-modal-heading + .light-modal-close-icon {
+.light-modal-heading+.light-modal-close-icon {
     position: static
 }
 
@@ -76,19 +76,21 @@
     align-items: center
 }
 
-.light-modal-close-btn, .light-modal-close-icon {
+.light-modal-close-btn,
+.light-modal-close-icon {
     text-decoration: none;
     color: #fff;
     padding: 5px 10px;
     border-radius: .2em;
-    background: #ff6f91;
-    font-size: 1.5em;
+    /* background: #ff6f91; */
+    font-size: 3em;
     line-height: 1;
     transition: background .2s ease-in-out
 }
 
-.light-modal-close-btn:hover, .light-modal-close-icon:hover {
-    background: #ff3c6a
+.light-modal-close-btn:hover,
+.light-modal-close-icon:hover {
+    /* background: #ff3c6a */
 }
 
 .light-modal-close-icon {
@@ -121,14 +123,16 @@
     visibility: visible
 }
 
-.light-modal-navigation .navigation-next, .light-modal-navigation .navigation-prev {
+.light-modal-navigation .navigation-next,
+.light-modal-navigation .navigation-prev {
     width: 32px;
     height: 32px;
     border-color: #fff;
     transition: border-color .2s
 }
 
-.light-modal-navigation .navigation-next:hover, .light-modal-navigation .navigation-prev:hover {
+.light-modal-navigation .navigation-next:hover,
+.light-modal-navigation .navigation-prev:hover {
     border-color: hsla(0, 0%, 100%, .7)
 }
 
@@ -164,6 +168,7 @@
     0% {
         opacity: 0
     }
+
     to {
         opacity: 1
     }

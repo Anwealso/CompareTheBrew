@@ -325,13 +325,15 @@ def select_image_links(conn):
     return rows
 
 
-def select_drink_by_smart_search(conn, terms, thing):
+def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max=""):
     """Select all drinks that contain any of the search keywords given in their name, brand or type attributes
     
     Args:
         conn: the Connection object
         terms: the value in the type/name/brand column that we are querying for
         thing: search by 'ASC_' | 'DESC_' += 'efficiency'; 'price'; 'percent'; 'ml';
+        price_min: minimum price filter (optional)
+        price_max: maximum price filter (optional)
     Returns:
         A list of rows from the drinks table matching the search terms
     """
@@ -362,12 +364,22 @@ def select_drink_by_smart_search(conn, terms, thing):
     category = parts[1]
     order = parts[0]
 
+    # Build price filter conditions
+    price_conditions = []
+    if price_min:
+        price_conditions.append(f"price >= {float(price_min)}")
+    if price_max:
+        price_conditions.append(f"price <= {float(price_max)}")
+    price_filter = ""
+    if price_conditions:
+        price_filter = " AND " + " AND ".join(price_conditions)
+
     # For each keyword, execute a new query at the cursor to find drinks matching that keyword
     for term in intelliterms:
         term = term.lower()
         cur.execute(
-            "SELECT * FROM drinks WHERE search_text LIKE '%{}%' ORDER BY {} {}".format(
-                term, category, order))
+            "SELECT * FROM drinks WHERE search_text LIKE '%{}%'{} ORDER BY {} {}".format(
+                term, price_filter, category, order))
 
         rows = cur.fetchall()
         print("FOR " + term)

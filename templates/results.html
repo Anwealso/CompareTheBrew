@@ -118,22 +118,25 @@
         <div id="options">
             <div class="buttons">
                 <b class="sortbytext">Sort by:</b>
-                <a href="/search?q={{ search_terms }}&order=score-desc" class="{% if order == 'score-desc' or not order %}buttonSortActive{% else %}buttonSort{% endif %}">Best Score</a>
-                <a href="/search?q={{ search_terms }}&order=score-asc" class="{% if order == 'score-asc' %}buttonSortActive{% else %}buttonSort{% endif %}">Worst Score</a>
-                <a href="/search?q={{ search_terms }}&order=price-desc" class="{% if order == 'price-desc' %}buttonSortActive{% else %}buttonSort{% endif %}">Worst Price</a>
-                <a href="/search?q={{ search_terms }}&order=size-desc" class="{% if order == 'size-desc' %}buttonSortActive{% else %}buttonSort{% endif %}">Volume</a>
+                <a href="/search?q={{ search_terms }}&order=score-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}" class="{% if order == 'score-desc' or not order %}buttonSortActive{% else %}buttonSort{% endif %}">Best Score</a>
+                <a href="/search?q={{ search_terms }}&order=score-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}" class="{% if order == 'score-asc' %}buttonSortActive{% else %}buttonSort{% endif %}">Worst Score</a>
+                <a href="/search?q={{ search_terms }}&order=price-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}" class="{% if order == 'price-asc' %}buttonSortActive{% else %}buttonSort{% endif %}">Best Price</a>
+                <a href="/search?q={{ search_terms }}&order=size-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}" class="{% if order == 'size-desc' %}buttonSortActive{% else %}buttonSort{% endif %}">Greatest Quantity</a>
             </div>
             <div id="priceRange">
-                Price range: Slider to be implemented
+                <b class="sortbytext">Price: $</b>
+                <input type="number" id="priceMin" name="price_min" min="0" step="1" placeholder="Min" value="{{ price_min if price_min else '' }}" style="width: 60px; padding: 8px; font-size: 14px;">
+                <b class="sortbytext"> - $</b>
+                <input type="number" id="priceMax" name="price_max" min="0" step="1" placeholder="Max" value="{{ price_max if price_max else '' }}" style="width: 60px; padding: 8px; font-size: 14px;">
+                <button onclick="applyPriceFilter()" style="padding: 8px 16px; font-size: 14px; background-color: #722f37; color: white; border: none; border-radius: 4px; cursor: pointer;">Apply</button>
             </div>
         </div>
 
         <div class="light">
             {% if results|length == 1 %}
-                We found 1 drink that matched your search.
+                Found 1 drink that matched your search.
             {% else %}
-                We found {{ results|length }} drinks matching your search. I've set it so it only shows the first 16 for
-                testing.
+                Found {{ results|length }} drinks matching your search.
             {% endif %}
             <a href="#unique-id" class="btn" style="fill:#A7A7A7;vertical-align:middle;max-width:50px;float:right"><img src="/static/images/help.svg" alt=""></a>
         </div>
@@ -227,11 +230,11 @@
         </div>
         <div class="pagination" style="display: flex; justify-content: flex-end; align-items: center; margin: 20px 0; font-size: 24px;">
             {% if current_page > 1 %}
-                <a href="/search?q={{ search_terms }}&order={{ order }}&page={{ current_page - 1 }}" class="buttonSort" style="margin-right: 10px;">&laquo; Previous</a>
+                <a href="/search?q={{ search_terms }}&order={{ order }}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}&page={{ current_page - 1 }}" class="buttonSort" style="margin-right: 10px;">&laquo; Previous</a>
             {% endif %}
             <span style="color: #722f37; font-weight: bold; margin: 0 15px;">Page {{ current_page }} of {{ total_pages }}</span>
             {% if current_page < total_pages %}
-                <a href="/search?q={{ search_terms }}&order={{ order }}&page={{ current_page + 1 }}" class="buttonSort" style="margin-left: 10px;">Next &raquo;</a>
+                <a href="/search?q={{ search_terms }}&order={{ order }}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}&page={{ current_page + 1 }}" class="buttonSort" style="margin-left: 10px;">Next &raquo;</a>
             {% endif %}
         </div>
 
@@ -268,6 +271,33 @@
 </div>
 <script src="/static/js/fitty.min.js"></script>
 <script>
+    function applyPriceFilter() {
+        const priceMin = document.getElementById('priceMin').value;
+        const priceMax = document.getElementById('priceMax').value;
+        const urlParams = new URLSearchParams(window.location.search);
+        const q = urlParams.get('q') || '';
+        const order = urlParams.get('order') || 'score-desc';
+        
+        let url = '/search?q=' + encodeURIComponent(q) + '&order=' + order;
+        
+        if (priceMin) {
+            url += '&price_min=' + priceMin;
+        }
+        if (priceMax) {
+            url += '&price_max=' + priceMax;
+        }
+        
+        window.location.href = url;
+    }
+
+    // Allow pressing Enter in price inputs to trigger filter
+    document.getElementById('priceMin').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') applyPriceFilter();
+    });
+    document.getElementById('priceMax').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') applyPriceFilter();
+    });
+
     fitty('.responsive_head', {
         maxSize: 100,
     });

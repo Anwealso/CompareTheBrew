@@ -224,8 +224,8 @@ input:focus {
 }
 
 .item {
-	display: block;
-	width: 100%;
+	flex: 0 0 calc(100% - 42px);
+	max-width: calc(100% - 42px);
 }
 
 .resultCard .ad {
@@ -343,7 +343,8 @@ input:focus {
 }
 
 #footer {
-	position: relative;
+	position: fixed;
+	bottom: 0;
 	padding: 1%;
 	padding-top: 2%;
 	padding-bottom: 2%;

@@ -29,32 +29,32 @@ $(document).ready(function(e) {
         console.log(search_term);
         var bestscore = "window.location.href=" + "'http://" + split[2] + "/results=" + "score-desc" + "/" + search_term + "';";
         var worstscore = "window.location.href=" + "'http://" + split[2] + "/results=" + "score-asc" + "/" + search_term + "';";
-        var worstprice = "window.location.href=" + "'http://" + split[2] + "/results=" + "price-desc" + "/" + search_term + "';";
+        var bestprice = "window.location.href=" + "'http://" + split[2] + "/results=" + "price-asc" + "/" + search_term + "';";
         var volume = "window.location.href=" + "'http://" + split[2] + "/results=" + "size-desc" + "/" + search_term + "';";
         document.getElementById("bestscore").setAttribute("onclick", bestscore);
         document.getElementById("worstscore").setAttribute("onclick", worstscore);
-        document.getElementById("worstprice").setAttribute("onclick", worstprice);
+        document.getElementById("bestprice").setAttribute("onclick", bestprice);
         document.getElementById("volume").setAttribute("onclick", volume);
 
         if (search_type == "score-desc") {
                 document.getElementById("bestscore").className = "buttonSortActive";
                 document.getElementById("worstscore").className = "buttonSort";
-                document.getElementById("worstprice").className = "buttonSort";
+                document.getElementById("bestprice").className = "buttonSort";
                 document.getElementById("volume").className = "buttonSort";
         } else if (search_type == "score-asc") {
                 document.getElementById("bestscore").className = "buttonSort";
                 document.getElementById("worstscore").className = "buttonSortActive";
-                document.getElementById("worstprice").className = "buttonSort";
+                document.getElementById("bestprice").className = "buttonSort";
                 document.getElementById("volume").className = "buttonSort";
-        } else if (search_type == "price-desc") {
+        } else if (search_type == "price-asc") {
                 document.getElementById("bestscore").className = "buttonSort";
                 document.getElementById("worstscore").className = "buttonSort";
-                document.getElementById("worstprice").className = "buttonSortActive";
+                document.getElementById("bestprice").className = "buttonSortActive";
                 document.getElementById("volume").className = "buttonSort";
         } else if (search_type == "size-desc") {
                 document.getElementById("bestscore").className = "buttonSort";
                 document.getElementById("worstscore").className = "buttonSort";
-                document.getElementById("worstprice").className = "buttonSort";
+                document.getElementById("bestprice").className = "buttonSort";
                 document.getElementById("volume").className = "buttonSortActive";
         }
 
