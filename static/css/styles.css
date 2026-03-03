@@ -339,6 +339,19 @@ a {
 
 }
 
+.retailer-badge {
+    display: inline-block;
+    background-color: #722f37;
+    color: #ffdc52;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+}
+
 .name {
     font-weight: bolder;
     font-size: 4vmax;
