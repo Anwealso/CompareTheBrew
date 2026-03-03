@@ -157,8 +157,6 @@ textarea:focus, input:focus {
     font-size: 30px;
     position: fixed;
     padding: 1%;
-    padding-top: 2%;
-    padding-bottom: 2%;
     left: 0;
     bottom: 0;
     width: 100%;
