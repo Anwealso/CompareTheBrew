@@ -16,6 +16,9 @@ from config import Config
 # from scrape2 import search
 import db.databaseHandler as db
 
+# Simple dark mode for dev QOL
+DARK_MODE = True
+
 # Create a new flask application
 app = Flask(__name__)
 
@@ -28,7 +31,7 @@ def displaySearchPage():
     # Get the current top drink from the database
     conn = db.create_connection()  # connect to the database
     topDrink = db.select_all_drinks_by_efficiency(conn)[0] # get the first result from all of the drinks sorted by efficiency desc
-    return render_template('index.html', result=topDrink)
+    return render_template('index.html', result=topDrink, dark_mode=DARK_MODE)
 
 # A function to get search terms from the search page
 @app.route('/', methods=['POST'])
@@ -111,6 +114,7 @@ def search_page():
         total_results=total_results_count,
         price_min=price_min,
         price_max=price_max,
+        dark_mode=DARK_MODE,
     )
 
 
@@ -194,7 +198,7 @@ def display_top50_page():
 
     # gather metrics info
     metrics(["beer"])
-    return render_template('top50.html', results=tempResults)
+    return render_template('top50.html', results=tempResults, dark_mode=DARK_MODE)
 
 @app.route("/top50/wine")
 def display_top50wine_page():
@@ -205,7 +209,7 @@ def display_top50wine_page():
 
     # gather metrics info
     metrics(["wine"])
-    return render_template('top50.html', results=tempResults)
+    return render_template('top50.html', results=tempResults, dark_mode=DARK_MODE)
 
 @app.route("/top50/spirits")
 def display_top50spirits_page():
@@ -216,7 +220,7 @@ def display_top50spirits_page():
 
     # gather metrics info
     metrics(["spirits"])
-    return render_template('top50.html', results=tempResults)
+    return render_template('top50.html', results=tempResults, dark_mode=DARK_MODE)
 
 # Handle search form submission from results page
 @app.route("/search", methods=["POST"])
@@ -235,18 +239,18 @@ def search_post():
 # Route for About Us page
 @app.route('/faq', methods=['GET', 'POST'])
 def viewFAQ():
-    return render_template('FAQ.html')  # render a template
+    return render_template('FAQ.html', dark_mode=DARK_MODE)  # render a template
 
 # Ajunner Error Handling
 # 404
 @app.errorhandler(404)
 def page_not_found404(e):
-    return render_template('/404.html'), 404
+    return render_template('/404.html', dark_mode=DARK_MODE), 404
 
 # 500
 @app.errorhandler(500)
 def page_not_found500(e):
-    return render_template('/500.html'), 500
+    return render_template('/500.html', dark_mode=DARK_MODE), 500
 
 @app.route('/api', methods=['GET', 'POST'])
 def api_handler():

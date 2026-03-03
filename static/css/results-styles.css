@@ -1,3 +1,24 @@
+/* =============================================================================
+   DEVICE BIN BREAKPOINTS
+   =============================================================================
+   
+   The following device bins are used throughout this stylesheet:
+   
+   Mobile Portrait: < 480px   (default styles)
+   Mobile Landscape: 480px - 767px  (@media min-width: 480px)
+   Tablet:        768px - 999px  (@media min-width: 768px)
+   Desktop:       1000px+  (@media min-width: 1000px)
+   Large Desktop: 2000px+  (@media min-width: 2000px)
+   
+   Card Layout by Device Bin (Fixed Widths):
+   - Mobile Portrait (< 480px):  1 card per row, 200px wide
+   - Mobile Landscape (480-767px): 2 cards per row, 200px wide each
+   - Tablet (768-999px):  4 cards per row, 180px wide each
+   - Desktop (1000px+):  4 cards per row, 240px wide each
+   - Large Desktop (2000px+): 4 cards per row, 300px wide each
+   
+   ============================================================================= */
+
 @font-face {
 	font-family: 'louis_george_cafe';
 	src: url('louis_george_cafe/louis_george_cafe_bold-webfont.eot');
@@ -224,8 +245,15 @@ input:focus {
 }
 
 .item {
-	flex: 0 0 calc(100% - 42px);
-	max-width: calc(100% - 42px);
+	flex: 0 0 200px;
+	max-width: 200px;
+}
+
+@media (min-width: 480px) {
+	.item {
+		flex: 0 0 200px;
+		max-width: 200px;
+	}
 }
 
 .resultCard .ad {
@@ -244,7 +272,7 @@ input:focus {
 	box-shadow: 0 5px 13px rgba(0, 0, 0, 0.075), 0 1px 2px rgba(0, 0, 0, 0.22);
 	transition: all 0.3s cubic-bezier(.25, .8, .25, 1);
 	overflow: hidden;
-	height: 300px;
+	height: 180px;
 	box-sizing: border-box;
 }
 
@@ -641,11 +669,12 @@ CSS for when the menu is actually open
 	}
 
 	.item {
-		width: calc((100% - 24px) / 3);
+		flex: 0 0 calc(50% - 12px);
+		max-width: calc(50% - 12px);
 	}
 
 	.resultCard .ad {
-		width: 300px;
+		width: 100%;
 	}
 
 	.name {
@@ -692,9 +721,6 @@ CSS for when the menu is actually open
 		gap: 12px;
 	}
 
-	.item {
-	}
-
 	#options {
 		font-size: 16px;
 		padding-top: 24px;
@@ -730,10 +756,32 @@ CSS for when the menu is actually open
 	}
 }
 
+@media (min-width: 768px) and (max-width: 999px) {
+	.item {
+		flex: 0 0 180px;
+		max-width: 180px;
+	}
+}
+
+@media (min-width: 1000px) {
+	.item {
+		flex: 0 0 240px;
+		max-width: 240px;
+	}
+
+	.resultCard {
+		height: 180px;
+	}
+}
+
 @media (min-width: 2000px) {
+	.item {
+		flex: 0 0 300px;
+		max-width: 300px;
+	}
+
 	.name {
 		font-size: 1.4vmax;
-		/*grid-template-columns: 1fr 1fr 1fr;*/
 	}
 }
 

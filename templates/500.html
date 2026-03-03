@@ -11,6 +11,16 @@
     <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTzI0uH0_lzecaSuTinKUKNL_W1t72KKq1QWdC8hWGKG71Bue43">
 	<link rel="stylesheet" href="/static/css/styles.css">
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+	{% if dark_mode %}
+	<style>
+		body { background-color: #1a1a1a; }
+		#question { color: #ccc; }
+		#menu { background-color: #353535; }
+		#menu a { color: #fff; }
+		#menu .navButton { background-color: #4a4a4a; color: #fff; }
+	</style>
+	{% endif %}
 </head>
 
 <body>
