@@ -93,6 +93,40 @@ python3 db_search_cli.py "2l" "beer"
 python3 db_search_cli.py vodka lime --sort price
 ```
 
+### 4. Task Queue CLI
+View the current state of the scraping task queue in the database:
+
+```bash
+$ python3 tools/task_queue_cli.py --show-stats
+$ python3 tools/task_queue_cli.py --show-pending
+$ python3 tools/task_queue_cli.py --retailer bws
+```
+
+#### Arguments
+- **--retailer**: Filter by retailer (e.g., `bws`, `danmurphys`, `fc`, `ll`)
+- **--status**: Filter by status (`pending`, `in_progress`, `completed`, `failed`)
+- **--limit**: Number of tasks to show (default: 20)
+- **--show-stats**: Show task statistics (counts by status and retailer)
+- **--show-pending**: Show only pending tasks
+
+#### Examples
+```bash
+# Show overall task queue statistics
+python3 tools/task_queue_cli.py --show-stats
+
+# Show stats for a specific retailer
+python3 tools/task_queue_cli.py --show-stats --retailer bws
+
+# Show pending tasks only
+python3 tools/task_queue_cli.py --show-pending
+
+# Show recent tasks for a retailer
+python3 tools/task_queue_cli.py --retailer bws
+
+# Show failed tasks
+python3 tools/task_queue_cli.py --status failed
+```
+
 ## API Queries
 The server provides a search API:
 `http://localhost:5000/api?term=TERM&order=score_desc`
