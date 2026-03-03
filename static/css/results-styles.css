@@ -226,21 +226,16 @@ input:focus {
 }
 
 #resultsArea {
-	/*	display: grid;
-	grid-template-columns: 1fr;*/
-	/* Matts old */
-	/* padding-top: 60px; */
-	/* Alex's updated */
 	padding-top: 15px;
-	margin-left: -15px;
-	margin-right: -15px;
-	/*	flex-wrap: wrap;
-	flex-direction: row;*/
+	padding-left: 15px;
+	padding-right: 15px;
 }
 
 #cardsArea {
 	display: flex;
 	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
 	gap: 42px;
 }
 
@@ -666,6 +661,7 @@ CSS for when the menu is actually open
 		display: flex;
 		flex-wrap: wrap;
 		gap: 12px;
+		justify-content: center;
 	}
 
 	.item {
@@ -719,6 +715,7 @@ CSS for when the menu is actually open
 
 	#cardsArea {
 		gap: 12px;
+		justify-content: center;
 	}
 
 	#options {
@@ -756,17 +753,19 @@ CSS for when the menu is actually open
 	}
 }
 
+/* Phone */
 @media (min-width: 768px) and (max-width: 999px) {
 	.item {
-		flex: 0 0 180px;
-		max-width: 180px;
+		flex: 0 0 210px;
+		max-width: 210px;
 	}
 }
 
+/* Tablet */
 @media (min-width: 1000px) {
 	.item {
-		flex: 0 0 240px;
-		max-width: 240px;
+		flex: 0 0 300px;
+		max-width: 300px;
 	}
 
 	.resultCard {
@@ -774,6 +773,7 @@ CSS for when the menu is actually open
 	}
 }
 
+/* Desktop */
 @media (min-width: 2000px) {
 	.item {
 		flex: 0 0 300px;
