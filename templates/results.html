@@ -209,21 +209,6 @@
                                                 {{ full_name }}
                                             </div>
                                             {% endif %}
-	                                        {% if result == results[0] %}
-	                                            <div class="medal">
-	                                                🥇
-	                                            </div>
-	                                        {% endif %}
-	                                        {% if result == results[2] %}
-	                                            <div class="medal">
-	                                                🥈
-	                                            </div>
-	                                        {% endif %}
-	                                        {% if result == results[3] %}
-	                                            <div class="medal">
-	                                                🥉
-	                                            </div>
-	                                        {% endif %}
                                             <span class="searchLine"></span>
                                             <div class="details" style="white-space: nowrap; display: inline-block;">
                                                 {{ (result[7] / 1000) | round(2) }}L - {{ '%0.1f'| format(result[9]) }} std.
