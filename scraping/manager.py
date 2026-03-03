@@ -2,7 +2,9 @@ import json
 import os
 from datetime import datetime
 from typing import Dict, List, Optional
-from scraping.processors import RetailerProcessor, BWSProcessor, LiquorlandProcessor, FirstChoiceProcessor
+from scraping.processors import RetailerProcessor
+from scraping.bws_processor import BWSProcessor
+from scraping.coles_processor import LiquorlandProcessor, FirstChoiceProcessor
 from db.databaseHandler import (
     create_connection, upsert_source, dbhandler, 
     add_scrape_task, get_next_pending_task, update_task_status, get_pending_tasks_count,
