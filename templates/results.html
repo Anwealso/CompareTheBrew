@@ -153,10 +153,10 @@
         </div>
 
         <div class="light">
-            {% if results|length == 1 %}
+            {% if total_results == 1 %}
                 Found 1 drink that matched your search.
             {% else %}
-                Found {{ results|length }} drinks matching your search.
+                Found {{ total_results }} drinks matching your search.
             {% endif %}
             <a href="#unique-id" class="btn" style="fill:#A7A7A7;vertical-align:middle;max-width:50px;float:right"><img src="/static/images/help.svg" alt=""></a>
         </div>
