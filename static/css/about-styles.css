@@ -276,13 +276,13 @@ a {
 
 .brand {
     font-weight: bold;
-    font-size: 1.2rem;
+    font-size: 14px;
     color: #cda20b;
 }
 
 .name {
     font-weight: bolder;
-    font-size: 1rem;
+    font-size: 16px;
     color: #722f37;
     /*	overflow: hidden;
         text-overflow: ellipsis;*/
@@ -309,7 +309,7 @@ a {
 .indexdetails {
     margin-top: 5.2%;
     font-weight: bolder;
-    font-size: 1.4vw;
+    font-size: 12px;
     color: #722f37;
 }
 
@@ -337,7 +337,7 @@ a {
     /* The original font size that matt had */
     /* font-size: 3.8vw; */
     /* Alex's adjusted font size to make the text fit into the card */
-    font-size: 1.5rem;
+    font-size: 18px;
     color: #722f37;
     -webkit-transform: scale(1, 1.1);
     /* Safari and Chrome */
@@ -637,14 +637,6 @@ CSS for when the menu is actually open
     .drink-of-the-day {
         margin-top: 6vh;
         width: 45%;
-    }
-
-    .name {
-        font-size: 1.2rem;
-    }
-
-    .brand {
-        font-size: 1rem;
     }
 
     #footer {
