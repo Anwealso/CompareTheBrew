@@ -128,6 +128,15 @@
                     </div>
                     {% endif %}
                     <div class="cardImage">
+                        {% if result[11] %}
+                        <img src="{{ result[11] }}"
+                             alt="{{ result[2] }} {{ result[3] }}" style="width:60px;height:80px;object-fit:contain;">
+                        {% else %}
+                        <img src="/static/images/drinkimages/{{ result[12] }}.png"
+                             alt="{{ result[2] }} {{ result[3] }}" style="width:60px;height:80px;object-fit:contain;">
+                        {% endif %}
+                    </div>
+                    <div class="cardContent">
                         {% set brand_name = result[2] %}
                         {% set full_name = result[3] %}
                         {% if brand_name and brand_name in full_name %}
