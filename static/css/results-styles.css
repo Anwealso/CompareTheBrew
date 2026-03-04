@@ -290,23 +290,26 @@ input:focus {
 
 .brand {
 	font-weight: bold;
-	font-size: 0.9rem;
+	font-size: 0.8rem;
 	color: #cda20b;
 	float: left;
 	margin-bottom: 2px;
 }
 
 .retailer-badge {
-	display: inline-block;
+	position: absolute;
+	top: 0;
+	left: 0;
 	background-color: #722f37;
 	color: #ffdc52;
-	padding: 2px 6px;
-	border-radius: 4px;
-	font-size: 0.65rem;
+	padding: 4px 8px;
+	border-bottom-right-radius: 8px;
+	font-size: 0.6rem;
 	font-weight: bold;
 	text-transform: uppercase;
-	margin-bottom: 4px;
 	letter-spacing: 0.5px;
+	z-index: 2;
+	box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
 }
 
 .medal {
@@ -316,7 +319,7 @@ input:focus {
 
 .name {
 	font-weight: bolder;
-	font-size: 1.1rem;
+	font-size: 1.0rem;
 	color: #722f37;
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
@@ -330,20 +333,20 @@ input:focus {
 .details {
 	margin-top: 2px;
 	font-weight: bolder;
-	font-size: 0.75rem;
+	font-size: 0.7rem;
 	color: #a7a7a7;
 }
 
 .price {
 	display: inline-block;
 	color: #cda20b;
-	font-size: 1.4rem;
+	font-size: 1.2rem;
 	margin-left: 8px;
 }
 
 .score {
 	font-weight: bolder;
-	font-size: 1.4rem;
+	font-size: 1.2rem;
 	color: #eb7734;
 	display: inline-flex;
 	align-items: center;
@@ -366,7 +369,7 @@ input:focus {
 
 .score {
 	font-weight: bolder;
-	font-size: 1.4rem;
+	font-size: 1.2rem;
 	color: #eb7734;
 }
 
@@ -700,11 +703,11 @@ CSS for when the menu is actually open
 	}
 
 	.name {
-		font-size: 2vmax;
+		font-size: 1.2rem;
 	}
 
 	.brand {
-		font-size: 1.5vmax;
+		font-size: 0.9rem;
 	}
 
 	.smallSearch {
@@ -821,7 +824,7 @@ CSS for when the menu is actually open
 	}
 
 	.name {
-		font-size: 1.4vmax;
+		font-size: 1.3rem;
 	}
 }
 

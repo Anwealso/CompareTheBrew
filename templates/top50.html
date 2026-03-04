@@ -7,6 +7,8 @@
     <title>Compare The Brew</title>
     <meta name="description" content="Compare The Brew">
     <meta name="author" content="The Boys">
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍺</text></svg>">
 
     <link rel="stylesheet" href="/static/css/results-styles.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -146,23 +148,12 @@
                                 <!-- Develop so only loads more when scrolls down -->
                                 <div class="item">
                                     <a class="resultCard" href="{{ result[6] }}">
-                                        <div class="cardImage">
-                                            {% if result[11] %}
-                                            <img src="{{ result[11] }}"
-                                                 onerror="this.onerror=null;this.src='/static/images/wine-glass-placeholder.png';"
-                                                 alt="{{ result[2] }} {{ result[3] }}" style="width:60px;height:80px;object-fit:contain;">
-                                            {% else %}
-                                            <img src="/static/images/drinkimages/{{ result[-1] }}.png"
-                                                 onerror="this.onerror=null;this.src='/static/images/wine-glass-placeholder.png';"
-                                                 style="width:60px;height:80px;object-fit:contain;">
-                                            {% endif %}
+                                        {% if result[1] %}
+                                        <div class="retailer-badge">
+                                            {{ result[1] }}
                                         </div>
-                                        <div class="cardContent">
-                                            {% if result[1] %}
-                                            <div class="retailer-badge">
-                                                {{ result[1] }}
-                                            </div>
-                                            {% endif %}
+                                        {% endif %}
+                                        <div class="cardImage">
                                             {% set brand_name = result[2] %}
                                             {% set full_name = result[3] %}
                                             {% if brand_name and brand_name in full_name %}

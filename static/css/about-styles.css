@@ -276,13 +276,13 @@ a {
 
 .brand {
     font-weight: bold;
-    font-size: 3vmax;
+    font-size: 1.2rem;
     color: #cda20b;
 }
 
 .name {
     font-weight: bolder;
-    font-size: 1vmax;
+    font-size: 1rem;
     color: #722f37;
     /*	overflow: hidden;
         text-overflow: ellipsis;*/
@@ -337,7 +337,7 @@ a {
     /* The original font size that matt had */
     /* font-size: 3.8vw; */
     /* Alex's adjusted font size to make the text fit into the card */
-    font-size: 3.0vw;
+    font-size: 1.5rem;
     color: #722f37;
     -webkit-transform: scale(1, 1.1);
     /* Safari and Chrome */
@@ -640,11 +640,11 @@ CSS for when the menu is actually open
     }
 
     .name {
-        font-size: 2vmax;
+        font-size: 1.2rem;
     }
 
     .brand {
-        font-size: 1.5vmax;
+        font-size: 1rem;
     }
 
     #footer {
