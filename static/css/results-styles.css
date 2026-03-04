@@ -240,14 +240,14 @@ input:focus {
 }
 
 .item {
-	flex: 0 0 200px;
-	max-width: 200px;
+	flex: 0 0 240px;
+	max-width: 240px;
 }
 
 @media (min-width: 480px) {
 	.item {
-		flex: 0 0 200px;
-		max-width: 200px;
+		flex: 0 0 240px;
+		max-width: 240px;
 	}
 }
 
@@ -267,7 +267,7 @@ input:focus {
 	box-shadow: 0 5px 13px rgba(0, 0, 0, 0.075), 0 1px 2px rgba(0, 0, 0, 0.22);
 	transition: all 0.3s cubic-bezier(.25, .8, .25, 1);
 	overflow: hidden;
-	height: 150px;
+	height: 180px;
 	box-sizing: border-box;
 }
 
@@ -290,10 +290,67 @@ input:focus {
 
 .brand {
 	font-weight: bold;
-	font-size: 12px;
+	font-size: 10px;
 	color: #cda20b;
 	float: left;
 	margin-bottom: 2px;
+}
+
+.retailer-badge {
+	position: absolute;
+	top: 8px;
+	left: 8px;
+	background-color: #722f37;
+	color: #ffdc52;
+	padding: 2px 6px;
+	border-radius: 4px;
+	font-size: 7px;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	z-index: 2;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.medal {
+	float: right;
+	font-size: 11px;
+}
+
+.name {
+	font-weight: bolder;
+	font-size: 10px;
+	color: #722f37;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+	margin-top: 2px;
+	margin-bottom: 2px;
+	line-height: 1.1;
+}
+
+.details {
+	margin-top: 2px;
+	font-weight: bolder;
+	font-size: 7px;
+	color: #a7a7a7;
+}
+
+.price {
+	display: inline-block;
+	color: #cda20b;
+	font-size: 11px;
+	margin-left: 8px;
+}
+
+.score {
+	font-weight: bolder;
+	font-size: 11px;
+	color: #eb7734;
+	display: inline-flex;
+	align-items: center;
+	line-height: 1;
 }
 
 .retailer-badge {
@@ -309,7 +366,7 @@ input:focus {
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
 	z-index: 2;
-	box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .medal {
@@ -369,7 +426,7 @@ input:focus {
 
 .score {
 	font-weight: bolder;
-	font-size: 15px;
+	font-size: 11px;
 	color: #eb7734;
 }
 
@@ -799,8 +856,8 @@ CSS for when the menu is actually open
 
 @media (min-width: 768px) and (max-width: 999px) {
 	.item {
-		flex: 0 0 195px;
-		max-width: 195px;
+		flex: 0 0 234px;
+		max-width: 234px;
 	}
 
 	#siteLogo {
@@ -813,9 +870,26 @@ CSS for when the menu is actually open
 /* Tablet */
 @media (min-width: 1000px) {
 	.item {
-		flex: 0 0 300px;
-		max-width: 300px;
+		flex: 0 0 360px;
+		max-width: 360px;
 	}
+
+	.resultCard {
+		height: 216px;
+	}
+}
+
+/* Desktop */
+@media (min-width: 2000px) {
+	.item {
+		flex: 0 0 360px;
+		max-width: 360px;
+	}
+
+	.name {
+		font-size: 1.3rem;
+	}
+}
 }
 
 /* Desktop */

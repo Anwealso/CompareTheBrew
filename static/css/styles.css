@@ -2,10 +2,10 @@
     font-family: 'louis_george_cafe';
     src: url('louis_george_cafe/louis_george_cafe_bold-webfont.eot');
     src: url('louis_george_cafe/louis_geo/rge_cafe_bold-webfont.eot?#iefix') format('embedded-opentype'),
-    url('louis_george_cafe/louis_george_cafe_bold-webfont.woff2') format('woff2'),
-    url('louis_george_cafe/louis_george_cafe_bold-webfont.woff') format('woff'),
-    url('louis_george_cafe/louis_george_cafe_bold-webfont.ttf') format('truetype'),
-    url('louis_george_cafe/louis_george_cafe_bold-webfont.svg#louis_george_cafebold') format('svg');
+        url('louis_george_cafe/louis_george_cafe_bold-webfont.woff2') format('woff2'),
+        url('louis_george_cafe/louis_george_cafe_bold-webfont.woff') format('woff'),
+        url('louis_george_cafe/louis_george_cafe_bold-webfont.ttf') format('truetype'),
+        url('louis_george_cafe/louis_george_cafe_bold-webfont.svg#louis_george_cafebold') format('svg');
     font-weight: bold;
     font-style: normal;
 
@@ -15,20 +15,20 @@
     font-family: 'louis_george_cafe';
     src: url('louis_george_cafe/louis_george_cafe-webfont.eot');
     src: url('louis_george_cafe/louis_george_cafe-webfont.eot?#iefix') format('embedded-opentype'),
-    url('louis_george_cafe/louis_george_cafe-webfont.woff2') format('woff2'),
-    url('louis_george_cafe/louis_george_cafe-webfont.woff') format('woff'),
-    url('louis_george_cafe/louis_george_cafe-webfont.ttf') format('truetype'),
-    url('louis_george_cafe/louis_george_cafe-webfont.svg#louis_george_caferegular') format('svg');
+        url('louis_george_cafe/louis_george_cafe-webfont.woff2') format('woff2'),
+        url('louis_george_cafe/louis_george_cafe-webfont.woff') format('woff'),
+        url('louis_george_cafe/louis_george_cafe-webfont.ttf') format('truetype'),
+        url('louis_george_cafe/louis_george_cafe-webfont.svg#louis_george_caferegular') format('svg');
     font-weight: normal;
     font-style: normal;
 
 }
 
 #logo img {
-	float: right;
-	margin-top: 50px;
-	margin-right: 50px;
-	max-height: 36px;
+    float: right;
+    margin-top: 50px;
+    margin-right: 50px;
+    max-height: 36px;
     width: 200px;
 }
 
@@ -50,9 +50,7 @@ body {
     color: #722f37;
 }
 
-#content {
-
-}
+#content {}
 
 .medal {
     float: right;
@@ -144,11 +142,12 @@ input[type="search"]::-webkit-search-results-decoration {
     left: -5.5%;
 }
 
-textarea:focus, input:focus {
+textarea:focus,
+input:focus {
     outline: none;
 }
 
-#searchDrink:focus + .underline {
+#searchDrink:focus+.underline {
     transition: height .075s ease-in-out;
     height: 10px;
 }
@@ -174,20 +173,25 @@ textarea:focus, input:focus {
     float: left;
 }
 
-::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+::placeholder {
+    /* Chrome, Firefox, Opera, Safari 10.1+ */
     color: #cda20b;
-    opacity: 1; /* Firefox */
+    opacity: 1;
+    /* Firefox */
 }
 
-:-ms-input-placeholder { /* Internet Explorer 10-11 */
+:-ms-input-placeholder {
+    /* Internet Explorer 10-11 */
     color: #cda20b;
 }
 
-::-ms-input-placeholder { /* Microsoft Edge */
+::-ms-input-placeholder {
+    /* Microsoft Edge */
     color: #cda20b;
 }
 
-::-moz-selection { /* Code for Firefox */
+::-moz-selection {
+    /* Code for Firefox */
     background: #ffdc52;
 }
 
@@ -217,13 +221,13 @@ a {
 }
 
 #siteLogo {
-	position: absolute;
-	top: 50px;
-	right: 50px;
-	font-size: 24px;
-	font-weight: bold;
-	color: #722f37;
-	z-index: 100;
+    position: absolute;
+    top: 50px;
+    right: 50px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #722f37;
+    z-index: 100;
 }
 
 /* START of hamburger menu CSS*/
@@ -241,7 +245,7 @@ a {
 }
 
 #siteLogo:hover {
-	color: #cda20b;
+    color: #cda20b;
 }
 
 .item {
@@ -267,13 +271,20 @@ a {
     background-position: -115% 0;
     background-size: 150px 50px;
     animation: glide 2050ms infinite;
-    background-image: -moz-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%); /* FF3.6+ */
-    background-image: -webkit-gradient(linear, left top, right top, color-stop(0%, rgba(255, 255, 255, 0)), color-stop(50%, rgba(255, 255, 255, 0.3)), color-stop(99%, rgba(128, 186, 232, 0)), color-stop(100%, rgba(125, 185, 232, 0))); /* Chrome,Safari4+ */
-    background-image: -webkit-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%); /* Chrome10+,Safari5.1+ */
-    background-image: -o-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%); /* Opera 11.10+ */
-    background-image: -ms-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%); /* IE10+ */
-    background-image: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00ffffff', endColorstr='#00ffffff', GradientType=1); /* IE6-9 */
+    background-image: -moz-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%);
+    /* FF3.6+ */
+    background-image: -webkit-gradient(linear, left top, right top, color-stop(0%, rgba(255, 255, 255, 0)), color-stop(50%, rgba(255, 255, 255, 0.3)), color-stop(99%, rgba(128, 186, 232, 0)), color-stop(100%, rgba(125, 185, 232, 0)));
+    /* Chrome,Safari4+ */
+    background-image: -webkit-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%);
+    /* Chrome10+,Safari5.1+ */
+    background-image: -o-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%);
+    /* Opera 11.10+ */
+    background-image: -ms-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%);
+    /* IE10+ */
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%);
+    /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00ffffff', endColorstr='#00ffffff', GradientType=1);
+    /* IE6-9 */
 }
 
 /* animation */
@@ -282,6 +293,7 @@ a {
     from {
         background-position: -215% 0;
     }
+
     to {
         background-position: 300% 0;
     }
@@ -308,13 +320,20 @@ a {
     background-position: -115% 0;
     background-size: 150px 50px;
     animation: glide 2050ms infinite;
-    background-image: -moz-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%); /* FF3.6+ */
-    background-image: -webkit-gradient(linear, left top, right top, color-stop(0%, rgba(255, 255, 255, 0)), color-stop(50%, rgba(255, 255, 255, 0.3)), color-stop(99%, rgba(128, 186, 232, 0)), color-stop(100%, rgba(125, 185, 232, 0))); /* Chrome,Safari4+ */
-    background-image: -webkit-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%); /* Chrome10+,Safari5.1+ */
-    background-image: -o-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%); /* Opera 11.10+ */
-    background-image: -ms-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%); /* IE10+ */
-    background-image: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00ffffff', endColorstr='#00ffffff', GradientType=1); /* IE6-9 */
+    background-image: -moz-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%);
+    /* FF3.6+ */
+    background-image: -webkit-gradient(linear, left top, right top, color-stop(0%, rgba(255, 255, 255, 0)), color-stop(50%, rgba(255, 255, 255, 0.3)), color-stop(99%, rgba(128, 186, 232, 0)), color-stop(100%, rgba(125, 185, 232, 0)));
+    /* Chrome,Safari4+ */
+    background-image: -webkit-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%);
+    /* Chrome10+,Safari5.1+ */
+    background-image: -o-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%);
+    /* Opera 11.10+ */
+    background-image: -ms-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%);
+    /* IE10+ */
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(128, 186, 232, 0) 99%, rgba(125, 185, 232, 0) 100%);
+    /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00ffffff', endColorstr='#00ffffff', GradientType=1);
+    /* IE6-9 */
 }
 
 /* animation */
@@ -323,6 +342,7 @@ a {
     from {
         background-position: -215% 0;
     }
+
     to {
         background-position: 300% 0;
     }
@@ -347,7 +367,7 @@ a {
 
 .brand {
     font-weight: bold;
-    font-size: 12px;
+    font-size: 10px;
     color: #cda20b;
     float: left;
 
@@ -362,17 +382,17 @@ a {
     color: #ffdc52;
     padding: 2px 6px;
     border-radius: 4px;
-    font-size: 10px;
+    font-size: 7px;
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     z-index: 2;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .name {
     font-weight: bolder;
-    font-size: 14px;
+    font-size: 10px;
     color: #722f37;
     /*	overflow: hidden;
         text-overflow: ellipsis;*/
@@ -393,7 +413,7 @@ a {
 .indexdetails {
     margin-top: 5.2%;
     font-weight: bolder;
-    font-size: 10px;
+    font-size: 7px;
     color: #722f37;
 }
 
@@ -409,7 +429,7 @@ a {
     /* The original font size that matt had */
     /* font-size: 3.8vw; */
     /* Alex's adjusted font size to make the text fit into the card */
-    font-size: 15px;
+    font-size: 11px;
     color: #722f37;
 }
 
@@ -421,13 +441,18 @@ a {
     /* The original font size that matt had */
     /* font-size: 3.8vw; */
     /* Alex's adjusted font size to make the text fit into the card */
-    font-size: 15px;
+    font-size: 11px;
     color: #722f37;
-    -webkit-transform: scale(1, 1.1); /* Safari and Chrome */
-    -moz-transform: scale(1, 1.1); /* Firefox */
-    -ms-transform: scale(1, 1.1); /* IE 9 */
-    -o-transform: scale(1, 1.1); /* Opera */
-    transform: scale(1, 1.1); /* W3C */
+    -webkit-transform: scale(1, 1.1);
+    /* Safari and Chrome */
+    -moz-transform: scale(1, 1.1);
+    /* Firefox */
+    -ms-transform: scale(1, 1.1);
+    /* IE 9 */
+    -o-transform: scale(1, 1.1);
+    /* Opera */
+    transform: scale(1, 1.1);
+    /* W3C */
 }
 
 .price {
@@ -438,7 +463,7 @@ a {
     /* The original font size that matt had */
     /* font-size: 3.8vw; */
     /* Alex's adjusted font size to make the text fit into the card */
-    font-size: 15px;
+    font-size: 11px;
     color: #cda20b;
 }
 
@@ -500,13 +525,15 @@ a {
 
     cursor: pointer;
 
-    opacity: 0; /* hide this */
-    z-index: 2; /* and place it over the hamburger */
+    opacity: 0;
+    /* hide this */
+    z-index: 2;
+    /* and place it over the hamburger */
 
     -webkit-touch-callout: none;
 }
 
-#slide:hover ~ span {
+#slide:hover~span {
     background: #cda20b;
 }
 
@@ -528,8 +555,8 @@ a {
     transform-origin: 4px 0px;
 
     transition: transform 0.5s cubic-bezier(0.77, 0.2, 0.05, 1.0),
-    background 0.5s cubic-bezier(0.77, 0.2, 0.05, 1.0),
-    opacity 0.55s ease;
+        background 0.5s cubic-bezier(0.77, 0.2, 0.05, 1.0),
+        opacity 0.55s ease;
 }
 
 #menuToggle span:first-child {
@@ -543,7 +570,7 @@ a {
 /* 
  Animation to move top line into cross
  */
-#menuToggle input:checked ~ span {
+#menuToggle input:checked~span {
     opacity: 1;
     transform: rotate(45deg) translate(-2px, -1px);
     background: #cda20b;
@@ -552,7 +579,7 @@ a {
 /*
  Fade out the middle line 
  */
-#menuToggle input:checked ~ span:nth-last-child(3) {
+#menuToggle input:checked~span:nth-last-child(3) {
     opacity: 0;
     transform: rotate(0deg) scale(0.2, 0.2);
 }
@@ -560,7 +587,7 @@ a {
 /*
  Animation to move bottom line into cross
  */
-#menuToggle input:checked ~ span:nth-last-child(2) {
+#menuToggle input:checked~span:nth-last-child(2) {
     transform: rotate(-45deg) translate(0, -1px);
 }
 
@@ -593,7 +620,7 @@ CSS for when the menu is actually open
     font-size: 90px;
 }
 
-#menuToggle input:checked ~ ul {
+#menuToggle input:checked~ul {
     transform: none;
 }
 
@@ -617,7 +644,7 @@ CSS for when the menu is actually open
     cursor: pointer;
 }
 
-#menuToggle input:checked + .shadow {
+#menuToggle input:checked+.shadow {
     display: inline;
 }
 
@@ -626,19 +653,19 @@ CSS for when the menu is actually open
 
 /* Responsive logo */
 @media (max-width: 767px) {
-	#siteLogo {
-		top: 15px;
-		right: 15px;
-		font-size: 18px;
-	}
+    #siteLogo {
+        top: 15px;
+        right: 15px;
+        font-size: 18px;
+    }
 }
 
 @media (min-width: 768px) and (max-width: 999px) {
-	#siteLogo {
-		top: 20px;
-		right: 20px;
-		font-size: 20px;
-	}
+    #siteLogo {
+        top: 20px;
+        right: 20px;
+        font-size: 20px;
+    }
 }
 
 @media (min-width: 1000px) {
@@ -680,11 +707,11 @@ CSS for when the menu is actually open
         transform-origin: 4px 0px;
 
         transition: transform 0.5s cubic-bezier(0.77, 0.2, 0.05, 1.0),
-        background 0.5s cubic-bezier(0.77, 0.2, 0.05, 1.0),
-        opacity 0.55s ease;
+            background 0.5s cubic-bezier(0.77, 0.2, 0.05, 1.0),
+            opacity 0.55s ease;
     }
 
-    #slide:hover ~ span {
+    #slide:hover~span {
         background: #ffdc52;
     }
 
@@ -701,7 +728,7 @@ CSS for when the menu is actually open
         border-radius: 25px;
     }
 
-    #searchDrink:focus + .underline {
+    #searchDrink:focus+.underline {
         height: 4px;
     }
 
