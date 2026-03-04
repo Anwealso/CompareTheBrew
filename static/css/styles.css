@@ -333,13 +333,16 @@ a {
 
 .brand {
     font-weight: bold;
-    font-size: 1.2rem;
+    font-size: 14px;
     color: #cda20b;
     float: left;
 
 }
 
 .retailer-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
     display: inline-block;
     background-color: #722f37;
     color: #ffdc52;
@@ -348,8 +351,9 @@ a {
     font-size: 0.65rem;
     font-weight: bold;
     text-transform: uppercase;
-    margin-bottom: 4px;
     letter-spacing: 0.5px;
+    z-index: 2;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .name {
