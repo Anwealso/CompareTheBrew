@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS "drinks" (
     "efficiency" REAL,
     "image" TEXT,
     "shortimage" TEXT,
-    "search_text" TEXT
+    "search_text" TEXT,
+    "date_created" TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Indexes for drinks table
