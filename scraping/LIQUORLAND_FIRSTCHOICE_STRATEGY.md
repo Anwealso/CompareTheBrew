@@ -9,78 +9,97 @@ Our recent deep-dive into Liquorland's protection (and by extension First Choice
 3.  **Data in Shell:** The initial HTML page load contains a `Schema.org` `ItemList` (usually ~60 items) in a `<script>` tag. This is the most reliable way to get product names and links, but it often lacks real-time pricing which is hydrated via background API calls.
 4.  **Successful Bypass:** Using **ScrapingBee with `stealth_proxy=true`, `premium_proxy=true`, and `render_js=true`** successfully retrieved the 885KB React shell, bypassing the immediate CAPTCHA.
 
-## Recommended Path Forward
+## Implemented Strategy: Multi-Strategy Fallback Approach
 
-To maintain a reliable scraper for Coles Group sites, we should move away from direct API calls and toward a "Shell + Hydration" or "Headless Session" approach:
+The `LiquorlandProcessor` now implements a **multi-strategy fallback** approach that tries increasingly sophisticated methods until successful. This is implemented in `scraping/coles_processor.py`.
 
-### 1. The "Stealth Shell" Approach (Best for Discovery)
-Use ScrapingBee with high-stealth settings to pull the initial HTML.
-- **Parameters:**
-  - `render_js=true`
-  - `stealth_proxy=true`
-  - `premium_proxy=true`
-  - `country_code=au`
-  - `wait=10000` (Essential for hydration scripts to settle)
-- **Extraction:** Parse the `ItemList` from script tags for high-level product discovery.
+### Strategy Sequence
 
-### 2. Solving the Price Gap
-Since prices are often missing from the static shell:
-- **JS Scenarios:** Use ScrapingBee `js_scenario` to wait for specific price elements (e.g., `.price-container`) before returning the HTML.
-- **Wait For:** Use `wait_for=".product-tile-list"` to ensure the React app has actually finished its background fetch before ScrapingBee takes the snapshot.
+1.  **Mobile Safari + Premium Proxy + NO JS** (bypasses JS fingerprints)
+    - Uses iPhone User-Agent
+    - `render_js=false`, `premium_proxy=true`
+    - Fastest and cheapest successful bypass
 
-### 3. Credit Management
-Stealth and Premium proxies cost significantly more credits (up to 10-25x per request).
-- **Strategy:** Scrape category pages only once every 24 hours.
-- **Cache:** Use the `Schema.org` data to identify products, and only perform high-cost "Price Hydration" scrapes for the top-priority items or search results.
+2.  **Desktop Chrome + Stealth Proxy + JS + Wait** (heavyweight attempt)
+    - Uses Chrome User-Agent
+    - `render_js=true`, `premium_proxy=true`, `stealth_proxy=true`
+    - Waits 10 seconds for hydration
+    - Waits for `.product-tile-list` element
 
-### 4. Implementation Priority
-1.  Update `ColesGroupProcessor` to use the `stealth_proxy=true` flag.
-2.  Implement a fallback parser that extracts from the `schema.org` JSON-LD if the main `__NEXT_DATA__` is obscured.
-3.  Increase the `wait` parameter to 10s to allow Kasada/ShieldSquare challenges to resolve in the background.
+3.  **Googlebot Simulation** (sometimes bypasses ShieldSquare)
+    - Uses Googlebot User-Agent
+    - `render_js=false`, `premium_proxy=true`
 
-## Code Implementation Examples
+4.  **API Mimic Call** (mimics site's own frontend)
+    - Calls `/api/v1/search/{category}` directly
+    - Uses proper headers (Accept, Referer)
 
-### 1. ScrapingBee Stealth Request Template
+### Fallback Extraction
+
+When all strategies fail to return structured JSON, the processor falls back to extracting from **Schema.org JSON-LD**:
+- Parses `<script type="application/ld+json">` tags
+- Extracts `ItemList` with product names, URLs, and images
+- Used for discovery and basic product info
+
+## Code Implementation
+
+### Multi-Strategy Fetch
+
 ```python
-params = {
-    "api_key": "YOUR_API_KEY",
-    "url": "https://www.liquorland.com.au/wine",
-    "render_js": "true",
-    "premium_proxy": "true",
-    "stealth_proxy": "true",
-    "country_code": "au",
-    "wait": "10000",
-    "wait_for": ".product-tile-list"  # Ensures hydration is complete
-}
+class LiquorlandProcessor(ColesGroupProcessor):
+    def fetch_url(self, url: str) -> Optional[str]:
+        """Tries multiple strategies until successful."""
+        strategies = [
+            self._try_mobile_nojs,
+            self._try_desktop_stealth_js,
+            self._try_googlebot,
+            self._try_api_mimic,
+        ]
+        
+        for strategy in strategies:
+            result = strategy(url)
+            if result and len(result) > 50000:  # Success threshold
+                return result
+        
+        return None
+
+    def _try_mobile_nojs(self, url: str) -> Optional[str]:
+        """Strategy 1: Mobile Safari + Premium Proxy + NO JS."""
+        return self._fetch(url, render_js=False, premium_proxy=True, custom_headers={
+            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X)..."
+        })
+
+    def _try_desktop_stealth_js(self, url: str) -> Optional[str]:
+        """Strategy 2: Desktop Chrome + Stealth Proxy + JS + Wait."""
+        return self._fetch(url, render_js=True, premium_proxy=True, stealth_proxy=True,
+                          wait="10000", wait_for=".product-tile-list", custom_headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)..."
+        })
 ```
 
-### 2. Fallback Schema.org Extraction
-When `__NEXT_DATA__` is unavailable or obfuscated, use this to at least get names and links:
+### Schema.org Fallback Extraction
 
 ```python
-import json
-from bs4 import BeautifulSoup
-
-def extract_from_schema(html):
+def _extract_from_schema(self, html: str) -> List[dict]:
+    """Extract products from Schema.org ItemList JSON-LD."""
     soup = BeautifulSoup(html, "html.parser")
-    # Liquorland embeds ItemList in a script tag with type application/ld+json
     scripts = soup.find_all("script", type="application/ld+json")
+    
     for s in scripts:
-        try:
-            data = json.loads(s.string)
-            if data.get("@type") == "ItemList":
-                products = []
-                for item in data.get("itemListElement", []):
-                    # Item may be nested or direct
-                    p_data = item.get("item", item)
-                    products.append({
-                        "name": p_data.get("name"),
-                        "url": p_data.get("url"),
-                        "image": p_data.get("image")
-                    })
-                return products
-        except:
-            continue
+        data = json.loads(s.string)
+        if data.get("@type") == "ItemList":
+            return [{"name": item.get("item", item).get("name"),
+                     "url": item.get("item", item).get("url"),
+                     "image": item.get("item", item).get("image")}
+                    for item in data.get("itemListElement", [])]
     return []
 ```
+
+## Credit Management
+
+Stealth and Premium proxies cost significantly more credits (up to 10-25x per request).
+
+- **Strategy:** Scrape category pages only once every 24 hours.
+- **Fallback:** Use the `Schema.org` data for basic product info if high-cost strategies fail.
+- **Discovery:** Uses paginated results (24 items per page) with fallback to estimate total pages from ItemList count.
 
