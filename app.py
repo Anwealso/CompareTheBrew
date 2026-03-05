@@ -17,7 +17,7 @@ from config import Config
 import db.databaseHandler as db
 
 # Simple dark mode for dev QOL
-DARK_MODE = True
+DARK_MODE = False
 
 # Create a new flask application
 app = Flask(__name__)
