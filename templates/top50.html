@@ -10,10 +10,9 @@
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍺</text></svg>">
 
-    <link rel="stylesheet" href="/static/css/results-styles.css">
+    <link rel="stylesheet" href="/static/css/main.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script type="text/javascript" src="http://latex.codecogs.com/latexit.js"></script>
-    <link rel="stylesheet" href="/static/css/light-modal.css">
 
     {% if dark_mode %}
     <style>
@@ -182,22 +181,21 @@
                                                 {{ full_name }}
                                             </div>
                                             {% endif %}
-                                            <span class="searchLine"></span>
-                                            <div class="details" style="white-space: nowrap; display: inline-block;">
-                                                {{ (result[7] / 1000) | round(2) }}L - {{ '%0.1f'| format(result[9]) }} std.
-                                                - {{ result[8] }}%
-                                            </div>
-                                            <div>
+                                            <div class="cardDetails">
+                                                <span class="searchLine"></span>
+                                                <div class="details" style="white-space: nowrap; display: inline-block;">
+                                                    {{ (result[7] / 1000) | round(2) }}L - {{ '%0.1f'| format(result[9]) }} std.
+                                                    - {{ result[8] }}%
+                                                </div>
                                                 <div class="scorePriceContainer">
-                                                    <div class="score responsive_head"
-                                                         style="white-space: nowrap; display: inline-flex; align-items: center;">
+                                                    <div class="score responsive_head">
                                                         <div class="sideways">
                                                             <img src="/static/images/score.svg" alt="Score">
                                                         </div>
                                                         {{ '%0.0f'| format(result[10] * 100) }}
-                                                        <div class="price">
-                                                            ${{ '%0.2f'| format(result[5]) }}
-                                                        </div>
+                                                    </div>
+                                                    <div class="price">
+                                                        ${{ '%0.2f'| format(result[5]) }}
                                                     </div>
                                                 </div>
                                             </div>

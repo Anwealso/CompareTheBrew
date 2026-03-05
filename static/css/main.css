@@ -1,0 +1,1200 @@
+/* =============================================================================
+   main.css — Single unified stylesheet for CompareTheBrew
+   Merges: styles.css  |  about-styles.css  |  results-styles.css  |  light-modal.css
+   =============================================================================
+
+   Table of Contents
+   -----------------
+   1.  Custom Font
+   2.  CSS Custom Properties (colour tokens)
+   3.  Global Reset & Base
+   4.  Shared Layout  (#siteLogo, #footer, #cover, …)
+   5.  Hamburger / Nav Menu
+   6.  Card Components  (.resultCard, .cardImage, .cardContent, …)
+   7.  Search Components  (.underline, .searchLine, #searchDrink, …)
+   8.  HOME PAGE — specific styles
+   9.  RESULTS / TOP-50 PAGES — specific styles
+   10. ABOUT PAGE — specific styles
+   11. Light Modal  (light-modal v1.1.0)
+   12. Responsive Media Queries
+   13. Dark Mode (commented out)
+   ============================================================================= */
+
+
+/* =============================================================================
+   1. Custom Font
+   ============================================================================= */
+
+@font-face {
+    font-family: 'louis_george_cafe';
+    src: url('louis_george_cafe/louis_george_cafe_bold-webfont.eot');
+    src: url('louis_george_cafe/louis_geo/rge_cafe_bold-webfont.eot?#iefix') format('embedded-opentype'),
+        url('louis_george_cafe/louis_george_cafe_bold-webfont.woff2') format('woff2'),
+        url('louis_george_cafe/louis_george_cafe_bold-webfont.woff') format('woff'),
+        url('louis_george_cafe/louis_george_cafe_bold-webfont.ttf') format('truetype'),
+        url('louis_george_cafe/louis_george_cafe_bold-webfont.svg#louis_george_cafebold') format('svg');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'louis_george_cafe';
+    src: url('louis_george_cafe/louis_george_cafe-webfont.eot');
+    src: url('louis_george_cafe/louis_george_cafe-webfont.eot?#iefix') format('embedded-opentype'),
+        url('louis_george_cafe/louis_george_cafe-webfont.woff2') format('woff2'),
+        url('louis_george_cafe/louis_george_cafe-webfont.woff') format('woff'),
+        url('louis_george_cafe/louis_george_cafe-webfont.ttf') format('truetype'),
+        url('louis_george_cafe/louis_george_cafe-webfont.svg#louis_george_caferegular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+
+/* =============================================================================
+   2. CSS Custom Properties (colour tokens)
+   ============================================================================= */
+
+:root {
+    --color-maroon: #722f37;
+    --color-gold: #cda20b;
+    --color-yellow: #ffdc52;
+    --color-light: #a7a7a7;
+    --color-dark: #353535;
+    --color-bg: #ededed;
+    --color-white: #ffffff;
+    --color-orange: #eb7734;
+}
+
+
+/* =============================================================================
+   3. Global Reset & Base
+   ============================================================================= */
+
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--color-white);
+    font-family: 'louis_george_cafe', Arial, sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    font-size: 15px;
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    text-decoration: none;
+}
+
+textarea:focus,
+input:focus {
+    outline: none;
+}
+
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+}
+
+/* Placeholder text */
+::placeholder {
+    color: var(--color-gold);
+    opacity: 1;
+}
+
+:-ms-input-placeholder {
+    color: var(--color-gold);
+}
+
+::-ms-input-placeholder {
+    color: var(--color-gold);
+}
+
+/* Selection highlight */
+::-moz-selection {
+    background: var(--color-yellow);
+}
+
+::selection {
+    background: var(--color-yellow);
+}
+
+/* #content — intentionally unstyled */
+
+
+/* =============================================================================
+   4. Shared Layout
+   ============================================================================= */
+
+/* ---- Site Logo ---- */
+#siteLogo {
+    position: fixed;
+    top: 50px;
+    right: 50px;
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--color-gold);
+    z-index: 100;
+}
+
+#siteLogo:hover {
+    color: var(--color-maroon);
+}
+
+/* ---- Footer ---- */
+#footer {
+    font-size: 30px;
+    position: fixed;
+    padding: 1%;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: var(--color-maroon);
+    color: var(--color-yellow);
+    z-index: 3;
+}
+
+#footerRight {
+    float: right;
+    margin-right: 2%;
+}
+
+#footerLeft {
+    float: left;
+}
+
+/* Mobile-only footer (results / top50 pages) */
+#mobileFooter {
+    display: inline-block;
+    position: relative;
+    width: 100% !important;
+    padding: 1%;
+    padding-top: 2%;
+    padding-bottom: 2%;
+    left: 0;
+    background-color: var(--color-maroon);
+    color: var(--color-yellow);
+    z-index: 3;
+}
+
+/* ---- Cover overlay (for menu shadow) ---- */
+#cover {
+    opacity: 0;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    transition: opacity 0.3s cubic-bezier(.25, .8, .25, 1);
+    pointer-events: none;
+}
+
+.clickable {
+    pointer-events: auto !important;
+}
+
+.shadow {
+    background-color: black;
+    opacity: 0.8 !important;
+    z-index: 1;
+    cursor: pointer;
+}
+
+#menuToggle input:checked+.shadow {
+    display: inline;
+}
+
+
+/* =============================================================================
+   5. Hamburger / Nav Menu
+   ============================================================================= */
+
+/* -- Toggle wrapper -- */
+#menuToggle {
+    display: block;
+    position: fixed;
+    top: 50px;
+    left: 50px;
+    z-index: 1;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* -- Hidden checkbox -- */
+#menuToggle input {
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    opacity: 0;
+    z-index: 2;
+    -webkit-touch-callout: none;
+}
+
+/* -- Hamburger bars -- */
+#menuToggle span {
+    display: block;
+    width: 100px;
+    height: 12px;
+    margin-bottom: 20px;
+    position: relative;
+    background: var(--color-gold);
+    border-radius: 3px;
+    z-index: 1;
+    transform-origin: 4px 0px;
+    transition:
+        transform 0.5s cubic-bezier(0.77, 0.2, 0.05, 1.0),
+        background 0.5s cubic-bezier(0.77, 0.2, 0.05, 1.0),
+        opacity 0.55s ease;
+}
+
+#menuToggle span:first-child {
+    transform-origin: 0% 0%;
+}
+
+#menuToggle span:nth-last-child(2) {
+    transform-origin: 0% 100%;
+}
+
+#slide:hover~span {
+    background: var(--color-gold);
+}
+
+/* Checked → cross animations */
+#menuToggle input:checked~span {
+    opacity: 1;
+    transform: rotate(45deg) translate(-2px, -1px);
+    background: var(--color-gold);
+}
+
+#menuToggle input:checked~span:nth-last-child(3) {
+    opacity: 0;
+    transform: rotate(0deg) scale(0.2, 0.2);
+}
+
+#menuToggle input:checked~span:nth-last-child(2) {
+    transform: rotate(-45deg) translate(0, -1px);
+}
+
+/* -- Menu panel -- */
+#menu {
+    overflow: hidden;
+    position: absolute;
+    width: 60vw;
+    height: 100vh;
+    margin: -146px 0 0 -50px;
+    padding: 50px;
+    padding-top: 232px;
+    background-color: var(--color-bg);
+    list-style-type: none;
+    -webkit-font-smoothing: antialiased;
+    transform-origin: 0% 0%;
+    transform: translate(-100%, 0);
+    transition: transform 0.5s cubic-bezier(0.77, 0.2, 0.05, 1.0);
+}
+
+#menu li {
+    font-size: 90px;
+}
+
+#menuToggle input:checked~ul {
+    transform: none;
+}
+
+/* -- Menu link colours -- */
+#menuToggle a {
+    text-decoration: none;
+    color: #232323;
+    transition: color 0.3s ease;
+}
+
+#menuToggle a:hover {
+    color: var(--color-maroon);
+}
+
+/* -- Nav menu item buttons -- */
+.navButton {
+    padding: 20px;
+    margin-left: -200px;
+    padding-right: 800px;
+    padding-left: 200px;
+    background-color: var(--color-gold);
+    margin-bottom: 6px;
+    font-weight: bold;
+    color: white;
+    width: 800px;
+}
+
+.navButton:hover {
+    background-color: var(--color-yellow);
+}
+
+/* -- Hamburger helper -- */
+.hamburger {
+    padding: 1%;
+    font-size: 48px;
+    color: var(--color-maroon);
+}
+
+
+/* =============================================================================
+   6. Card Components
+   ============================================================================= */
+
+/* ---- Result Card ---- */
+.resultCard {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-radius: 9px;
+    background-color: var(--color-white);
+    box-shadow: 0 5px 13px rgba(0, 0, 0, 0.075), 0 1px 2px rgba(0, 0, 0, 0.22);
+    transition: all 0.3s cubic-bezier(.25, .8, .25, 1);
+    overflow: hidden;
+    height: 180px;
+    box-sizing: border-box;
+}
+
+.resultCard:hover {
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.13), 0 10px 10px rgba(0, 0, 0, 0.13);
+}
+
+.resultCard .ad {
+    width: 100%;
+}
+
+/* ---- Card Card (index "drink of the day" variant) ---- */
+.cardCard {
+    position: relative;
+    display: inline-block;
+    align-items: center;
+    padding: 14px;
+    border-radius: 9px;
+    background-color: var(--color-yellow);
+    box-shadow: 0 5px 13px rgba(0, 0, 0, 0.075), 0 1px 2px rgba(0, 0, 0, 0.22);
+    transition: all 0.3s cubic-bezier(.25, .8, .25, 1);
+    overflow: hidden;
+    background-repeat: repeat-y;
+    background-position: -115% 0;
+    background-size: 150px 50px;
+    animation: glide 2050ms infinite;
+    background-image: linear-gradient(to right,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.3) 50%,
+            rgba(128, 186, 232, 0) 99%,
+            rgba(125, 185, 232, 0) 100%);
+}
+
+.cardCard:hover {
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.13), 0 10px 10px rgba(0, 0, 0, 0.13);
+}
+
+@keyframes glide {
+    from {
+        background-position: -215% 0;
+    }
+
+    to {
+        background-position: 300% 0;
+    }
+}
+
+/* ---- Internal card pieces ---- */
+.cardImage {
+    flex: 0 0 25%;
+    padding-left: 6px;
+    padding-right: 6px;
+    font-size: 8px;
+}
+
+.cardContent {
+    flex: 1;
+    min-width: 0;
+    padding-right: 4px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.brand {
+    font-weight: bold;
+    font-size: 20px;
+    color: var(--color-gold);
+    float: left;
+    margin-top: 20px;
+    margin-bottom: 2px;
+}
+
+.name {
+    font-weight: bolder;
+    font-size: 26px;
+    color: var(--color-maroon);
+    height: 60px;
+    overflow: hidden;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    line-height: 1.1;
+}
+
+.cardDetails {
+    margin-top: auto;
+}
+
+.details {
+    margin-top: 2px;
+    font-weight: bolder;
+    font-size: 18px;
+    color: var(--color-light);
+}
+
+/* Alias kept for index page compatibility */
+.indexdetails {
+    margin-top: 5.2%;
+    font-weight: bolder;
+    font-size: 7px;
+    color: var(--color-maroon);
+}
+
+.scorePriceContainer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.score {
+    font-weight: bolder;
+    font-size: 40px;
+    color: var(--color-orange);
+    display: inline-flex;
+    align-items: center;
+}
+
+.price {
+    display: inline-block;
+    font-size: 30px;
+    color: var(--color-gold);
+    margin-left: 8px;
+    flex: 1;
+    justify-content: center;
+    display: inline-flex;
+}
+
+.retailer-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    display: inline-block;
+    background-color: var(--color-maroon);
+    color: var(--color-yellow);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.medal {
+    float: right;
+    font-size: 16px;
+}
+
+.sideways {
+    display: inline-block;
+    height: 0.7em;
+    margin-right: 4px;
+}
+
+.sideways img {
+    height: 100%;
+    width: auto;
+    display: block;
+}
+
+/* Shared item wrapper */
+.item {
+    display: inline-block;
+    margin: 0 0 42px;
+    width: 100%;
+}
+
+
+/* =============================================================================
+   7. Search Components
+   ============================================================================= */
+
+.underline {
+    background-color: var(--color-gold);
+    display: inline-block;
+    height: 7px;
+    transition: height .075s ease-in-out;
+    left: 0px;
+    margin-top: -4px;
+    position: absolute;
+    top: 175px;
+    width: 100%;
+    border-radius: 25px;
+}
+
+#searchDrink:focus+.underline {
+    transition: height .075s ease-in-out;
+    height: 10px;
+}
+
+.searchLine {
+    background-color: var(--color-gold);
+    display: block;
+    height: 3px;
+    left: 0px;
+    position: relative;
+    width: 100%;
+    border-radius: 5px;
+}
+
+#searchDrink {
+    border: none;
+    background: none;
+    display: inline;
+    width: 85%;
+    font-family: 'louis_george_cafe', Arial, sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    font-size: 88px;
+    color: var(--color-dark);
+    margin-top: -3%;
+    margin-bottom: 3%;
+    position: relative;
+    left: -5.5%;
+}
+
+/* Size variants used on results/top50 pages */
+.bigSearch {
+    font-size: 44px;
+}
+
+.smallSearch {
+    font-size: 88px;
+    margin-top: -3%;
+    margin-bottom: 3%;
+    position: relative;
+    left: -5.5%;
+}
+
+/* .smallLine top-offset is applied inside the @media (min-width: 1000px) block below */
+
+
+/* =============================================================================
+   8. HOME PAGE — specific styles
+   ============================================================================= */
+
+#main {
+    font-size: 30px;
+    position: absolute;
+    left: 50%;
+    top: 62%;
+    -webkit-transform: translate(-50%, -58%);
+    transform: translate(-50%, -58%);
+    max-width: 1360px;
+    width: 80%;
+}
+
+#question {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--color-maroon);
+    padding-bottom: 2.1%;
+}
+
+.light {
+    padding-top: 30px;
+    font-size: 36px;
+    color: var(--color-light);
+}
+
+.light_nospacing {
+    padding-top: 10px;
+    font-size: 36px;
+    color: var(--color-light);
+}
+
+.drink-of-the-day {
+    margin-top: 0.2vh;
+    width: 75%;
+}
+
+.award-title {
+    margin-top: 10vh;
+    font-weight: bold;
+    font-size: 3vh;
+    color: var(--color-gold);
+}
+
+
+/* =============================================================================
+   9. RESULTS / TOP-50 PAGES — specific styles
+   ============================================================================= */
+
+/* Main results container */
+.mainResults {
+    margin-top: 6vh;
+    margin-bottom: 80px;
+    font-size: 30px;
+    position: absolute;
+    left: 50%;
+    -webkit-transform: translate(-50%, 2.2%);
+    transform: translate(-50%, 2.2%);
+    width: 80%;
+    max-width: 1360px;
+}
+
+.main {
+    font-size: 30px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    margin-bottom: 80px;
+}
+
+.resultsNumber {
+    padding-top: 50px;
+    font-size: 14px;
+    color: var(--color-light);
+}
+
+/* Results page .light has extra top spacing */
+.mainResults .light {
+    padding-top: 48px;
+    margin-bottom: 40px;
+}
+
+/* Sort / filter controls */
+#options {
+    padding-top: 42px;
+    font-size: 36px;
+    font-weight: bold;
+    color: var(--color-maroon);
+}
+
+.buttons {
+    display: inline;
+}
+
+.buttonSort {
+    border: none;
+    padding: 17px 30px;
+    margin-left: 10px;
+    font-size: 36px;
+    background-color: var(--color-yellow);
+    color: var(--color-gold);
+    border-radius: 9px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.buttonSortActive {
+    border: none;
+    padding: 17px 30px;
+    margin-left: 10px;
+    font-size: 36px;
+    background-color: var(--color-maroon);
+    color: var(--color-gold);
+    border-radius: 9px;
+    text-decoration: none;
+}
+
+#priceRange {
+    margin-top: 42px;
+    font-size: 36px;
+    font-weight: bold;
+    color: var(--color-maroon);
+    right: 0;
+}
+
+/* Results layout */
+#areaContainer {
+    margin-bottom: 200px;
+}
+
+#resultsArea {
+    padding: 15px;
+}
+
+#cardsArea {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 42px;
+}
+
+/* Results page overrides .item to use flex */
+.mainResults .item,
+#cardsArea>.item {
+    display: block;
+    margin: 0;
+    flex: 0 0 240px;
+    max-width: 240px;
+    width: auto;
+}
+
+/* Results search line */
+.mainResults .searchLine {
+    background-color: var(--color-yellow);
+}
+
+
+/* =============================================================================
+   10. ABOUT PAGE — specific styles
+   ============================================================================= */
+
+.overhead {
+    color: var(--color-maroon);
+    font-weight: bolder;
+}
+
+/* About page .light has more top padding */
+#main.about .light {
+    padding-top: 65px;
+}
+
+/* About page result cards are inline-block tiles */
+#main.about .resultCard {
+    float: left;
+    height: auto;
+    width: 30%;
+    padding: 14px;
+    background-color: #fcffd0;
+}
+
+/* About page card image sizing */
+#main.about .cardImage {
+    padding: 5px;
+    padding-bottom: 5px;
+    height: 75%;
+    width: 75%;
+}
+
+/* About page drink-of-the-day */
+#main.about .drink-of-the-day {
+    margin-top: 6vh;
+    width: 45%;
+}
+
+
+/* =============================================================================
+   11. Light Modal  (light-modal v1.1.0 — MIT License)
+       Source: https://github.com/hunzaboy/Light-Modal
+   ============================================================================= */
+
+.light-modal {
+    display: none;
+    position: fixed;
+    background: transparent;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    align-items: center;
+    justify-content: center;
+    right: 0;
+    z-index: 1;
+    transition: background 1s;
+    font-size: 16px;
+    visibility: hidden;
+}
+
+.light-modal-content {
+    background: var(--color-white);
+    color: #000000;
+    width: 30vw;
+    border-radius: .2em;
+    position: relative;
+    max-height: calc(100vh - 150px);
+    line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+}
+
+.light-modal-content img {
+    max-width: 100%;
+    border-radius: .2em;
+}
+
+.light-modal-content.large-content {
+    width: 50vw;
+}
+
+.light-modal-header {
+    padding: 20px;
+    background: rgba(0, 0, 0, .2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.light-modal-heading {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.light-modal-heading+.light-modal-close-icon {
+    position: static;
+}
+
+.light-modal-body {
+    padding: 20px;
+    overflow: auto;
+    max-height: 450px;
+}
+
+.light-modal-footer {
+    padding: 20px;
+    background: rgba(0, 0, 0, .2);
+    text-align: right;
+    display: flex;
+    align-items: center;
+}
+
+.light-modal-close-btn,
+.light-modal-close-icon {
+    text-decoration: none;
+    color: var(--color-white);
+    padding: 5px 10px;
+    border-radius: .2em;
+    font-size: 3em;
+    line-height: 1;
+    transition: background .2s ease-in-out;
+}
+
+.light-modal-close-icon {
+    position: absolute;
+    top: -15px;
+    right: -15px;
+}
+
+.light-modal-close-btn {
+    font-size: 1em;
+}
+
+.light-modal-caption {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 100%;
+    padding: 10px 0;
+    background: rgba(0, 0, 0, .2);
+    border-radius: .2em;
+    width: 100%;
+    text-align: center;
+    margin-top: 5px;
+}
+
+.light-modal:target {
+    background: rgba(0, 0, 0, .5);
+    display: flex;
+    visibility: visible;
+}
+
+.light-modal-navigation .navigation-next,
+.light-modal-navigation .navigation-prev {
+    width: 32px;
+    height: 32px;
+    border-color: var(--color-white);
+    transition: border-color .2s;
+}
+
+.light-modal-navigation .navigation-next:hover,
+.light-modal-navigation .navigation-prev:hover {
+    border-color: hsla(0, 0%, 100%, .7);
+}
+
+.light-modal-navigation .navigation-next {
+    position: absolute;
+    right: -50px;
+    top: 50%;
+    border-bottom: 1px solid;
+    border-left: 1px solid;
+    transform: rotate(-135deg);
+}
+
+.light-modal-navigation .navigation-prev {
+    position: absolute;
+    left: -50px;
+    top: 50%;
+    border-bottom: 1px solid;
+    border-left: 1px solid;
+    transform: rotate(45deg);
+}
+
+@keyframes light-modal-fade {
+    0% {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.basic {
+    animation-name: light-modal-fade;
+}
+
+
+/* =============================================================================
+   12. Responsive Media Queries
+   ============================================================================= */
+
+/* ---- Phone (< 480px) — modal nav arrows ---- */
+@media (max-width: 480px) {
+    .light-modal-navigation .navigation-next {
+        right: 5px;
+    }
+
+    .light-modal-navigation .navigation-prev {
+        left: 5px;
+    }
+}
+
+/* ---- Phone portrait (< 767px) ---- */
+@media (max-width: 767px) {
+    #siteLogo {
+        top: 15px;
+        right: 15px;
+        font-size: 18px;
+    }
+
+    .light-modal {
+        font-size: 14px;
+    }
+
+    @supports (display: flex) {
+        .light-modal:target .light-modal-content {
+            width: 70vw;
+        }
+    }
+}
+
+/* ---- Tablet (768px – 999px) ---- */
+@media (min-width: 768px) and (max-width: 999px) {
+    #siteLogo {
+        top: 20px;
+        right: 20px;
+        font-size: 20px;
+    }
+
+    #cardsArea>.item,
+    .mainResults .item {
+        flex: 0 0 234px;
+        max-width: 234px;
+    }
+}
+
+/* ---- Desktop (1000px+) ---- */
+@media (min-width: 1000px) {
+
+    body {
+        font-size: 15px;
+    }
+
+    .hamburger {
+        font-size: 36px !important;
+    }
+
+    /* Compact hamburger */
+    #menuToggle input {
+        width: 40px;
+        height: 32px;
+        top: -7px;
+        left: -5px;
+    }
+
+    #menuToggle span {
+        width: 33px;
+        height: 4px;
+        margin-bottom: 5px;
+    }
+
+    #slide:hover~span {
+        background: var(--color-yellow);
+    }
+
+    /* Narrow side-panel menu */
+    #menu {
+        width: 10vw;
+        height: 100vh;
+        max-width: 85px;
+        margin: -100px 0 0 -55px;
+        padding-top: 125px;
+    }
+
+    #menu li {
+        font-size: 22px;
+    }
+
+    /* Search underline */
+    .underline {
+        height: 2px;
+        top: 95px;
+    }
+
+    #searchDrink:focus+.underline {
+        height: 4px;
+    }
+
+    /* Home #main: narrower column */
+    #main {
+        width: 55%;
+    }
+
+    /* Home search */
+    #searchDrink {
+        width: 92%;
+        font-size: 40px;
+        margin-top: 0;
+        margin-bottom: 0;
+        left: 0;
+    }
+
+    #searchButton {
+        font-size: 44px !important;
+        margin-top: -0.4% !important;
+    }
+
+    #question {
+        font-size: 23px;
+    }
+
+    .light {
+        font-size: 14px;
+    }
+
+    .drink-of-the-day {
+        margin-top: 5vh;
+        width: 40%;
+    }
+
+    /* Footer */
+    #footer {
+        padding: 1%;
+        z-index: 3;
+        font-size: 16px;
+        position: fixed;
+        display: initial;
+    }
+
+    #mobileFooter {
+        font-size: 16px;
+        display: none;
+    }
+
+    /* Results layout */
+    .mainResults {
+        top: 80px;
+        -webkit-transform: translate(-50%, 0%);
+        transform: translate(-50%, 0%);
+    }
+
+    #cardsArea {
+        gap: 12px;
+        justify-content: center;
+    }
+
+    #cardsArea>.item,
+    .mainResults .item {
+        flex: 0 0 360px;
+        max-width: 360px;
+    }
+
+    .resultCard {
+        height: 216px;
+    }
+
+    .resultCard .ad {
+        width: 100%;
+    }
+
+    /* Results search */
+    .smallSearch {
+        width: 82%;
+        font-size: 28px;
+        margin-top: 0;
+        margin-bottom: 0;
+        left: 0;
+    }
+
+    .smallLine {
+        top: 45px;
+    }
+
+    #searchButton {
+        font-size: 28px !important;
+        margin-top: -0.4% !important;
+    }
+
+    /* Sort / filter controls */
+    #options {
+        font-size: 16px;
+        padding-top: 24px;
+    }
+
+    .buttonSort {
+        font-size: 18px;
+        padding: 11px 20px;
+    }
+
+    .buttonSortActive {
+        font-size: 18px;
+        padding: 11px 20px;
+        color: white;
+    }
+
+    #priceRange {
+        font-size: 16px;
+        margin-top: 11px;
+        position: absolute;
+        display: inline;
+    }
+}
+
+/* ---- Large desktop (2000px+) ---- */
+@media (min-width: 2000px) {
+
+    #cardsArea>.item,
+    .mainResults .item {
+        flex: 0 0 300px;
+        max-width: 300px;
+    }
+
+    .name {
+        font-size: 26px;
+    }
+}
+
+
+/* =============================================================================
+   13. Dark Mode (commented out — preserved for future use)
+   =============================================================================
+
+@media (prefers-color-scheme: dark) {
+    body                { background-color: #1c1c1e; }
+    #menu               { background-color: #353535; }
+    li                  { color: white; }
+    .resultCard         { background-color: #48484a; }
+    .name               { color: #64d3ff; }
+    #priceRange         { color: #64d3ff; }
+    .buttonSort         { background-color: #346173; }
+    .buttonSortActive   { background-color: #64d3ff; color: black; }
+    .sortbytext         { color: #64d3ff; }
+    .indexdetails       { color: #a7a7a7; font-size: 0.75rem; font-weight: bolder; }
+    #question           { color: #64d3ff; }
+    #footer             { background-color: #346173; }
+    #mobileFooter       { background-color: #346173; }
+    #searchDrink        { color: #8e8e93; }
+}
+============================================================================= */

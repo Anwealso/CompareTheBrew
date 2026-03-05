@@ -9,7 +9,7 @@
     <meta name="author" content="The Boys">
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍺</text></svg>">
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/main.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     {% if dark_mode %}
@@ -157,22 +157,22 @@
                         <div class="medal">
                             🏆
                         </div>
-                        <span class="searchLine"></span>
-                        <div class="indexdetails">
-                            {{ result[7] }}L - {{ result[9] }} std. - {{ result[8] }}%
-                        </div>
-                        <div>
+                        <div class="cardDetails">
+                            <span class="searchLine"></span>
+                            <div class="indexdetails">
+                                {{ result[7] }}L - {{ result[9] }} std. - {{ result[8] }}%
+                            </div>
                             <div class="scorePriceContainer">
-                                <div class="score responsive_head" style="white-space: nowrap; display: inline-block;">
+                                <div class="score responsive_head">
                                     &nbsp{{ '%0.0f'| format(result[10] * 100) }}
                                     <div class="sideways">
                                         <img src="/static/images/scoreMaroon.svg"
                                              style="max-height:60%;position:absolute;top: 50%;-webkit-transform:translate(0, -50%);transform:translate(0, -50%);left:0;overflow:visible"
                                              alt="Score">
                                     </div>
-                                    <div class="price">
-                                        ${{ result[5] }}
-                                    </div>
+                                </div>
+                                <div class="price">
+                                    ${{ result[5] }}
                                 </div>
                             </div>
                         </div>
