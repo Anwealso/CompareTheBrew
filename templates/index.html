@@ -163,16 +163,14 @@
                                 {{ result[7] }}L - {{ result[9] }} std. - {{ result[8] }}%
                             </div>
                             <div class="scorePriceContainer">
-                                <div class="score responsive_head">
-                                    &nbsp{{ '%0.0f'| format(result[10] * 100) }}
+                                <div class="score scoreMaroon">
                                     <div class="sideways">
-                                        <img src="/static/images/scoreMaroon.svg"
-                                             style="max-height:60%;position:absolute;top: 50%;-webkit-transform:translate(0, -50%);transform:translate(0, -50%);left:0;overflow:visible"
-                                             alt="Score">
+                                        <img src="/static/images/scoreMaroon.svg" alt="Score">
                                     </div>
+                                    {{ '%0.0f'| format(result[10] * 100) }}
                                 </div>
                                 <div class="price">
-                                    ${{ result[5] }}
+                                    ${{ '%0.2f'| format(result[5]) }}
                                 </div>
                             </div>
                         </div>
@@ -197,22 +195,8 @@
                    title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button"/>
             <img alt="" border="0" src="https://www.paypal.com/en_AU/i/scr/pixel.gif" width="1" height="1"/>
         </form>
-
         Drink responsibly.</b>
     </div>
 </div>
-<script src="/static/js/fitty.min.js"></script>
-<script>
-    fitty('.responsive_head', {
-        maxSize: 100,
-    });
-    fitty('.indexdetails', {
-        minSize: 6,
-    });
-    fitty('.name', {
-        minSize: 10,
-        multiLine: true,
-    });
-</script>
 </body>
 </html>
