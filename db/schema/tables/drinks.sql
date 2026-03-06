@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS "drinks" (
     "image" TEXT,
     "shortimage" TEXT,
     "search_text" TEXT,
+    "location" TEXT,
     "date_created" TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
