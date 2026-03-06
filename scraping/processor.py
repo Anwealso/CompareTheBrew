@@ -1,10 +1,9 @@
 import json
-import ssl
 from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple
-from urllib.request import Request, urlopen
 from scripts.classItem import Item
 from config import Config
+from scraping.fetcher import get_fetcher
 
 class RetailerProcessor(ABC):
     """
@@ -45,25 +44,7 @@ class RetailerProcessor(ABC):
         """
         Fetches the content of a URL.
         """
-        if self.api_key:
-            import urllib.parse
-            encoded_url = urllib.parse.quote(url)
-            sb_url = f"https://app.scrapingbee.com/api/v1/?api_key={self.api_key}&url={encoded_url}&render_js=true&premium_proxy=true&country_code=au"
-            try:
-                context = ssl._create_unverified_context()
-                with urlopen(sb_url, context=context) as response:
-                    return response.read().decode('utf-8')
-            except Exception as e:
-                print(f"ScrapingBee error for {url}: {e}")
-        
-        try:
-            context = ssl._create_unverified_context()
-            req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urlopen(req, context=context) as response:
-                return response.read().decode('utf-8')
-        except Exception as e:
-            print(f"Direct fetch error for {url}: {e}")
-            return None
+        return get_fetcher().fetch_url(url)
 
     @abstractmethod
     def get_items(self, url: str, metadata: Optional[dict] = None) -> Tuple[List[Item], Optional[dict]]:

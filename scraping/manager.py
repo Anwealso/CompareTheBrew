@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime
 from typing import Dict, List, Optional
-from scraping.processors import RetailerProcessor
+from scraping.processor import RetailerProcessor
 from scraping.bws_processor import BWSProcessor
 from scraping.coles_processor import LiquorlandProcessor, FirstChoiceProcessor
 from db.databaseHandler import (

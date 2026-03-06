@@ -1,7 +1,7 @@
 import json
 from typing import List, Optional, Tuple
 from scripts.classItem import Item
-from scraping.processors import RetailerProcessor
+from scraping.processor import RetailerProcessor
 
 class BWSProcessor(RetailerProcessor):
     """
