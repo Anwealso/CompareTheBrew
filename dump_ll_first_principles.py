@@ -7,7 +7,7 @@ import json
 from dotenv import load_dotenv
 
 load_dotenv()
-API_KEY = os.getenv("SCRAPING_API_KEY")
+API_KEY = os.getenv("SCRAPINGBEE_API_KEY")
 
 def try_fetch(name, url, params, headers=None):
     print(f"\n>> Attempting: {name}")

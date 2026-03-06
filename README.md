@@ -19,7 +19,7 @@ Copy the example environment file and fill in your API keys:
 $ cp .env.example .env
 ```
 Edit `.env` to include your:
-- `SCRAPING_API_KEY`: Key for third-party scraping services (if needed).
+- `SCRAPINGBEE_API_KEY`: Key for third-party scraping services (if needed).
 - `IPINFO_TOKEN`: Token for location-based search tracking.
 
 ## Usage

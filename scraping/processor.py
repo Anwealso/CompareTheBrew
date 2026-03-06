@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple
 from scripts.classItem import Item
 from config import Config
-from scraping.fetcher import get_fetcher
-
+from scraping.fetcher import Fetcher, get_fetcher
+    
 class RetailerProcessor(ABC):
     """
     Base class for retailer-specific scraping logic.
@@ -12,7 +12,8 @@ class RetailerProcessor(ABC):
     for extracting items.
     """
     def __init__(self):
-        self.api_key = Config.SCRAPING_API_KEY
+        self.api_key: str = Config.SCRAPINGBEE_API_KEY
+        self.fetcher: Fetcher = get_fetcher()
 
     def clean_numeric(self, val: any) -> float:
         """Cleans a string/number to a float."""
@@ -44,8 +45,8 @@ class RetailerProcessor(ABC):
         """
         Fetches the content of a URL.
         """
-        return get_fetcher().fetch_url(url)
-
+        return self.fetcher.fetch_url(url)
+    
     @abstractmethod
     def get_items(self, url: str, metadata: Optional[dict] = None) -> Tuple[List[Item], Optional[dict]]:
         """

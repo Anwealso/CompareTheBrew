@@ -14,7 +14,7 @@ from scripts.databaseHandler import *
 store = None
 category = None
 populate = False
-SCRAPING_API_KEY = Config.SCRAPING_API_KEY
+SCRAPINGBEE_API_KEY = Config.SCRAPINGBEE_API_KEY
 
 def search(search_term: str, store: str) -> List:
     searched_data = list()
