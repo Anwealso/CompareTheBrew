@@ -12,7 +12,7 @@ class Config(object):
     DEBUG = False
     TESTING = False
     CSRF_ENABLED = True
-    SCRAPINGBEE_API_KEY = os.environ.get('SCRAPINGBEE_API_KEY')
+    SCRAPINGBEE_API_KEY = os.environ.get('SCRAPING_API_KEY')
     IPINFO_TOKEN = os.environ.get('IPINFO_TOKEN')
     BRIGHTDATA_CUSTOMER_ID = os.environ.get('BRIGHTDATA_CUSTOMER_ID')
     BRIGHTDATA_ZONE = os.environ.get('BRIGHTDATA_ZONE')

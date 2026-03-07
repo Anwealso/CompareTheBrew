@@ -5,13 +5,13 @@
         "https://api.bws.com.au/apis/ui/Browse?Location=%2Fspirits%2Fall-spirits&banner=true&department=spirits&pageNumber=1&pageSize=1000&sortType=Browse_Relevance_LocalSales&subDepartment=all+spirits"
     ],
     "ll": [
-        "https://www.liquorland.com.au/api/v1/search/beer",
-        "https://www.liquorland.com.au/api/v1/search/wine",
-        "https://www.liquorland.com.au/api/v1/search/spirits"
+        "https://www.liquorland.com.au/beer",
+        "https://www.liquorland.com.au/wine",
+        "https://www.liquorland.com.au/spirits"
     ],
     "fc": [
-        "https://www.firstchoiceliquor.com.au/api/v1/search/beer",
-        "https://www.firstchoiceliquor.com.au/api/v1/search/wine",
-        "https://www.firstchoiceliquor.com.au/api/v1/search/spirits"
+        "https://www.firstchoiceliquor.com.au/beer",
+        "https://www.firstchoiceliquor.com.au/wine",
+        "https://www.firstchoiceliquor.com.au/spirits"
     ]
 }
