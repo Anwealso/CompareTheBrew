@@ -11,14 +11,14 @@ from db.databaseHandler import (
     increment_task_attempts
 )
 
-class ScrapingManager:
+class ScrapingController:
     """
-    Central manager for coordinating the scraping pipeline across different retailers.
+    Central controller for coordinating the scraping pipeline across different retailers.
     Uses a Task Queue system with a progressive iterator approach.
     """
     def __init__(self, sitemaps_file: str = "scraping/sitemaps.json", max_retries: int = 3):
         """
-        Initializes the manager with a sitemaps file and retry limit.
+        Initializes the controller with a sitemaps file and retry limit.
         
         Args:
             sitemaps_file (str): Path to the JSON file containing retailer URLs.
@@ -145,22 +145,22 @@ class ScrapingManager:
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description='Task-based Scraping Manager')
+    parser = argparse.ArgumentParser(description='Task-based Scraping Controller')
     parser.add_argument('retailer', type=str, help='bws, ll, fc')
     parser.add_argument('--discover', action='store_true', help='Seed the queue')
     parser.add_argument('--run', action='store_true', help='Run all pending tasks')
     parser.add_argument('--next', action='store_true', help='Process only the next single task')
     
     args = parser.parse_args()
-    manager = ScrapingManager()
+    controller = ScrapingController()
     
     if args.discover:
-        manager.discover(args.retailer)
+        controller.discover(args.retailer)
     
     if args.run:
-        manager.process_all(args.retailer)
+        controller.process_all(args.retailer)
     elif args.next:
-        manager.run_next(args.retailer)
+        controller.run_next(args.retailer)
     elif not args.discover:
         # Default behavior if no flag: Discover if queue is empty, then run all
         conn = create_connection()
@@ -168,5 +168,5 @@ if __name__ == "__main__":
         conn.close()
         
         if count == 0:
-            manager.discover(args.retailer)
-        manager.process_all(args.retailer)
+            controller.discover(args.retailer)
+        controller.process_all(args.retailer)
