@@ -52,20 +52,38 @@ def get_tasks_by_retailer(conn):
 def get_pending_tasks(conn, retailer=None, limit=20):
     cur = conn.cursor()
     
+    # Join with runs to order by run start time
+    # Status order: completed=0, in_progress=1, pending=2, failed=3 (so completed shows first)
     if retailer:
         cur.execute("""
-            SELECT ID, retailer, url, status, attempts, created_at, updated_at, run_id
-            FROM scrape_tasks 
-            WHERE retailer = ? AND status = 'pending'
-            ORDER BY created_at ASC
+            SELECT t.ID, t.retailer, t.url, t.status, t.attempts, t.created_at, t.updated_at, t.run_id
+            FROM scrape_tasks t
+            LEFT JOIN runs r ON t.run_id = r.uuid
+            WHERE t.retailer = ? AND t.status = 'pending'
+            ORDER BY r.start_time DESC, 
+                CASE t.status 
+                    WHEN 'completed' THEN 0 
+                    WHEN 'in_progress' THEN 1 
+                    WHEN 'pending' THEN 2 
+                    WHEN 'failed' THEN 3 
+                END,
+                t.updated_at DESC
             LIMIT ?
         """, (retailer, limit))
     else:
         cur.execute("""
-            SELECT ID, retailer, url, status, attempts, created_at, updated_at, run_id
-            FROM scrape_tasks 
-            WHERE status = 'pending'
-            ORDER BY created_at ASC
+            SELECT t.ID, t.retailer, t.url, t.status, t.attempts, t.created_at, t.updated_at, t.run_id
+            FROM scrape_tasks t
+            LEFT JOIN runs r ON t.run_id = r.uuid
+            WHERE t.status = 'pending'
+            ORDER BY r.start_time DESC,
+                CASE t.status 
+                    WHEN 'completed' THEN 0 
+                    WHEN 'in_progress' THEN 1 
+                    WHEN 'pending' THEN 2 
+                    WHEN 'failed' THEN 3 
+                END,
+                t.updated_at DESC
             LIMIT ?
         """, (limit,))
     
@@ -74,19 +92,36 @@ def get_pending_tasks(conn, retailer=None, limit=20):
 def get_recent_tasks(conn, status=None, limit=20):
     cur = conn.cursor()
     
+    # Status order: completed=0, in_progress=1, pending=2, failed=3
     if status:
         cur.execute("""
-            SELECT ID, retailer, url, status, attempts, created_at, updated_at, run_id
-            FROM scrape_tasks 
-            WHERE status = ?
-            ORDER BY updated_at DESC
+            SELECT t.ID, t.retailer, t.url, t.status, t.attempts, t.created_at, t.updated_at, t.run_id
+            FROM scrape_tasks t
+            LEFT JOIN runs r ON t.run_id = r.uuid
+            WHERE t.status = ?
+            ORDER BY r.start_time DESC,
+                CASE t.status 
+                    WHEN 'completed' THEN 0 
+                    WHEN 'in_progress' THEN 1 
+                    WHEN 'pending' THEN 2 
+                    WHEN 'failed' THEN 3 
+                END,
+                t.updated_at DESC
             LIMIT ?
         """, (status, limit))
     else:
         cur.execute("""
-            SELECT ID, retailer, url, status, attempts, created_at, updated_at, run_id
-            FROM scrape_tasks 
-            ORDER BY updated_at DESC
+            SELECT t.ID, t.retailer, t.url, t.status, t.attempts, t.created_at, t.updated_at, t.run_id
+            FROM scrape_tasks t
+            LEFT JOIN runs r ON t.run_id = r.uuid
+            ORDER BY r.start_time DESC,
+                CASE t.status 
+                    WHEN 'completed' THEN 0 
+                    WHEN 'in_progress' THEN 1 
+                    WHEN 'pending' THEN 2 
+                    WHEN 'failed' THEN 3 
+                END,
+                t.updated_at DESC
             LIMIT ?
         """, (limit,))
     
@@ -184,10 +219,18 @@ def main():
             elif args.retailer:
                 cur = conn.cursor()
                 cur.execute("""
-                    SELECT ID, retailer, url, status, attempts, created_at, updated_at, run_id
-                    FROM scrape_tasks 
-                    WHERE retailer = ?
-                    ORDER BY updated_at DESC
+                    SELECT t.ID, t.retailer, t.url, t.status, t.attempts, t.created_at, t.updated_at, t.run_id
+                    FROM scrape_tasks t
+                    LEFT JOIN runs r ON t.run_id = r.uuid
+                    WHERE t.retailer = ?
+                    ORDER BY r.start_time DESC,
+                        CASE t.status 
+                            WHEN 'completed' THEN 0 
+                            WHEN 'in_progress' THEN 1 
+                            WHEN 'pending' THEN 2 
+                            WHEN 'failed' THEN 3 
+                        END,
+                        t.updated_at DESC
                     LIMIT ?
                 """, (args.retailer, args.limit))
                 tasks = cur.fetchall()
