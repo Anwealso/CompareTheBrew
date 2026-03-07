@@ -15,6 +15,10 @@ import sys
 import os
 import uuid
 from pathlib import Path
+from rich.console import Console
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn, TimeRemainingColumn
+
+console = Console()
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -170,52 +174,61 @@ def run_scraping_jobs(args):
         if current_run_id:
             print(f"Run ID: {current_run_id[:9]}...")
         if limit:
-            print(f"Task limit: {limit}")
-        print("-" * 40)
+            console.print(f"[bold]Task limit:[/bold] {limit}")
+        console.print("-" * 40)
         
-        while True:
-            if limit and completed >= limit:
-                print(f"\nReached task limit ({limit}). Stopping.")
-                break
+        # Create progress bar
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TaskProgressColumn(),
+            TextColumn("[cyan]{task.fields[remaining]} remaining"),
+            console=console
+        ) as progress:
             
-            result = controller.run_next(store, run_id=current_run_id)
+            if limit:
+                task = progress.add_task(
+                    f"[green]Scraping {store}", 
+                    total=limit, 
+                    remaining=pending_count
+                )
+            else:
+                task = progress.add_task(
+                    f"[green]Scraping {store}", 
+                    total=pending_count, 
+                    remaining=pending_count
+                )
             
-            if not result:
-                pending_now = count_pending_tasks_for_store(conn, store, args.category if args.category else None)
-                if pending_now == 0:
-                    print(f"\nNo more pending tasks for {store}.")
+            while True:
+                if limit and completed >= limit:
+                    progress.update(task, description=f"[yellow]Limit reached")
+                    break
+                
+                result = controller.run_next(store, run_id=current_run_id)
+                
+                if not result:
+                    pending_now = count_pending_tasks_for_store(conn, store, args.category if args.category else None)
+                    if pending_now == 0:
+                        progress.update(task, description=f"[green]Completed - no more tasks")
+                    else:
+                        progress.update(task, description=f"[red]Stopped - error or limit")
+                    break
+                
+                completed += 1
+                total_completed += 1
+                
+                remaining = count_pending_tasks_for_store(conn, store, args.category if args.category else None)
+                
+                if limit:
+                    progress.update(task, completed=completed, remaining=remaining)
                 else:
-                    print(f"\nNo more tasks to process (limit reached or error).")
-                break
-            
-            completed += 1
-            total_completed += 1
-            
-            remaining = count_pending_tasks_for_store(conn, store, args.category if args.category else None)
-            
-            if completed % 5 == 0 or remaining == 0:
-                progress_bar(completed, remaining, limit, store)
+                    progress.update(task, completed=completed, total=completed + remaining, remaining=remaining)
         
-        print(f"\nCompleted {completed} tasks for {store}")
+        console.print(f"\n[bold green]Completed {completed} tasks for {store}[/bold green]")
         conn.close()
     
     return total_completed, total_discovered
-
-
-def progress_bar(completed, remaining, limit, store):
-    """Display a progress bar with task information."""
-    if limit:
-        total = min(limit, completed + remaining)
-        percentage = (completed / total) * 100 if total > 0 else 0
-        bar_length = 30
-        filled = int(bar_length * completed / total) if total > 0 else 0
-        bar = '█' * filled + '░' * (bar_length - filled)
-        
-        print(f"\r[{bar}] {percentage:.1f}% | Completed: {completed} | Remaining: {remaining} | Limit: {limit} | Store: {store}", end='', flush=True)
-    else:
-        print(f"\rCompleted: {completed} | Remaining: {remaining} | Store: {store}", end='', flush=True)
-    
-    print()
 
 
 def main():
