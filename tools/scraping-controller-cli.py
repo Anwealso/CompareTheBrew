@@ -276,6 +276,12 @@ Category options: beer, wine, spirits
     )
     
     parser.add_argument(
+        '--resume-last',
+        action='store_true',
+        help='Resume the last run for the specified retailer/category'
+    )
+    
+    parser.add_argument(
         '--continue',
         dest='continue_run',
         action='store_true',
@@ -295,6 +301,7 @@ Category options: beer, wine, spirits
         print(f"Category: {args.category}")
         print(f"Limit: {args.limit}")
         print(f"New: {args.new}")
+        print(f"Resume Last: {args.resume_last}")
         print(f"Continue: {args.continue_run}")
         print()
     
@@ -325,6 +332,41 @@ Category options: beer, wine, spirits
             sys.exit(0)
     
     conn.close()
+    
+    # Handle resume-last - find the last run and set args to continue it
+    if args.resume_last:
+        args.new = False
+        args.continue_run = True
+        # Verify the run exists
+        conn = create_connection()
+        cur = conn.cursor()
+        
+        stores = get_stores_from_arg(args.store)
+        
+        for store in stores:
+            if args.category:
+                cur.execute("""
+                    SELECT uuid FROM runs 
+                    WHERE retailer = ? AND category = ? 
+                    ORDER BY start_time DESC LIMIT 1
+                """, (store, args.category))
+            else:
+                cur.execute("""
+                    SELECT uuid FROM runs 
+                    WHERE retailer = ? 
+                    ORDER BY start_time DESC LIMIT 1
+                """, (store,))
+            
+            row = cur.fetchone()
+            if row:
+                break
+        
+        conn.close()
+        
+        if not row:
+            print("\nNo previous run found for the specified criteria.")
+            print("To start a new scraping run, use: --new or -n")
+            sys.exit(0)
     
     if not args.new and not args.continue_run:
         args.continue_run = True
