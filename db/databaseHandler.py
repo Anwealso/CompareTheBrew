@@ -374,12 +374,22 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="")
     if price_conditions:
         price_filter = " AND " + " AND ".join(price_conditions)
 
+    # Deduplication subquery - keeps only the most recent row for each unique drink
+    # Main attributes: name, brand, type, ml, percent, store (excluding promotional text, location, etc.)
+    # Using MAX(id) as proxy for most recent (auto-increment aligns with date_created)
+    
     # For each keyword, execute a new query at the cursor to find drinks matching that keyword
     for term in intelliterms:
         term = term.lower()
-        cur.execute(
-            "SELECT * FROM drinks WHERE search_text LIKE '%{}%'{} ORDER BY {} {}".format(
-                term, price_filter, category, order))
+        # Use the deduplicated subquery to filter out older duplicates
+        dedupe_sql = f"""
+            SELECT * FROM drinks WHERE id IN (
+                SELECT MAX(id) FROM drinks
+                WHERE search_text LIKE '%{term}%'
+                GROUP BY name, brand, type, ml, percent, store
+            ){price_filter} ORDER BY {category} {order}
+        """
+        cur.execute(dedupe_sql)
 
         rows = cur.fetchall()
         print("FOR " + term)
