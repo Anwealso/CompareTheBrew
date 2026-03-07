@@ -1,6 +1,8 @@
 import argparse
+import shutil
 import sqlite3
 import sys
+import textwrap
 from pathlib import Path
 
 def get_db_path():
@@ -150,14 +152,19 @@ def main():
             if not tasks:
                 print("No pending tasks found.")
                 return
-                
-            print(f"{'ID':<5} | {'Retailer':<15} | {'URL':<40} | {'Attempts':<8}")
-            print("-" * 80)
+            
+            url_col_width = 60
+            
+            print(f"{'ID':<5} | {'Retailer':<15} | {'URL':<60} | {'Attempts':<8}")
+            print("-" * 98)
             
             for row in tasks:
                 task_id, retailer, url, status, attempts, created_at, updated_at = row
-                url_display = url[:37] + "..." if len(url) > 40 else url
-                print(f"{task_id:<5} | {retailer:<15} | {url_display:<40} | {attempts:<8}")
+                lines = [url[i:i+60] for i in range(0, len(url), 60)]
+                print(f"{task_id:<5} | {retailer:<15} | {lines[0]:<60} | {attempts:<8}")
+                for line in lines[1:]:
+                    print(f"{'':5} | {'':<15} | {line:<60} | {'':<8}")
+                
                 
         else:
             print(f"\n=== Recent Tasks ===")
@@ -185,14 +192,18 @@ def main():
             if not tasks:
                 print("No tasks found.")
                 return
-                
-            print(f"{'ID':<5} | {'Retailer':<12} | {'Status':<12} | {'URL':<35} | {'Attempts':<8}")
-            print("-" * 85)
+            
+            url_col_width = 60
+            
+            print(f"{'ID':<5} | {'Retailer':<12} | {'Status':<12} | {'URL':<60} | {'Attempts':<8}")
+            print("-" * 105)
             
             for row in tasks:
                 task_id, retailer, url, status, attempts, created_at, updated_at = row
-                url_display = url[:32] + "..." if len(url) > 35 else url
-                print(f"{task_id:<5} | {retailer:<12} | {status:<12} | {url_display:<35} | {attempts:<8}")
+                lines = [url[i:i+60] for i in range(0, len(url), 60)]
+                print(f"{task_id:<5} | {retailer:<12} | {status:<12} | {lines[0]:<60} | {attempts:<8}")
+                for line in lines[1:]:
+                    print(f"{'':5} | {'':<12} | {'':<12} | {line:<60} | {'':<8}")
 
     finally:
         conn.close()
