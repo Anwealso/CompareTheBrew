@@ -62,12 +62,12 @@ def get_pending_tasks(conn, retailer=None, limit=20):
             WHERE t.retailer = ? AND t.status = 'pending'
             ORDER BY r.start_time DESC, 
                 CASE t.status 
-                    WHEN 'completed' THEN 0 
-                    WHEN 'in_progress' THEN 1 
-                    WHEN 'pending' THEN 2 
+                    WHEN 'in_progress' THEN 0
+                    WHEN 'pending' THEN 1
+                    WHEN 'completed' THEN 2
                     WHEN 'failed' THEN 3 
                 END,
-                t.updated_at DESC
+                t.updated_at ASC
             LIMIT ?
         """, (retailer, limit))
     else:
@@ -78,12 +78,12 @@ def get_pending_tasks(conn, retailer=None, limit=20):
             WHERE t.status = 'pending'
             ORDER BY r.start_time DESC,
                 CASE t.status 
-                    WHEN 'completed' THEN 0 
-                    WHEN 'in_progress' THEN 1 
-                    WHEN 'pending' THEN 2 
+                    WHEN 'in_progress' THEN 0 
+                    WHEN 'pending' THEN 1 
+                    WHEN 'completed' THEN 2 
                     WHEN 'failed' THEN 3 
                 END,
-                t.updated_at DESC
+                t.updated_at ASC
             LIMIT ?
         """, (limit,))
     
@@ -101,12 +101,12 @@ def get_recent_tasks(conn, status=None, limit=20):
             WHERE t.status = ?
             ORDER BY r.start_time DESC,
                 CASE t.status 
-                    WHEN 'completed' THEN 0 
-                    WHEN 'in_progress' THEN 1 
-                    WHEN 'pending' THEN 2 
+                    WHEN 'in_progress' THEN 0 
+                    WHEN 'pending' THEN 1 
+                    WHEN 'completed' THEN 2 
                     WHEN 'failed' THEN 3 
                 END,
-                t.updated_at DESC
+                t.updated_at ASC
             LIMIT ?
         """, (status, limit))
     else:
@@ -116,12 +116,12 @@ def get_recent_tasks(conn, status=None, limit=20):
             LEFT JOIN runs r ON t.run_id = r.uuid
             ORDER BY r.start_time DESC,
                 CASE t.status 
-                    WHEN 'completed' THEN 0 
-                    WHEN 'in_progress' THEN 1 
-                    WHEN 'pending' THEN 2 
+                    WHEN 'in_progress' THEN 0 
+                    WHEN 'pending' THEN 1 
+                    WHEN 'completed' THEN 2 
                     WHEN 'failed' THEN 3 
                 END,
-                t.updated_at DESC
+                t.updated_at ASC
             LIMIT ?
         """, (limit,))
     
@@ -225,12 +225,12 @@ def main():
                     WHERE t.retailer = ?
                     ORDER BY r.start_time DESC,
                         CASE t.status 
-                            WHEN 'completed' THEN 0 
-                            WHEN 'in_progress' THEN 1 
-                            WHEN 'pending' THEN 2 
+                            WHEN 'in_progress' THEN 0
+                            WHEN 'pending' THEN 1
+                            WHEN 'completed' THEN 2
                             WHEN 'failed' THEN 3 
                         END,
-                        t.updated_at DESC
+                        t.updated_at ASC
                     LIMIT ?
                 """, (args.retailer, args.limit))
                 tasks = cur.fetchall()
