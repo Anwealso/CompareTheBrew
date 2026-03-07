@@ -139,6 +139,48 @@ def add_scrape_task(conn, retailer, url, metadata=None, run_id=None):
     return cur.lastrowid
 
 
+def get_next_pending_task_by_run(conn, run_id, retailer=None):
+    """
+    Get the next task for a specific run.
+    First checks for in_progress tasks (retry), then falls back to pending tasks.
+    """
+    cur = conn.cursor()
+    
+    # First try to find an in_progress task for this run (retry case)
+    if retailer:
+        cur.execute("""
+            SELECT * FROM scrape_tasks 
+            WHERE run_id = ? AND retailer = ? AND status = 'in_progress' 
+            ORDER BY updated_at ASC LIMIT 1
+        """, (run_id, retailer))
+    else:
+        cur.execute("""
+            SELECT * FROM scrape_tasks 
+            WHERE run_id = ? AND status = 'in_progress' 
+            ORDER BY updated_at ASC LIMIT 1
+        """, (run_id,))
+    
+    task = cur.fetchone()
+    if task:
+        return task
+    
+    # Fall back to pending tasks
+    if retailer:
+        cur.execute("""
+            SELECT * FROM scrape_tasks 
+            WHERE run_id = ? AND retailer = ? AND status = 'pending' 
+            ORDER BY created_at ASC LIMIT 1
+        """, (run_id, retailer))
+    else:
+        cur.execute("""
+            SELECT * FROM scrape_tasks 
+            WHERE run_id = ? AND status = 'pending' 
+            ORDER BY created_at ASC LIMIT 1
+        """, (run_id,))
+    
+    return cur.fetchone()
+
+
 def get_next_pending_task(conn, retailer=None):
     """
     Get the next pending task, optionally filtered by retailer.

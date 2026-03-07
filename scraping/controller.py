@@ -8,7 +8,8 @@ from scraping.bws_processor import BWSProcessor
 from scraping.coles_processor import LiquorlandProcessor, FirstChoiceProcessor
 from db.databaseHandler import (
     create_connection, upsert_source, dbhandler, 
-    add_scrape_task, get_next_pending_task, update_task_status, get_pending_tasks_count,
+    add_scrape_task, get_next_pending_task, get_next_pending_task_by_run,
+    update_task_status, get_pending_tasks_count,
     increment_task_attempts, create_run, update_run_completed
 )
 
@@ -93,17 +94,27 @@ class ScrapingController:
         conn.close()
         return run_id
 
-    def run_next(self, retailer_name: str) -> bool:
+    def run_next(self, retailer_name: str, run_id: str = None) -> bool:
         """
         Progressive execution: Pulls ONE task from the queue, processes it, 
         and handles potentially returned 'next' metadata.
+        
+        Args:
+            retailer_name: The retailer to process tasks for
+            run_id: Optional run_id to filter tasks. If provided, will优先 select
+                    in_progress tasks for this run first, then pending ones.
         """
         retailer_name = retailer_name.lower()
         conn = create_connection()
         if not conn:
             return False
 
-        task = get_next_pending_task(conn, retailer_name)
+        # Get next task - either by run_id (if provided) or just retailer
+        if run_id:
+            task = get_next_pending_task_by_run(conn, run_id, retailer_name)
+        else:
+            task = get_next_pending_task(conn, retailer_name)
+        
         if not task:
             # print(f"No pending tasks for {retailer_name}")
             conn.close()
