@@ -13,6 +13,7 @@ Usage:
 import argparse
 import sys
 import os
+import uuid
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -80,36 +81,24 @@ def count_pending_tasks_for_store(conn, store, category=None):
     return cur.fetchone()[0]
 
 
-def discover_tasks_for_store_category(store, category):
+def discover_tasks_for_store_category(store, category=None, run_id=None):
     """Discover tasks for a specific store and category."""
     controller = ScrapingController()
-    url_template = RETAILER_URLS.get(store)
     
-    if not url_template:
-        print(f"Unknown store: {store}")
-        return 0
+    # Call discover with category - it handles URL building internally
+    discovered_run_id = controller.discover(store, category=category, run_id=run_id)
     
-    url = url_template.format(category=CATEGORY_URLS[category])
-    
-    processor = controller.processors.get(store)
-    if not processor:
-        print(f"No processor found for store: {store}")
-        return 0
-    
+    # Count how many tasks were added
     conn = create_connection()
-    if not conn:
-        return 0
+    cur = conn.cursor()
+    if run_id:
+        cur.execute("SELECT COUNT(*) FROM scrape_tasks WHERE run_id = ?", (run_id,))
+    else:
+        cur.execute("SELECT COUNT(*) FROM scrape_tasks WHERE run_id = ?", (discovered_run_id,))
+    count = cur.fetchone()[0]
+    conn.close()
     
-    try:
-        tasks = processor.discover_tasks(url)
-        print(f"Discovered {len(tasks)} tasks for {store}/{category}")
-        
-        for t in tasks:
-            add_scrape_task(conn, store, t['url'], t['metadata'])
-        
-        return len(tasks)
-    finally:
-        conn.close()
+    return count
 
 
 def run_scraping_jobs(args):

@@ -98,16 +98,43 @@ def get_sources_by_retailer(conn, retailer):
     return cur.fetchall()
 
 
-def add_scrape_task(conn, retailer, url, metadata=None):
+def create_run(conn, run_id, retailer=None, category=None):
+    """
+    Create a new run entry in the runs table.
+    """
+    from datetime import datetime
+    now = datetime.now().isoformat()
+    sql = ''' INSERT INTO runs(uuid, start_time, status, retailer, category)
+              VALUES(?, ?, 'in_progress', ?, ?) '''
+    cur = conn.cursor()
+    cur.execute(sql, (run_id, now, retailer, category))
+    conn.commit()
+    return cur.lastrowid
+
+
+def update_run_completed(conn, run_id, tasks_completed):
+    """
+    Mark a run as completed.
+    """
+    from datetime import datetime
+    now = datetime.now().isoformat()
+    sql = ''' UPDATE runs SET end_time = ?, status = 'completed', tasks_completed = ?
+              WHERE uuid = ? '''
+    cur = conn.cursor()
+    cur.execute(sql, (now, tasks_completed, run_id))
+    conn.commit()
+
+
+def add_scrape_task(conn, retailer, url, metadata=None, run_id=None):
     """
     Add a new scrape task to the queue
     """
     from datetime import datetime
     now = datetime.now().isoformat()
-    sql = ''' INSERT INTO scrape_tasks(retailer, url, status, metadata, created_at, updated_at)
-              VALUES(?,?,?,?,?,?) '''
+    sql = ''' INSERT INTO scrape_tasks(retailer, url, status, metadata, run_id, created_at, updated_at)
+              VALUES(?,?,?,?,?,?,?) '''
     cur = conn.cursor()
-    cur.execute(sql, (retailer, url, 'pending', json.dumps(metadata) if metadata else None, now, now))
+    cur.execute(sql, (retailer, url, 'pending', json.dumps(metadata) if metadata else None, run_id, now, now))
     conn.commit()
     return cur.lastrowid
 

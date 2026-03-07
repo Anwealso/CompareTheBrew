@@ -1,5 +1,6 @@
 import json
 import os
+import uuid
 from datetime import datetime
 from typing import Dict, List, Optional
 from scraping.processor import RetailerProcessor
@@ -8,7 +9,7 @@ from scraping.coles_processor import LiquorlandProcessor, FirstChoiceProcessor
 from db.databaseHandler import (
     create_connection, upsert_source, dbhandler, 
     add_scrape_task, get_next_pending_task, update_task_status, get_pending_tasks_count,
-    increment_task_attempts
+    increment_task_attempts, create_run, update_run_completed
 )
 
 class ScrapingController:
@@ -44,33 +45,53 @@ class ScrapingController:
         with open(self.sitemaps_file, 'r') as f:
             return json.load(f)
 
-    def discover(self, retailer_name: str):
+    def discover(self, retailer_name: str = None, category: str = None, run_id: str = None):
         """
         Discovery Phase: Hits the retailer's seed URLs once to seed the task queue.
         For pagination retailers (like BWS), it adds all pages at once.
         For others, it adds the first page and depends on the processor to find 'next'.
+        
+        Args:
+            retailer_name: The retailer to discover tasks for (e.g., 'bws', 'll', 'fc')
+            category: Optional category to limit discovery to (e.g., 'beer', 'wine', 'spirits')
+            run_id: Optional UUID for this discovery run. If not provided, a new one is generated.
+
+        TODO: Refactor to allow bulk discovery for all retailers at once and make retailer_name optional.
         """
         retailer_name = retailer_name.lower()
         if retailer_name not in self.processors:
             print(f"No processor found for retailer: {retailer_name}")
             return
 
+        if run_id is None:
+            run_id = str(uuid.uuid4())
+            print(f"Generated new run_id: {run_id}")
+        
         processor = self.processors[retailer_name]
         seed_urls = self.sitemaps.get(retailer_name, [])
+                
+        if category:
+            # Narrow down to just the urls for that category if specified
+            seed_urls = [url for url in seed_urls if category in url.lower()]
+        
         conn = create_connection()
         if not conn:
             return
 
-        print(f"Starting discovery for {retailer_name}...")
+        # Create the run entry in the database
+        create_run(conn, run_id, retailer=retailer_name, category=category)
+        
+        print(f"Starting discovery for {retailer_name}" + (f" ({category})" if category else "") + f" (run_id: {run_id})...")
         for url in seed_urls:
             print(f"Discovering from: {url}")
             tasks = processor.discover_tasks(url)
             print(f"Found {len(tasks)} tasks.")
             for t in tasks:
-                add_scrape_task(conn, retailer_name, t["url"], t["metadata"])
+                add_scrape_task(conn, retailer_name, t["url"], t["metadata"], run_id)
                 print(f"  - Queued task: {t['url']}")
         
         conn.close()
+        return run_id
 
     def run_next(self, retailer_name: str) -> bool:
         """
@@ -89,11 +110,11 @@ class ScrapingController:
             return False
 
         # IDs in SQLite are usually 0-indexed in the cursor result if using SELECT *
-        # ID, retailer, url, status, metadata, attempts, created_at, updated_at
+        # ID, retailer, url, status, metadata, run_id, attempts, created_at, updated_at
         task_id = task[0]
         url = task[2]
         metadata_str = task[4]
-        current_attempts = task[5] if task[5] is not None else 0
+        current_attempts = task[6] if task[6] is not None else 0
         
         metadata = json.loads(metadata_str) if metadata_str else {}
         processor = self.processors[retailer_name]
