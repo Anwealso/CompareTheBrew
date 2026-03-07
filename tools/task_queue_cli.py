@@ -54,7 +54,7 @@ def get_pending_tasks(conn, retailer=None, limit=20):
     
     if retailer:
         cur.execute("""
-            SELECT ID, retailer, url, status, attempts, created_at, updated_at
+            SELECT ID, retailer, url, status, attempts, created_at, updated_at, run_id
             FROM scrape_tasks 
             WHERE retailer = ? AND status = 'pending'
             ORDER BY created_at ASC
@@ -62,7 +62,7 @@ def get_pending_tasks(conn, retailer=None, limit=20):
         """, (retailer, limit))
     else:
         cur.execute("""
-            SELECT ID, retailer, url, status, attempts, created_at, updated_at
+            SELECT ID, retailer, url, status, attempts, created_at, updated_at, run_id
             FROM scrape_tasks 
             WHERE status = 'pending'
             ORDER BY created_at ASC
@@ -76,7 +76,7 @@ def get_recent_tasks(conn, status=None, limit=20):
     
     if status:
         cur.execute("""
-            SELECT ID, retailer, url, status, attempts, created_at, updated_at
+            SELECT ID, retailer, url, status, attempts, created_at, updated_at, run_id
             FROM scrape_tasks 
             WHERE status = ?
             ORDER BY updated_at DESC
@@ -84,7 +84,7 @@ def get_recent_tasks(conn, status=None, limit=20):
         """, (status, limit))
     else:
         cur.execute("""
-            SELECT ID, retailer, url, status, attempts, created_at, updated_at
+            SELECT ID, retailer, url, status, attempts, created_at, updated_at, run_id
             FROM scrape_tasks 
             ORDER BY updated_at DESC
             LIMIT ?
@@ -153,17 +153,22 @@ def main():
                 print("No pending tasks found.")
                 return
             
-            url_col_width = 60
-            
-            print(f"{'ID':<5} | {'Retailer':<15} | {'URL':<60} | {'Attempts':<8}")
-            print("-" * 98)
+            print(f"{'Run ID':<12} | {'Task ID':<7} | {'Retailer':<8} | {'Category':<10} | {'URL':<60} | {'Att':<4}")
+            print("-" * 110)
             
             for row in tasks:
-                task_id, retailer, url, status, attempts, created_at, updated_at = row
-                lines = [url[i:i+60] for i in range(0, len(url), 60)]
-                print(f"{task_id:<5} | {retailer:<15} | {lines[0]:<60} | {attempts:<8}")
-                for line in lines[1:]:
-                    print(f"{'':5} | {'':<15} | {line:<60} | {'':<8}")
+                task_id, retailer, url, status, attempts, created_at, updated_at, run_id = row
+                run_id_short = run_id[:9] + "..." if run_id and len(run_id) > 9 else (run_id or "")
+                # Get category from runs table
+                cur = conn.cursor()
+                category = ""
+                if run_id:
+                    cur.execute("SELECT category FROM runs WHERE uuid = ?", (run_id,))
+                    cat_row = cur.fetchone()
+                    if cat_row:
+                        category = cat_row[0] or ""
+                url_display = "..." + url[-57:] if len(url) > 60 else url
+                print(f"{run_id_short:<12} | {task_id:<7} | {retailer:<8} | {category:<10} | {url_display:<60} | {attempts:<4}")
                 
                 
         else:
@@ -179,7 +184,7 @@ def main():
             elif args.retailer:
                 cur = conn.cursor()
                 cur.execute("""
-                    SELECT ID, retailer, url, status, attempts, created_at, updated_at
+                    SELECT ID, retailer, url, status, attempts, created_at, updated_at, run_id
                     FROM scrape_tasks 
                     WHERE retailer = ?
                     ORDER BY updated_at DESC
@@ -193,17 +198,22 @@ def main():
                 print("No tasks found.")
                 return
             
-            url_col_width = 60
-            
-            print(f"{'ID':<5} | {'Retailer':<12} | {'Status':<12} | {'URL':<60} | {'Attempts':<8}")
-            print("-" * 105)
+            print(f"{'Run ID':<12} | {'Task ID':<7} | {'Retailer':<8} | {'Category':<10} | {'Status':<12} | {'URL':<60} | {'Att':<4}")
+            print("-" * 120)
             
             for row in tasks:
-                task_id, retailer, url, status, attempts, created_at, updated_at = row
-                lines = [url[i:i+60] for i in range(0, len(url), 60)]
-                print(f"{task_id:<5} | {retailer:<12} | {status:<12} | {lines[0]:<60} | {attempts:<8}")
-                for line in lines[1:]:
-                    print(f"{'':5} | {'':<12} | {'':<12} | {line:<60} | {'':<8}")
+                task_id, retailer, url, status, attempts, created_at, updated_at, run_id = row
+                run_id_short = run_id[:9] + "..." if run_id and len(run_id) > 9 else (run_id or "")
+                # Get category from runs table
+                cur = conn.cursor()
+                category = ""
+                if run_id:
+                    cur.execute("SELECT category FROM runs WHERE uuid = ?", (run_id,))
+                    cat_row = cur.fetchone()
+                    if cat_row:
+                        category = cat_row[0] or ""
+                url_display = "..." + url[-57:] if len(url) > 60 else url
+                print(f"{run_id_short:<12} | {task_id:<7} | {retailer:<8} | {category:<10} | {status:<12} | {url_display:<60} | {attempts:<4}")
 
     finally:
         conn.close()
