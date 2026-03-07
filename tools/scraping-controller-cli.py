@@ -82,7 +82,7 @@ def count_pending_tasks_for_store(conn, store, category=None):
 
 
 def discover_tasks_for_store_category(store, category=None, run_id=None):
-    """Discover tasks for a specific store and category."""
+    """Discover tasks for a specific store and category. Returns (count, run_id)."""
     controller = ScrapingController()
     
     # Call discover with category - it handles URL building internally
@@ -98,7 +98,7 @@ def discover_tasks_for_store_category(store, category=None, run_id=None):
     count = cur.fetchone()[0]
     conn.close()
     
-    return count
+    return count, discovered_run_id
 
 
 def run_scraping_jobs(args):
@@ -108,6 +108,7 @@ def run_scraping_jobs(args):
     
     total_completed = 0
     total_discovered = 0
+    current_run_id = None
     
     for store in stores:
         print(f"\n{'='*60}")
@@ -119,17 +120,37 @@ def run_scraping_jobs(args):
             if categories:
                 for category in categories:
                     print(f"\nDiscovering tasks for {store}/{category}...")
-                    discovered = discover_tasks_for_store_category(store, category)
+                    discovered, current_run_id = discover_tasks_for_store_category(store, category)
                     total_discovered += discovered
             else:
                 for category in ['beer', 'wine', 'spirits']:
                     print(f"\nDiscovering tasks for {store}/{category}...")
-                    discovered = discover_tasks_for_store_category(store, category)
+                    discovered, current_run_id = discover_tasks_for_store_category(store, category)
                     total_discovered += discovered
-        
-        conn = create_connection()
-        if not conn:
-            continue
+        else:
+            # When continuing (not --new), get the most recent run for this store/category
+            conn = create_connection()
+            cur = conn.cursor()
+            if args.category:
+                cur.execute("""
+                    SELECT uuid FROM runs 
+                    WHERE retailer = ? AND category = ? 
+                    ORDER BY start_time DESC LIMIT 1
+                """, (store, args.category))
+            else:
+                cur.execute("""
+                    SELECT uuid FROM runs 
+                    WHERE retailer = ? 
+                    ORDER BY start_time DESC LIMIT 1
+                """, (store,))
+            row = cur.fetchone()
+            if row:
+                current_run_id = row[0]
+            conn.close()
+            conn = create_connection()
+            
+            if not conn:
+                continue
             
         pending_count = count_pending_tasks_for_store(
             conn, store, 
@@ -146,6 +167,8 @@ def run_scraping_jobs(args):
         
         print(f"\nStarting scraping for {store}...")
         print(f"Pending tasks: {pending_count}")
+        if current_run_id:
+            print(f"Run ID: {current_run_id[:9]}...")
         if limit:
             print(f"Task limit: {limit}")
         print("-" * 40)
@@ -155,7 +178,7 @@ def run_scraping_jobs(args):
                 print(f"\nReached task limit ({limit}). Stopping.")
                 break
             
-            result = controller.run_next(store)
+            result = controller.run_next(store, run_id=current_run_id)
             
             if not result:
                 pending_now = count_pending_tasks_for_store(conn, store, args.category if args.category else None)
