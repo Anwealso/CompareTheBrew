@@ -34,20 +34,7 @@ RETAILER_MAP = {
     'll': 'll',
     'liquorland': 'll',
     'fc': 'fc',
-    'firstchoice': 'fc',
     'all': 'all'
-}
-
-CATEGORY_URLS = {
-    'beer': '/beer',
-    'wine': '/wine',
-    'spirits': '/spirits'
-}
-
-RETAILER_URLS = {
-    'bws': 'https://api.bws.com.au/apis/ui/Browse?Location=%2F{category}%2Fall-{category}&banner=true&department={category}&pageNumber=1&pageSize=1000&sortType=Browse_Relevance_LocalSales&subDepartment=all+{category}',
-    'll': 'https://www.liquorland.com.au{category}',
-    'fc': 'https://www.firstchoiceliquor.com.au{category}'
 }
 
 
@@ -146,7 +133,7 @@ def run_scraping_jobs(args):
                     discovered, current_run_id = discover_tasks_for_store_category(store, category)
                     total_discovered += discovered
             else:
-                for category in ['beer', 'wine', 'spirits']:
+                for category in ['beer', 'wine', 'spirits', 'premix']:
                     print(f"\nDiscovering tasks for {store}/{category}...")
                     discovered, current_run_id = discover_tasks_for_store_category(store, category)
                     total_discovered += discovered
@@ -275,7 +262,7 @@ Examples:
   %(prog)s --store ll --continue
   
 Store options: bws, ll (liquorland), fc (first choice), all
-Category options: beer, wine, spirits
+Category options: beer, wine, spirits, premix
         """
     )
     
@@ -290,8 +277,8 @@ Category options: beer, wine, spirits
         '-c', '--category',
         type=str,
         default=None,
-        choices=['beer', 'wine', 'spirits'],
-        help='Category to scrape: beer, wine, spirits (default: all)'
+        choices=['beer', 'wine', 'spirits', 'premix'],
+        help='Category to scrape: beer, wine, spirits, premix (default: all)'
     )
     
     parser.add_argument(
