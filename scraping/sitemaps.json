@@ -2,8 +2,7 @@
     "bws": [
         "https://api.bws.com.au/apis/ui/Browse?Location=%2Fbeer%2Fall-beer&banner=true&department=beer&pageNumber=1&pageSize=1000&sortType=Browse_Relevance_LocalSales&subDepartment=all+beer",
         "https://api.bws.com.au/apis/ui/Browse?Location=%2Fwine%2Fall-wine&banner=true&department=wine&pageNumber=1&pageSize=1000&sortType=Browse_Relevance_LocalSales&subDepartment=all+wine",
-        "https://api.bws.com.au/apis/ui/Browse?Location=%2Fspirits%2Fall-spirits&banner=true&department=spirits&pageNumber=1&pageSize=1000&sortType=Browse_Relevance_LocalSales&subDepartment=all+spirits",
-        "https://api.bws.com.au/apis/ui/Browse?Location=%2Fspirits%2Fpremixed-drinks&banner=true&department=spirits&pageNumber=1&pageSize=1000&sortType=Browse_Relevance_LocalSales&subDepartment=premixed-drinks"
+        "https://api.bws.com.au/apis/ui/Browse?Location=%2Fspirits%2Fall-spirits&banner=true&department=spirits&pageNumber=1&pageSize=1000&sortType=Browse_Relevance_LocalSales&subDepartment=all+spirits"
     ],
     "ll": [
         "https://www.liquorland.com.au/beer",

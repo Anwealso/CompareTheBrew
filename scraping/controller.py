@@ -53,7 +53,7 @@ class ScrapingController:
         
         Args:
             retailer_name: The retailer to discover tasks for (e.g., 'bws', 'll', 'fc')
-            category: Optional category to limit discovery to (e.g., 'beer', 'wine', 'spirits')
+            category: Optional category to limit discovery to (e.g., 'beer', 'wine', 'spirits', 'premix')
             run_id: Optional UUID for this discovery run. If not provided, a new one is generated.
 
         TODO: Refactor to allow bulk discovery for all retailers at once and make retailer_name optional.
