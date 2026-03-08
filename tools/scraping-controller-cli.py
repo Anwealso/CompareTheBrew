@@ -85,6 +85,25 @@ def count_pending_tasks_for_store(conn, store, category=None):
     return cur.fetchone()[0]
 
 
+def count_pending_tasks_by_run(conn, run_id, category=None):
+    """Count pending tasks for a specific run, optionally filtered by category."""
+    cur = conn.cursor()
+    
+    if category:
+        cur.execute("""
+            SELECT COUNT(*) FROM scrape_tasks 
+            WHERE run_id = ? AND status = 'pending' 
+            AND url LIKE ?
+        """, (run_id, f'%{category}%'))
+    else:
+        cur.execute("""
+            SELECT COUNT(*) FROM scrape_tasks 
+            WHERE run_id = ? AND status = 'pending'
+        """, (run_id,))
+    
+    return cur.fetchone()[0]
+
+
 def discover_tasks_for_store_category(store, category=None, run_id=None):
     """Discover tasks for a specific store and category. Returns (count, run_id)."""
     controller = ScrapingController()
@@ -155,11 +174,18 @@ def run_scraping_jobs(args):
             
             if not conn:
                 continue
-            
-        pending_count = count_pending_tasks_for_store(
-            conn, store, 
-            args.category if hasattr(args, 'category') and args.category else None
-        )
+        
+        # Get pending count - use run_id if available
+        if current_run_id:
+            pending_count = count_pending_tasks_by_run(
+                conn, current_run_id,
+                args.category if hasattr(args, 'category') and args.category else None
+            )
+        else:
+            pending_count = count_pending_tasks_for_store(
+                conn, store, 
+                args.category if hasattr(args, 'category') and args.category else None
+            )
         
         if pending_count == 0 and not args.new:
             print(f"No pending tasks for {store}. Use --new to start a fresh scrape.")
@@ -208,7 +234,10 @@ def run_scraping_jobs(args):
                 result = controller.run_next(store, run_id=current_run_id)
                 
                 if not result:
-                    pending_now = count_pending_tasks_for_store(conn, store, args.category if args.category else None)
+                    if current_run_id:
+                        pending_now = count_pending_tasks_by_run(conn, current_run_id, args.category if args.category else None)
+                    else:
+                        pending_now = count_pending_tasks_for_store(conn, store, args.category if args.category else None)
                     if pending_now == 0:
                         progress.update(task, description=f"[green]Completed - no more tasks")
                     else:
@@ -218,7 +247,10 @@ def run_scraping_jobs(args):
                 completed += 1
                 total_completed += 1
                 
-                remaining = count_pending_tasks_for_store(conn, store, args.category if args.category else None)
+                if current_run_id:
+                    remaining = count_pending_tasks_by_run(conn, current_run_id, args.category if args.category else None)
+                else:
+                    remaining = count_pending_tasks_for_store(conn, store, args.category if args.category else None)
                 
                 if limit:
                     progress.update(task, completed=completed, remaining=remaining)
