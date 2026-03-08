@@ -34,7 +34,7 @@ $ source venv/bin/activate
 The scraping system has been re-architected into a task-based pipeline.
 Run the full discovery and processing for a retailer:
 ```bash
-$ python3 -m scraping.manager bws
+$ python3 -m scraping.controller bws
 ```
 Available flags:
 - `--discover`: Seeds the task queue with URLs to scrape
@@ -43,7 +43,7 @@ Available flags:
 
 Example:
 ```bash
-$ python3 -m scraping.manager bws --discover --run
+$ python3 -m scraping.controller bws --discover --run
 ```
 See `scraping/SCRAPING_GUIDELINES.md` for more details.
 

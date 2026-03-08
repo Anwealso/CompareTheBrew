@@ -21,7 +21,8 @@ class LiquorlandProcessor(RetailerProcessor):
     Liquorland-specific processor implementing the first principles scraping strategy.
     """
     def __init__(self):
-        super().__init__("liquorland")
+        super().__init__()
+        self.store_id = "liquorland"
 
     def fetch_url(self, url: str) -> Optional[str]:
         """
@@ -155,6 +156,52 @@ class LiquorlandProcessor(RetailerProcessor):
 
         return [{"url": url, "metadata": {"page": 1}}]
 
+    def get_details_from_item_page(self, url: str) -> dict:
+        """
+        Visit the product page to extract additional details not present in the search page card.
+        Returns a dict with percent, std_drinks, and any other additional details.
+        """
+        details = {
+            "percent": 0.0,
+            "std_drinks": 0.0,
+        }
+        
+        if not url:
+            return details
+        
+        content = self.fetch_url(url)
+        if not content:
+            return details
+        
+        soup = BeautifulSoup(content, "html.parser")
+        
+        props_list = soup.find("ul", class_="product-properties")
+        if props_list:
+            items = props_list.find_all("li")
+            for item in items:
+                key_elem = item.find("span", class_="key")
+                val_elem = item.find("span", class_="val")
+                if not key_elem or not val_elem:
+                    continue
+                
+                key = key_elem.get_text(strip=True)
+                val = val_elem.get_text(strip=True)
+                
+                if key == "Standard Drinks":
+                    try:
+                        details["std_drinks"] = float(val)
+                    except ValueError:
+                        pass
+                elif key == "Alcohol Content":
+                    match = re.search(r'([\d.]+)%?', val)
+                    if match:
+                        try:
+                            details["percent"] = float(match.group(1))
+                        except ValueError:
+                            pass
+        
+        return details
+
     def get_items(self, url: str, metadata: Optional[dict] = None) -> Tuple[List[Item], Optional[dict]]:
         """
         Extract items from Liquorland using direct HTML extraction.
@@ -214,8 +261,11 @@ class LiquorlandProcessor(RetailerProcessor):
                             image = f"https://www.liquorland.com.au{image}"
                 
                 vol = self.parse_volume(name)
-                abv = 0.0
-                std_drinks = 0.0
+                
+                additional_details = self.get_details_from_item_page(link)
+                abv = additional_details.get("percent", 0.0)
+                std_drinks = additional_details.get("std_drinks", 0.0)
+                
                 efficiency = (std_drinks / current_price) if current_price > 0 and std_drinks > 0 else 0.0
                 
                 item = Item(
