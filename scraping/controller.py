@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 from scraping.processor import RetailerProcessor
 from scraping.bws_processor import BWSProcessor
-from scraping.coles_processor import LiquorlandProcessor, FirstChoiceProcessor
+from scraping.liquorland_processor import LiquorlandProcessor
 from db.databaseHandler import (
     create_connection, upsert_source, dbhandler, 
     add_scrape_task, get_next_pending_task, get_next_pending_task_by_run,
@@ -31,7 +31,6 @@ class ScrapingController:
         self.processors: Dict[str, RetailerProcessor] = {
             "bws": BWSProcessor(),
             "ll": LiquorlandProcessor(),
-            "fc": FirstChoiceProcessor()
         }
         self.sitemaps = self._load_sitemaps()
 
