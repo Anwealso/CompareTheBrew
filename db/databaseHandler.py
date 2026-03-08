@@ -394,7 +394,7 @@ def select_image_links(conn):
     return rows
 
 
-def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max=""):
+def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="", store=""):
     """Select all drinks that contain any of the search keywords given in their name, brand or type attributes
     
     Args:
@@ -403,6 +403,7 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="")
         thing: search by 'ASC_' | 'DESC_' += 'efficiency'; 'price'; 'percent'; 'ml';
         price_min: minimum price filter (optional)
         price_max: maximum price filter (optional)
+        store: retailer filter - 'all' or specific store like 'bws', 'liquorland' (optional)
     Returns:
         A list of rows from the drinks table matching the search terms
     """
@@ -439,6 +440,25 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="")
         price_conditions.append(f"price >= {float(price_min)}")
     if price_max:
         price_conditions.append(f"price <= {float(price_max)}")
+    
+    # Build store filter condition
+    store_filter = ""
+    if store and store.lower() != "all":
+        store_conditions = []
+        # Map friendly names to actual store IDs
+        store_mapping = {
+            "bws": "bws",
+            "liquorland": "liquorland",
+            "liquor land": "liquorland",
+            "first choice": "firstchoiceliquor",
+            "firstchoice": "firstchoiceliquor",
+            "fc": "firstchoiceliquor"
+        }
+        store_key = store.lower().strip()
+        actual_store = store_mapping.get(store_key, store.lower())
+        store_conditions.append(f"store = '{actual_store}'")
+        store_filter = " AND " + " AND ".join(store_conditions)
+    
     price_filter = ""
     if price_conditions:
         price_filter = " AND " + " AND ".join(price_conditions)
@@ -456,7 +476,7 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="")
                 SELECT MAX(id) FROM drinks
                 WHERE search_text LIKE '%{term}%'
                 GROUP BY name, brand, type, ml, percent, store
-            ){price_filter} ORDER BY {category} {order}
+            ){price_filter}{store_filter} ORDER BY {category} {order}
         """
         cur.execute(dedupe_sql)
 

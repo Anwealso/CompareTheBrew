@@ -68,6 +68,7 @@ def search_page():
         page: page number (default: 1)
         price_min: minimum price filter (optional)
         price_max: maximum price filter (optional)
+        store: retailer filter (optional, default: all)
     """
     search_terms = request.args.get("q", "")
     order_param = request.args.get("order", "score-desc")
@@ -78,12 +79,13 @@ def search_page():
 
     price_min = request.args.get("price_min", "")
     price_max = request.args.get("price_max", "")
+    store_filter = request.args.get("store", "all")
 
     per_page = 16
     sort_key = ORDER_MAP.get(order_param, "DESC_efficiency")
 
     conn = db.create_connection()
-    all_results = db.select_drink_by_smart_search(conn, search_terms, sort_key, price_min, price_max)
+    all_results = db.select_drink_by_smart_search(conn, search_terms, sort_key, price_min, price_max, store_filter)
     
     # Insert ads into the full list before paginating, or just into the page?
     # Usually better to insert ads into the full list so they stay in consistent positions,
@@ -114,6 +116,7 @@ def search_page():
         total_results=total_results_count,
         price_min=price_min,
         price_max=price_max,
+        store_filter=store_filter,
         dark_mode=DARK_MODE,
     )
 
