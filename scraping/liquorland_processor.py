@@ -16,6 +16,7 @@ BRIGHTDATA_ENABLED = False
 LIQOURLAND_MAX_RESULTS_PER_PAGE = 80 if BRIGHTDATA_ENABLED else 60
 FIRSTCHOICE_MAX_RESULTS_PER_PAGE = 60
 
+
 class LiquorlandProcessor(RetailerProcessor):
     """
     Liquorland-specific processor implementing the first principles scraping strategy.
@@ -23,6 +24,7 @@ class LiquorlandProcessor(RetailerProcessor):
     def __init__(self):
         super().__init__()
         self.store_id = "liquorland"
+        self._detail_cache = {}
 
     def fetch_url(self, url: str) -> Optional[str]:
         """
@@ -100,7 +102,7 @@ class LiquorlandProcessor(RetailerProcessor):
         if not self.api_key:
             print("No API key configured")
             return None
-            
+        
         params = {
             "api_key": self.api_key,
             "url": url,
@@ -169,6 +171,9 @@ class LiquorlandProcessor(RetailerProcessor):
         if not url:
             return details
         
+        if url in self._detail_cache:
+            return self._detail_cache[url]
+        
         content = self.fetch_url(url)
         if not content:
             return details
@@ -200,11 +205,14 @@ class LiquorlandProcessor(RetailerProcessor):
                         except ValueError:
                             pass
         
+        self._detail_cache[url] = details
         return details
 
     def get_items(self, url: str, metadata: Optional[dict] = None) -> Tuple[List[Item], Optional[dict]]:
         """
         Extract items from Liquorland using direct HTML extraction.
+        For 'page' tasks: extracts items and returns drink_detail URLs for enqueuing.
+        For 'drink_detail' tasks: fetches the detail page and updates cached item.
         """        
         result = []
         content = self.fetch_url_max_rpp(url)
@@ -262,15 +270,6 @@ class LiquorlandProcessor(RetailerProcessor):
                 
                 vol = self.parse_volume(name)
                 
-                if self.progress_callback:
-                    self.progress_callback(name)
-                
-                additional_details = self.get_details_from_item_page(link)
-                abv = additional_details.get("percent", 0.0)
-                std_drinks = additional_details.get("std_drinks", 0.0)
-                
-                efficiency = (std_drinks / current_price) if current_price > 0 and std_drinks > 0 else 0.0
-                
                 item = Item(
                     store=self.store_id,
                     brand=brand,
@@ -279,10 +278,10 @@ class LiquorlandProcessor(RetailerProcessor):
                     price=current_price,
                     link=link,
                     ml=vol,
-                    percent=abv,
-                    std_drinks=std_drinks,
+                    percent=0.0,
+                    std_drinks=0.0,
                     numb_items=1,
-                    efficiency=efficiency,
+                    efficiency=0.0,
                     image=image,
                     promotion=bool(promotion_text),
                     old_price=old_price
@@ -292,3 +291,11 @@ class LiquorlandProcessor(RetailerProcessor):
                 print(f"Error parsing Liquorland HTML product: {e}")
 
         return result, None
+
+    def process_drink_detail(self, url: str, metadata: Optional[dict] = None) -> dict:
+        """
+        Process a drink detail page task.
+        Fetches the detail page and returns the additional details.
+        """
+        details = self.get_details_from_item_page(url)
+        return details

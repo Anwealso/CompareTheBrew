@@ -1,6 +1,9 @@
 import json
 import os
 import uuid
+import threading
+import queue
+import time
 from datetime import datetime
 from typing import Dict, List, Optional
 from scraping.processor import RetailerProcessor
@@ -12,6 +15,9 @@ from db.databaseHandler import (
     update_task_status, get_pending_tasks_count,
     increment_task_attempts, create_run, update_run_completed
 )
+
+NUM_WORKERS = 4
+
 
 class ScrapingController:
     """
@@ -35,6 +41,7 @@ class ScrapingController:
             "ll": LiquorlandProcessor(),
         }
         self.sitemaps = self._load_sitemaps()
+        self._stop_workers = False
 
     def _load_sitemaps(self) -> Dict[str, List[str]]:
         """
@@ -73,14 +80,12 @@ class ScrapingController:
         seed_urls = self.sitemaps.get(retailer_name, [])
                 
         if category:
-            # Narrow down to just the urls for that category if specified
             seed_urls = [url for url in seed_urls if category in url.lower()]
         
         conn = create_connection()
         if not conn:
             return
 
-        # Create the run entry in the database
         create_run(conn, run_id, retailer=retailer_name, category=category)
         
         print(f"Starting discovery for {retailer_name}" + (f" ({category})" if category else "") + f" (run_id: {run_id})...")
@@ -89,7 +94,7 @@ class ScrapingController:
             tasks = processor.discover_tasks(url)
             print(f"Found {len(tasks)} tasks.")
             for t in tasks:
-                add_scrape_task(conn, retailer_name, t["url"], t["metadata"], run_id)
+                add_scrape_task(conn, retailer_name, t["url"], t["metadata"], run_id, task_type='page')
                 print(f"  - Queued task: {t['url']}")
         
         conn.close()
@@ -97,87 +102,136 @@ class ScrapingController:
 
     def run_next(self, retailer_name: str, run_id: str = None) -> bool:
         """
-        Progressive execution: Pulls ONE task from the queue, processes it, 
-        and handles potentially returned 'next' metadata.
+        Progressive execution: Pulls ONE task from the queue, processes it.
         
         Args:
             retailer_name: The retailer to process tasks for
-            run_id: Optional run_id to filter tasks. If provided, will优先 select
-                    in_progress tasks for this run first, then pending ones.
+            run_id: Optional run_id to filter tasks
         """
         retailer_name = retailer_name.lower()
         conn = create_connection()
         if not conn:
             return False
 
-        # Get next task - either by run_id (if provided) or just retailer
         if run_id:
             task = get_next_pending_task_by_run(conn, run_id, retailer_name)
         else:
             task = get_next_pending_task(conn, retailer_name)
         
         if not task:
-            # print(f"No pending tasks for {retailer_name}")
             conn.close()
             return False
 
-        # IDs in SQLite are usually 0-indexed in the cursor result if using SELECT *
-        # ID, retailer, url, status, metadata, run_id, attempts, created_at, updated_at
         task_id = task[0]
         url = task[2]
-        metadata_str = task[4]
-        current_attempts = task[6] if task[6] is not None else 0
+        task_type = task[4] if len(task) > 4 else 'page'
+        metadata_str = task[5] if len(task) > 5 else task[4]
+        current_attempts = task[7] if len(task) > 7 else 0
         
         metadata = json.loads(metadata_str) if metadata_str else {}
         processor = self.processors[retailer_name]
         processor.progress_callback = self.progress_callback
         
-        print(f"Processing Task {task_id} (Attempt {current_attempts + 1}/{self.max_retries}): {url}")
+        print(f"Processing Task {task_id} ({task_type}) (Attempt {current_attempts + 1}/{self.max_retries}): {url}")
         
         self.current_url = url
         
-        # Increment attempts and set status to in_progress
         increment_task_attempts(conn, task_id)
         update_task_status(conn, task_id, 'in_progress')
         
         now = datetime.now().isoformat()
-        # Track that we've hit this URL
         upsert_source(conn, url, retailer_name, now)
         
         try:
-            items, next_metadata = processor.get_items(url, metadata)
-            print(f"Found {len(items)} items.")
-            
-            if items:
-                dbhandler(conn, items, "u", True)
+            if task_type == 'drink_detail':
+                details = processor.process_drink_detail(url, metadata)
+                print(f"Got details: percent={details.get('percent')}, std_drinks={details.get('std_drinks')}")
+                update_task_status(conn, task_id, 'completed')
+            else:
+                items, next_metadata = processor.get_items(url, metadata)
+                print(f"Found {len(items)} items.")
                 
-            # Hybrid Approach: If the processor found a 'next page' (e.g., session-based sites)
-            if next_metadata:
-                next_url = next_metadata.get("next_url", url)
-                add_scrape_task(conn, retailer_name, next_url, next_metadata)
-                print(f"  - Discovered follow-up task: {next_url}")
+                if items:
+                    dbhandler(conn, items, "u", True)
                 
-            update_task_status(conn, task_id, 'completed')
+                if next_metadata:
+                    next_url = next_metadata.get("next_url", url)
+                    add_scrape_task(conn, retailer_name, next_url, next_metadata, run_id, task_type='page')
+                    print(f"  - Discovered follow-up task: {next_url}")
+                
+                update_task_status(conn, task_id, 'completed')
         except Exception as e:
             print(f"Error during task {task_id}: {e}")
             
-            # If we've reached max retries, mark as permanently failed
             if (current_attempts + 1) >= self.max_retries:
                 print(f"Task {task_id} exceeded max retries ({self.max_retries}). Marking as FAILED.")
                 update_task_status(conn, task_id, 'failed', {"error": str(e)})
             else:
-                # Move to back of queue by updating its status to pending 
-                # (DBHandler.update_task_status handles moving it to the back)
                 update_task_status(conn, task_id, 'pending', {"error": str(e)})
             
         conn.close()
         return True
+
+    def _worker_thread(self, worker_id: int, task_queue: queue.Queue, run_id: str = None):
+        """Worker thread that processes tasks from the queue."""
+        print(f"Worker {worker_id} started")
+        
+        while not self._stop_workers:
+            try:
+                result = self.run_next("ll", run_id)
+                if not result:
+                    time.sleep(0.5)
+            except Exception as e:
+                print(f"Worker {worker_id} error: {e}")
+                time.sleep(1)
+        
+        print(f"Worker {worker_id} stopped")
+
+    def run_parallel(self, num_workers: int = NUM_WORKERS, retailer: str = "ll", run_id: str = None):
+        """
+        Run tasks in parallel using multiple worker threads.
+        
+        Args:
+            num_workers: Number of worker threads
+            retailer: Retailer to process
+            run_id: Optional run_id to filter tasks
+        """
+        self._stop_workers = False
+        workers = []
+        
+        print(f"Starting {num_workers} workers...")
+        
+        for i in range(num_workers):
+            t = threading.Thread(target=self._worker_thread, args=(i, None, run_id))
+            t.daemon = True
+            t.start()
+            workers.append(t)
+        
+        try:
+            while True:
+                time.sleep(2)
+                conn = create_connection()
+                if conn:
+                    pending = get_pending_tasks_count(conn, retailer)
+                    conn.close()
+                    if pending == 0:
+                        print("No more pending tasks, stopping workers...")
+                        break
+        except KeyboardInterrupt:
+            print("\nStopping workers...")
+        
+        self._stop_workers = True
+        for t in workers:
+            t.join(timeout=2)
+        
+        print("All workers stopped")
 
     def process_all(self, retailer_name: str):
         """Looping run_next until exhaustion."""
         print(f"Processing all tasks for {retailer_name}...")
         while self.run_next(retailer_name):
             pass
+
 
 if __name__ == "__main__":
     import argparse
@@ -186,6 +240,8 @@ if __name__ == "__main__":
     parser.add_argument('--discover', action='store_true', help='Seed the queue')
     parser.add_argument('--run', action='store_true', help='Run all pending tasks')
     parser.add_argument('--next', action='store_true', help='Process only the next single task')
+    parser.add_argument('--parallel', action='store_true', help='Run with worker pool')
+    parser.add_argument('--workers', type=int, default=NUM_WORKERS, help='Number of workers for parallel mode')
     
     args = parser.parse_args()
     controller = ScrapingController()
@@ -193,12 +249,13 @@ if __name__ == "__main__":
     if args.discover:
         controller.discover(args.retailer)
     
-    if args.run:
+    if args.parallel:
+        controller.run_parallel(num_workers=args.workers, retailer=args.retailer)
+    elif args.run:
         controller.process_all(args.retailer)
     elif args.next:
         controller.run_next(args.retailer)
     elif not args.discover:
-        # Default behavior if no flag: Discover if queue is empty, then run all
         conn = create_connection()
         count = get_pending_tasks_count(conn, args.retailer)
         conn.close()

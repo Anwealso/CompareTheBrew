@@ -125,63 +125,63 @@ def update_run_completed(conn, run_id, tasks_completed):
     conn.commit()
 
 
-def add_scrape_task(conn, retailer, url, metadata=None, run_id=None):
+def add_scrape_task(conn, retailer, url, metadata=None, run_id=None, task_type='page'):
     """
     Add a new scrape task to the queue
+    task_type: 'page' for main page scrape, 'drink_detail' for individual drink page scrape
     """
     from datetime import datetime
     now = datetime.now().isoformat()
-    sql = ''' INSERT INTO scrape_tasks(retailer, url, status, metadata, run_id, created_at, updated_at)
-              VALUES(?,?,?,?,?,?,?) '''
+    sql = ''' INSERT INTO scrape_tasks(retailer, url, status, task_type, metadata, run_id, created_at, updated_at)
+              VALUES(?,?,?,?,?,?,?,?) '''
     cur = conn.cursor()
-    cur.execute(sql, (retailer, url, 'pending', json.dumps(metadata) if metadata else None, run_id, now, now))
+    cur.execute(sql, (retailer, url, 'pending', task_type, json.dumps(metadata) if metadata else None, run_id, now, now))
     conn.commit()
     return cur.lastrowid
 
 
-def get_next_pending_task_by_run(conn, run_id, retailer=None):
+def get_next_pending_task_by_run(conn, run_id, retailer=None, task_type=None):
     """
     Get the next task for a specific run.
     First checks for in_progress tasks (retry), then falls back to pending tasks.
     """
     cur = conn.cursor()
     
-    # First try to find an in_progress task for this run (retry case)
+    # Build query conditions
+    conditions = ["run_id = ?"]
+    params = [run_id]
+    
     if retailer:
-        cur.execute("""
-            SELECT * FROM scrape_tasks 
-            WHERE run_id = ? AND retailer = ? AND status = 'in_progress' 
-            ORDER BY updated_at ASC LIMIT 1
-        """, (run_id, retailer))
-    else:
-        cur.execute("""
-            SELECT * FROM scrape_tasks 
-            WHERE run_id = ? AND status = 'in_progress' 
-            ORDER BY updated_at ASC LIMIT 1
-        """, (run_id,))
+        conditions.append("retailer = ?")
+        params.append(retailer)
+    if task_type:
+        conditions.append("task_type = ?")
+        params.append(task_type)
+    
+    where_clause = " AND ".join(conditions)
+    
+    # First try to find an in_progress task for this run (retry case)
+    cur.execute(f"""
+        SELECT * FROM scrape_tasks 
+        WHERE {where_clause} AND status = 'in_progress' 
+        ORDER BY updated_at ASC LIMIT 1
+    """, params)
     
     task = cur.fetchone()
     if task:
         return task
     
     # Fall back to pending tasks
-    if retailer:
-        cur.execute("""
-            SELECT * FROM scrape_tasks 
-            WHERE run_id = ? AND retailer = ? AND status = 'pending' 
-            ORDER BY created_at ASC LIMIT 1
-        """, (run_id, retailer))
-    else:
-        cur.execute("""
-            SELECT * FROM scrape_tasks 
-            WHERE run_id = ? AND status = 'pending' 
-            ORDER BY created_at ASC LIMIT 1
-        """, (run_id,))
+    cur.execute(f"""
+        SELECT * FROM scrape_tasks 
+        WHERE {where_clause} AND status = 'pending' 
+        ORDER BY created_at ASC LIMIT 1
+    """, params)
     
     return cur.fetchone()
 
 
-def get_next_pending_task(conn, retailer=None):
+def get_next_pending_task(conn, retailer=None, task_type=None):
     """
     Get the next pending task, optionally filtered by retailer.
     Sorted by updated_at (asc) to ensure failed/re-queued tasks 
