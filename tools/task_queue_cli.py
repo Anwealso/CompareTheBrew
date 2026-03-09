@@ -108,10 +108,34 @@ def get_category_for_run(conn, run_id):
     return row[0] if row and row[0] else ""
 
 
+def get_tasks_for_run(conn, run_id, limit=10000):
+    if not run_id:
+        return []
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT t.ID, t.retailer, t.url, t.status, t.attempts, t.created_at, t.updated_at, t.run_id
+        FROM scrape_tasks t
+        WHERE t.run_id = ?
+        ORDER BY 
+            CASE t.status 
+                WHEN 'in_progress' THEN 0 
+                WHEN 'pending' THEN 1 
+                WHEN 'completed' THEN 2 
+                WHEN 'failed' THEN 3 
+            END,
+            t.updated_at ASC
+        LIMIT ?
+    """, (run_id, limit))
+    return cur.fetchall()
+
+
 class TaskQueueTable(DataTable):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.cursor_type = "row"
+
+    def on_data_table_row_selected(self, event) -> None:
+        self.app.action_view_details()
 
 
 class TaskQueueApp(App):
@@ -141,6 +165,10 @@ class TaskQueueApp(App):
         border: none;
     }
     
+    TaskQueueTable:focus {
+        border: solid $primary;
+    }
+    
     TaskQueueTable > .datatable--cursor {
         background: $accent;
     }
@@ -164,10 +192,16 @@ class TaskQueueApp(App):
         ("down,s", "cursor_down", "Down"),
         ("home", "cursor_home", "Home"),
         ("end", "cursor_end", "End"),
+        ("enter", "view_details", "View Details"),
+        ("backspace", "go_back", "Back"),
     ]
 
     retailer_filter = reactive("")
     status_filter = reactive("")
+    view_mode = reactive("overview")
+    selected_run_id = reactive("")
+    selected_retailer = reactive("")
+    selected_category = reactive("")
 
     def __init__(self, retailer: str = None, status: str = None, **kwargs):
         super().__init__(**kwargs)
@@ -181,13 +215,14 @@ class TaskQueueApp(App):
             with Vertical(id="stats"):
                 yield Static("Loading...", id="stats-text")
             yield TaskQueueTable(id="task-table")
-            with Horizontal(id="footer-bar"):
-                yield Static("", id="footer-text")
-        yield Footer()
+        with Horizontal(id="footer-bar"):
+            yield Static("", id="footer-text")
 
     def on_mount(self) -> None:
         table = self.query_one("#task-table", TaskQueueTable)
         table.add_columns("Run ID", "Retailer", "Category", "Pending", "In Progress", "Completed", "Failed")
+        table.focus()
+        self.query_one("#footer-text", Static).update("[b]Enter[/b]: Select/View | [b]↑/↓[/b]: Navigate | [b]Backspace[/b]: Go Back | [b]Q[/b]: Quit")
         self.refresh_data()
         self.set_interval(2.0, self.refresh_data)
 
@@ -210,6 +245,27 @@ class TaskQueueApp(App):
         table = self.query_one("#task-table", TaskQueueTable)
         table.action_cursor_end()
 
+    def action_view_details(self) -> None:
+        table = self.query_one("#task-table", TaskQueueTable)
+        cursor_row = table.cursor_row
+        runs = get_runs_with_tasks(self.conn)
+        
+        if cursor_row is not None and cursor_row < len(runs):
+            run = runs[cursor_row]
+            self.selected_run_id = run[0] or ""
+            self.selected_retailer = run[1] or ""
+            self.selected_category = run[2] or ""
+            self.view_mode = "details"
+            self.refresh_data()
+
+    def action_go_back(self) -> None:
+        if self.view_mode == "details":
+            self.view_mode = "overview"
+            self.selected_run_id = ""
+            self.selected_retailer = ""
+            self.selected_category = ""
+            self.refresh_data()
+
     def refresh_data(self) -> None:
         if not self.conn:
             self.conn = create_connection()
@@ -218,54 +274,84 @@ class TaskQueueApp(App):
             return
 
         try:
-            runs = get_runs_with_tasks(self.conn)
-            stats = get_task_stats(self.conn, self.retailer_filter or None)
-            
-            stats_text = f"Last updated: {datetime.now().strftime('%H:%M:%S')} | "
-            total_pending = total_in_progress = total_completed = total_failed = 0
-            for status, count in stats:
-                if status == 'pending':
-                    total_pending = count
-                elif status == 'in_progress':
-                    total_in_progress = count
-                elif status == 'completed':
-                    total_completed = count
-                elif status == 'failed':
-                    total_failed = count
-            stats_text += f"Total: Pending={total_pending} | In Progress={total_in_progress} | Completed={total_completed} | Failed={total_failed}"
-            
-            if self.retailer_filter:
-                stats_text += f" | Filter: retailer={self.retailer_filter}"
-            if self.status_filter:
-                stats_text += f" | Filter: status={self.status_filter}"
-            
-            self.query_one("#stats-text", Static).update(stats_text)
-
             table = self.query_one("#task-table", TaskQueueTable)
-            
             cursor_row = table.cursor_row
             cursor_column = table.cursor_column
             
             table.clear()
-            
-            for row in runs:
-                run_id, retailer, category, start_time, run_status, pending, in_progress, completed_count, failed = row
-                run_id_short = run_id[:10] + ".." if run_id and len(run_id) > 12 else (run_id or "")
-                category_short = (category or "")[:15]
-                table.add_row(
-                    run_id_short,
-                    retailer,
-                    category_short,
-                    str(pending),
-                    str(in_progress),
-                    str(completed_count),
-                    str(failed)
-                )
-            
-            if runs:
-                max_row = len(runs) - 1
-                restore_row = min(cursor_row, max_row)
-                table.move_cursor(row=restore_row, column=cursor_column)
+            for col in list(table.columns.keys()):
+                table.remove_column(col)
+
+            if self.view_mode == "details" and self.selected_run_id:
+                tasks = get_tasks_for_run(self.conn, self.selected_run_id)
+                
+                header_text = f"[DETAILED VIEW] Run: {self.selected_run_id[:12]}... | Retailer: {self.selected_retailer} | Category: {self.selected_category}"
+                self.query_one("#stats-text", Static).update(header_text)
+                
+                table.add_columns("Run ID", "Task ID", "Retailer", "Category", "Status", "URL", "Att")
+                
+                for row in tasks:
+                    task_id, retailer, url, status, attempts, created_at, updated_at, run_id = row
+                    category = self.selected_category
+                    run_id_short = (run_id or "")[:12] + ".." if run_id and len(run_id) > 14 else (run_id or "")
+                    url_display = "..." + url[-50:] if len(url) > 53 else url
+                    table.add_row(
+                        run_id_short,
+                        str(task_id),
+                        retailer,
+                        category,
+                        status,
+                        url_display,
+                        str(attempts)
+                    )
+                
+                self.query_one("#footer-text", Static).update("[b]Backspace[/b]: Back to Overview | [b]↑/↓[/b]: Navigate | [b]Q[/b]: Quit")
+            else:
+                runs = get_runs_with_tasks(self.conn)
+                stats = get_task_stats(self.conn, self.retailer_filter or None)
+                
+                stats_text = f"Last updated: {datetime.now().strftime('%H:%M:%S')} | "
+                total_pending = total_in_progress = total_completed = total_failed = 0
+                for status, count in stats:
+                    if status == 'pending':
+                        total_pending = count
+                    elif status == 'in_progress':
+                        total_in_progress = count
+                    elif status == 'completed':
+                        total_completed = count
+                    elif status == 'failed':
+                        total_failed = count
+                stats_text += f"Total: Pending={total_pending} | In Progress={total_in_progress} | Completed={total_completed} | Failed={total_failed}"
+                
+                if self.retailer_filter:
+                    stats_text += f" | Filter: retailer={self.retailer_filter}"
+                if self.status_filter:
+                    stats_text += f" | Filter: status={self.status_filter}"
+                
+                self.query_one("#stats-text", Static).update(stats_text)
+                
+                table.add_columns("Run ID", "Retailer", "Category", "Pending", "In Progress", "Completed", "Failed")
+                
+                for row in runs:
+                    run_id, retailer, category, start_time, run_status, pending, in_progress, completed_count, failed = row
+                    run_id_short = run_id[:10] + ".." if run_id and len(run_id) > 12 else (run_id or "")
+                    category_short = (category or "")[:15]
+                    table.add_row(
+                        run_id_short,
+                        retailer,
+                        category_short,
+                        str(pending),
+                        str(in_progress),
+                        str(completed_count),
+                        str(failed)
+                    )
+                
+                if runs:
+                    max_row = len(runs) - 1
+                    restore_row = min(cursor_row, max_row)
+                    table.move_cursor(row=restore_row, column=cursor_column)
+                
+                self.query_one("#footer-text", Static).update("[b]Enter[/b]: Select/View | [b]↑/↓[/b]: Navigate | [b]Q[/b]: Quit")
 
         except Exception as e:
             self.query_one("#stats-text", Static).update(f"Error: {e}")
