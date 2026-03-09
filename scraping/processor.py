@@ -14,6 +14,7 @@ class RetailerProcessor(ABC):
     def __init__(self):
         self.api_key: str = Config.SCRAPINGBEE_API_KEY
         self.fetcher: Fetcher = get_fetcher()
+        self.progress_callback = None
 
     def clean_numeric(self, val: any) -> float:
         """Cleans a string/number to a float."""

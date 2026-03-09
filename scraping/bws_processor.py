@@ -136,7 +136,12 @@ class BWSProcessor(RetailerProcessor):
                 efficiency = (std_drinks * item_numb / price) if price > 0 and std_drinks > 0 else 0.0
                 
                 # Map BWS fields to the common Item class
-                item = Item(store="bws", brand=subdrink.get("BrandName", "Unknown"), name=subdrink.get("Name", "Unknown").strip(), 
+                item_name = subdrink.get("Name", "Unknown").strip()
+                
+                if self.progress_callback:
+                    self.progress_callback(item_name)
+                
+                item = Item(store="bws", brand=subdrink.get("BrandName", "Unknown"), name=item_name, 
                             type=style, price=price, link=drink_link, ml=size, percent=percent_alcohol,
                             std_drinks=std_drinks, numb_items=item_numb, efficiency=efficiency, image=image_link,
                             promotion=subdrink.get('IsOnSpecial', False), old_price=subdrink.get("WasPrice", 0))

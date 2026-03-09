@@ -28,6 +28,8 @@ class ScrapingController:
         """
         self.sitemaps_file = sitemaps_file
         self.max_retries = max_retries
+        self.progress_callback = None
+        self.current_url = ""
         self.processors: Dict[str, RetailerProcessor] = {
             "bws": BWSProcessor(),
             "ll": LiquorlandProcessor(),
@@ -128,8 +130,11 @@ class ScrapingController:
         
         metadata = json.loads(metadata_str) if metadata_str else {}
         processor = self.processors[retailer_name]
+        processor.progress_callback = self.progress_callback
         
         print(f"Processing Task {task_id} (Attempt {current_attempts + 1}/{self.max_retries}): {url}")
+        
+        self.current_url = url
         
         # Increment attempts and set status to in_progress
         increment_task_attempts(conn, task_id)

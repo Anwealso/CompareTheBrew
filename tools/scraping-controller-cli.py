@@ -190,6 +190,12 @@ def run_scraping_jobs(args):
             console.print(f"[bold]Task limit:[/bold] {limit}")
         console.print("-" * 40)
         
+        def progress_callback(item_name: str):
+            url_truncated = controller.current_url[-50:] if controller.current_url else ""
+            progress.update(task, description=f"[green]{store}: {url_truncated} -> {item_name}")
+        
+        controller.progress_callback = progress_callback
+        
         # Create progress bar
         with Progress(
             SpinnerColumn(),

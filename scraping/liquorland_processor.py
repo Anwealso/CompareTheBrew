@@ -262,6 +262,9 @@ class LiquorlandProcessor(RetailerProcessor):
                 
                 vol = self.parse_volume(name)
                 
+                if self.progress_callback:
+                    self.progress_callback(name)
+                
                 additional_details = self.get_details_from_item_page(link)
                 abv = additional_details.get("percent", 0.0)
                 std_drinks = additional_details.get("std_drinks", 0.0)
