@@ -108,24 +108,24 @@ def get_category_for_run(conn, run_id):
     return row[0] if row and row[0] else ""
 
 
-def get_tasks_for_run(conn, run_id, limit=10000):
+def get_tasks_for_run(conn, run_id, limit=50000):
     if not run_id:
         return []
     cur = conn.cursor()
     cur.execute("""
         SELECT t.ID, t.retailer, t.url, t.status, t.attempts, t.created_at, t.updated_at, t.run_id
         FROM scrape_tasks t
-        WHERE t.run_id = ?
+        WHERE t.run_id LIKE ?
         ORDER BY 
             CASE t.status 
-                WHEN 'in_progress' THEN 0 
-                WHEN 'pending' THEN 1 
-                WHEN 'completed' THEN 2 
+                WHEN 'completed' THEN 0 
+                WHEN 'in_progress' THEN 1 
+                WHEN 'pending' THEN 2 
                 WHEN 'failed' THEN 3 
             END,
             t.updated_at ASC
         LIMIT ?
-    """, (run_id, limit))
+    """, (run_id + "%", limit))
     return cur.fetchall()
 
 
@@ -286,7 +286,12 @@ class TaskQueueApp(App):
             if self.view_mode == "details" and self.selected_run_id:
                 tasks = get_tasks_for_run(self.conn, self.selected_run_id)
                 
-                header_text = f"[DETAILED VIEW] Run: {self.selected_run_id[:12]}... | Retailer: {self.selected_retailer} | Category: {self.selected_category}"
+                pending = sum(1 for t in tasks if t[3] == 'pending')
+                in_progress = sum(1 for t in tasks if t[3] == 'in_progress')
+                completed = sum(1 for t in tasks if t[3] == 'completed')
+                failed = sum(1 for t in tasks if t[3] == 'failed')
+                
+                header_text = f"[DETAILED VIEW] Run: {self.selected_run_id[:12]}... | {self.selected_retailer} | {self.selected_category} | P:{pending} IP:{in_progress} C:{completed} F:{failed}"
                 self.query_one("#stats-text", Static).update(header_text)
                 
                 table.add_columns("Run ID", "Task ID", "Retailer", "Category", "Status", "URL", "Att")
@@ -305,6 +310,11 @@ class TaskQueueApp(App):
                         url_display,
                         str(attempts)
                     )
+                
+                if tasks:
+                    max_row = len(tasks) - 1
+                    restore_row = min(cursor_row, max_row)
+                    table.move_cursor(row=restore_row, column=cursor_column)
                 
                 self.query_one("#footer-text", Static).update("[b]Backspace[/b]: Back to Overview | [b]↑/↓[/b]: Navigate | [b]Q[/b]: Quit")
             else:
