@@ -124,9 +124,11 @@ class ScrapingController:
 
         task_id = task[0]
         url = task[2]
-        task_type = task[4] if len(task) > 4 else 'page'
-        metadata_str = task[5] if len(task) > 5 else task[4]
-        current_attempts = task[7] if len(task) > 7 else 0
+        status = task[3]
+        metadata_str = task[4]
+        run_id = task[5] if len(task) > 5 else None
+        current_attempts = task[6] if len(task) > 6 else 0
+        task_type = task[9] if len(task) > 9 else 'page'
         
         metadata = json.loads(metadata_str) if metadata_str else {}
         processor = self.processors[retailer_name]

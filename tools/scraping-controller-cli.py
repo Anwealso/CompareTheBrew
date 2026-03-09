@@ -190,9 +190,16 @@ def run_scraping_jobs(args):
             console.print(f"[bold]Task limit:[/bold] {limit}")
         console.print("-" * 40)
         
+        current_drink = ""
+        drink_count = 0
+        
         def progress_callback(item_name: str):
-            url_truncated = controller.current_url[-50:] if controller.current_url else ""
-            progress.update(task, description=f"[green]{store}: {url_truncated} -> {item_name}")
+            nonlocal current_drink, drink_count
+            current_drink = item_name
+            drink_count += 1
+            url_truncated = controller.current_url[-40:] if controller.current_url else ""
+            desc = f"[green]{store}: {url_truncated} | Drink: {item_name[:30]}"
+            progress.update(task, description=desc)
         
         controller.progress_callback = progress_callback
         
@@ -202,7 +209,7 @@ def run_scraping_jobs(args):
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),
             TaskProgressColumn(),
-            TextColumn("[cyan]{task.fields[remaining]} remaining"),
+            TextColumn("[cyan]{task.fields[current_drink]}"),
             console=console
         ) as progress:
             
@@ -210,13 +217,15 @@ def run_scraping_jobs(args):
                 task = progress.add_task(
                     f"[green]Scraping {store}", 
                     total=limit, 
-                    remaining=pending_count
+                    remaining=pending_count,
+                    current_drink=""
                 )
             else:
                 task = progress.add_task(
                     f"[green]Scraping {store}", 
                     total=pending_count, 
-                    remaining=pending_count
+                    remaining=pending_count,
+                    current_drink=""
                 )
             
             while True:
@@ -224,6 +233,7 @@ def run_scraping_jobs(args):
                     progress.update(task, description=f"[yellow]Limit reached")
                     break
                 
+                drink_count = 0
                 result = controller.run_next(store, run_id=current_run_id)
                 
                 if not result:
@@ -245,10 +255,13 @@ def run_scraping_jobs(args):
                 else:
                     remaining = count_pending_tasks_for_store(conn, store, args.category if args.category else None)
                 
+                url_truncated = controller.current_url[-40:] if controller.current_url else ""
+                desc = f"[green]{store}: Page {completed}/{completed + remaining} | Drinks: {drink_count}"
+                
                 if limit:
-                    progress.update(task, completed=completed, remaining=remaining)
+                    progress.update(task, completed=completed, remaining=remaining, description=desc, current_drink=f"{drink_count} drinks")
                 else:
-                    progress.update(task, completed=completed, total=completed + remaining, remaining=remaining)
+                    progress.update(task, completed=completed, total=completed + remaining, remaining=remaining, description=desc, current_drink=f"{drink_count} drinks")
         
         console.print(f"\n[bold green]Completed {completed} tasks for {store}[/bold green]")
         conn.close()
