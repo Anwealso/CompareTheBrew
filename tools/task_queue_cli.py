@@ -145,19 +145,19 @@ class TaskQueueApp(App):
     }
     
     #container {
-        height: 100%;
+        height: 90%;
         padding: 0 1;
     }
     
     #stats {
         height: auto;
-        padding: 1;
+        padding: 0 1;
         background: $panel;
         border-bottom: solid $primary;
     }
     
     #stats Static {
-        margin-bottom: 1;
+        margin: 0;
     }
     
     TaskQueueTable {
@@ -182,6 +182,7 @@ class TaskQueueApp(App):
     
     #footer-bar Static {
         opacity: 0.8;
+        margin: 0;
     }
     """
 
