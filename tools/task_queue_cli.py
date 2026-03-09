@@ -242,6 +242,10 @@ class TaskQueueApp(App):
             self.query_one("#stats-text", Static).update(stats_text)
 
             table = self.query_one("#task-table", TaskQueueTable)
+            
+            cursor_row = table.cursor_row
+            cursor_column = table.cursor_column
+            
             table.clear()
             
             for row in runs:
@@ -257,6 +261,11 @@ class TaskQueueApp(App):
                     str(completed_count),
                     str(failed)
                 )
+            
+            if runs:
+                max_row = len(runs) - 1
+                restore_row = min(cursor_row, max_row)
+                table.move_cursor(row=restore_row, column=cursor_column)
 
         except Exception as e:
             self.query_one("#stats-text", Static).update(f"Error: {e}")
