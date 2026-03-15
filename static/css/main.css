@@ -531,6 +531,10 @@ input[type="search"]::-webkit-search-results-decoration {
    7. Search Components
    ============================================================================= */
 
+#searchControls {
+    width: 100%;
+}
+
 .underline {
     background-color: var(--color-gold);
     display: inline-block;

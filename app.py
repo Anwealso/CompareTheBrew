@@ -107,7 +107,7 @@ def search_page():
     metrics(search_terms)
 
     return render_template(
-        "results.html",
+        "results_page.html",
         results=page_results,
         search_terms=search_terms,
         order=order_param,

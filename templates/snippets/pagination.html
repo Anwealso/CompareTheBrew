@@ -1,0 +1,31 @@
+  <!-- Pagination controls -->
+  <div
+    class="pagination"
+    style="
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin: 20px 0;
+      font-size: 24px;
+    "
+  >
+    {% if current_page > 1 %}
+    <a
+      href="/search?q={{ search_terms }}&order={{ order }}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}&page={{ current_page - 1 }}"
+      class="buttonSort"
+      style="margin-right: 10px"
+      >&laquo; Previous</a
+    >
+    {% endif %}
+    <span style="color: #722f37; font-weight: bold; margin: 0 15px"
+      >Page {{ current_page }} of {{ total_pages }}</span
+    >
+    {% if current_page < total_pages %}
+    <a
+      href="/search?q={{ search_terms }}&order={{ order }}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}&page={{ current_page + 1 }}"
+      class="buttonSort"
+      style="margin-left: 10px"
+      >Next &raquo;</a
+    >
+    {% endif %}
+  </div>

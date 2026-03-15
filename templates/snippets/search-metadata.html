@@ -1,0 +1,16 @@
+  <!-- Results counter -->
+  <div class="light">
+    {% if total_results == 1 %} Found 1 drink that matched your search. {% else
+    %} Found {{ total_results }} drinks matching your search. {% endif %}
+    <a
+      href="#unique-id"
+      class="btn"
+      style="
+        fill: #a7a7a7;
+        vertical-align: middle;
+        max-width: 50px;
+        float: right;
+      "
+      ><img src="/static/images/help.svg" alt=""
+    /></a>
+  </div>
