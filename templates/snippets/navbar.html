@@ -1,0 +1,72 @@
+<div id="cover"></div>
+<div id="header">
+    <a href="/" id="siteLogo">CompareTheBrew</a>
+    <nav role="navigation">
+        <div id="menuToggle">
+            <!--
+            Hidden checkbox
+            -->
+            <input id="slide" type="checkbox"/>
+
+            <!--
+            Some spans to act as a hamburger.
+            Don't remove this u monkey it looks dumb but it works
+            -->
+            <span></span>
+            <span></span>
+            <span></span>
+
+            <!--
+            Links
+            -->
+            <ul id="menu">
+                <a href="/">
+                    <li class="navButton">🏠Home</li>
+                </a>
+                <a href="/about">
+                    <li class="navButton">❓About</li>
+                </a>
+                <a href="https://www.redbubble.com/people/comparethebrew/shop">
+                    <li class="navButton">👕Merch</li>
+                </a>
+                <a href="/top50/beer">
+                    <li class="navButton">🍺Top 50: Beer</li>
+                </a>
+                <a href="/top50/wine">
+                    <li class="navButton">🍷Top 50: Wine</li>
+                </a>
+                <a href="/top50/spirits">
+                    <li class="navButton">🥃Top 50: Spirits</li>
+                </a>
+            </ul>
+        </div>
+    </nav>
+        <div>
+            <!--Modal Section-->
+            <div class="light-modal" id="unique-id" role="dialog" aria-labelledby="light-modal-label"
+                    aria-hidden="false">
+                <div class="light-modal-content animated zoomInUp">
+                    <!-- light modal header -->
+                    <div class="light-modal-header">
+                        <h3 class="light-modal-heading">Confused? Worry not...</h3>
+                        <a href="#" class="light-modal-close-icon" aria-label="close">&times;</a>
+                    </div>
+                    <!-- light modal body -->
+                    <div class="light-modal-body">
+                        {#<p>Here we can see an example drink card...</p>#}
+                        <img src="/static/images/example.PNG" alt="">
+                        <p>Score is the main way CompareTheBrew organises its results...</p>
+                        <div lang="latex">
+                            score = \frac{std.\;drinks}{price}*100
+                        </div>
+                        <p>Remember, <b>a greater score indicates more standard drinks per dollar</b></p>
+                    </div>
+                    <!-- light modal footer -->
+                    {#<div class="light-modal-footer">#}
+                        {#<a href="#" class="light-modal-close-btn" aria-label="close">Close</a>#}
+                    {#</div>#}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

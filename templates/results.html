@@ -1,330 +1,402 @@
 <!doctype html>
 
 <html lang="en">
-<head>
-    <meta charset="utf-8">
+  <head>
+    <meta charset="utf-8" />
 
     <title>Compare The Brew</title>
-    <meta name="description" content="Compare The Brew">
-    <meta name="author" content="The Boys">
+    <meta name="description" content="Compare The Brew" />
+    <meta name="author" content="The Boys" />
     <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍺</text></svg>">
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍺</text></svg>"
+    />
 
-    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/main.css" />
 
     {% if dark_mode %}
     <style>
-        body { background-color: #1a1a1a; }
-        .resultCard { background-color: #4a4a4a; }
-        .resultCard .name { color: #ffdc52; }
-        .resultCard .details { color: #ccc; }
-        .resultCard .brand { color: #cda20b; }
-        .light { color: #ccc; }
-        #searchDrink { color: #fff; }
-        .buttonSort { background-color: #4a4a4a; color: #cda20b; }
-        .buttonSortActive { background-color: #722f37; color: #cda20b; }
-        #priceRange { color: #ccc; }
-        #retailerFilter { color: #ccc; margin-left: 20px; }
-        #options { color: #ccc; }
-        #menu { background-color: #353535; }
-        #menu a { color: #fff; }
-        #menu .navButton { background-color: #4a4a4a; color: #fff; }
+      body {
+        background-color: #1a1a1a;
+      }
+      .resultCard {
+        background-color: #4a4a4a;
+      }
+      .resultCard .name {
+        color: #ffdc52;
+      }
+      .resultCard .details {
+        color: #ccc;
+      }
+      .resultCard .brand {
+        color: #cda20b;
+      }
+      .light {
+        color: #ccc;
+      }
+      #searchDrink {
+        color: #fff;
+      }
+      .buttonSort {
+        background-color: #4a4a4a;
+        color: #cda20b;
+      }
+      .buttonSortActive {
+        background-color: #722f37;
+        color: #cda20b;
+      }
+      #priceRange {
+        color: #ccc;
+      }
+      #retailerFilter {
+        color: #ccc;
+        margin-left: 20px;
+      }
+      #options {
+        color: #ccc;
+      }
+      #menu {
+        background-color: #353535;
+      }
+      #menu a {
+        color: #fff;
+      }
+      #menu .navButton {
+        background-color: #4a4a4a;
+        color: #fff;
+      }
     </style>
     {% endif %}
 
-    <script data-ad-client="ca-pub-2690757346374030" async
-            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <script
+      data-ad-client="ca-pub-2690757346374030"
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
+    ></script>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-155323852-1"></script>
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=UA-155323852-1"
+    ></script>
     <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
 
-    gtag('config', 'UA-155323852-1');
+      gtag("config", "UA-155323852-1");
     </script>
+  </head>
 
-</head>
+  <body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="/static/js/scripts.js"></script>
 
-<body>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-<script src="/static/js/scripts.js"></script>
-<div id="cover"></div>
-<div id="header">
-    <a href="/" id="siteLogo">CompareTheBrew</a>
-    <nav role="navigation">
-        <div id="menuToggle">
-            <!--
-            Hidden checkbox
-            -->
-            <input id="slide" type="checkbox"/>
+    {% include 'snippets/navbar.html' %}
 
-            <!--
-            Some spans to act as a hamburger.
-            Don't remove this u monkey it looks dumb but it works
-            -->
-            <span></span>
-            <span></span>
-            <span></span>
-
-            <!--
-            Links
-            -->
-            <ul id="menu">
-                <a href="/">
-                    <li class="navButton">🏠Home</li>
-                </a>
-                <a href="/about">
-                    <li class="navButton">❓About</li>
-                </a>
-                <a href="https://www.redbubble.com/people/comparethebrew/shop">
-                    <li class="navButton">👕Merch</li>
-                </a>
-                <a href="/top50/beer">
-                    <li class="navButton">🍺Top 50: Beer</li>
-                </a>
-                <a href="/top50/wine">
-                    <li class="navButton">🍷Top 50: Wine</li>
-                </a>
-                <a href="/top50/spirits">
-                    <li class="navButton">🥃Top 50: Spirits</li>
-                </a>
-            </ul>
-        </div>
-    </nav>
-        <div>
-            <!--Modal Section-->
-            <div class="light-modal" id="unique-id" role="dialog" aria-labelledby="light-modal-label"
-                    aria-hidden="false">
-                <div class="light-modal-content animated zoomInUp">
-                    <!-- light modal header -->
-                    <div class="light-modal-header">
-                        <h3 class="light-modal-heading">Confused? Worry not...</h3>
-                        <a href="#" class="light-modal-close-icon" aria-label="close">&times;</a>
-                    </div>
-                    <!-- light modal body -->
-                    <div class="light-modal-body">
-                        {#<p>Here we can see an example drink card...</p>#}
-                        <img src="/static/images/example.PNG" alt="">
-                        <p>Score is the main way CompareTheBrew organises its results...</p>
-                        <div lang="latex">
-                            score = \frac{std.\;drinks}{price}*100
-                        </div>
-                        <p>Remember, <b>a greater score indicates more standard drinks per dollar</b></p>
-                    </div>
-                    <!-- light modal footer -->
-                    {#<div class="light-modal-footer">#}
-                        {#<a href="#" class="light-modal-close-btn" aria-label="close">Close</a>#}
-                    {#</div>#}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="content">
-    <div id="main" class="mainResults">
-        <div>
-            <form id="query" method="GET" action="/search">
-                <i id="searchButton" class="material-icons"
-                   style="padding:1%;font-size:80px;color:#cda20b;right:0;position:absolute;margin-right:-1%;margin-top:1%;cursor:pointer;">search</i>
-                <input name="q" id="searchDrink" type="text" class="smallSearch" placeholder="Search..." value="{{ search_terms if search_terms else '' }}">
-                <input type="hidden" name="order" value="{{ order if order else 'score-desc' }}">
-                <span class="underline smallLine"></span>
-            </form>
+    <div id="content">
+      <div id="main" class="mainResults">
+        <div id=searchBar"">
+          {% include 'snippets/search_bar.html' %}
         </div>
         <div id="options">
-            <div class="buttons">
-                <b class="sortbytext">Sort by:</b>
-                <a href="/search?q={{ search_terms }}&order=score-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}" class="{% if order == 'score-desc' or not order %}buttonSortActive{% else %}buttonSort{% endif %}">Best Score</a>
-                <a href="/search?q={{ search_terms }}&order=score-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}" class="{% if order == 'score-asc' %}buttonSortActive{% else %}buttonSort{% endif %}">Worst Score</a>
-                <a href="/search?q={{ search_terms }}&order=price-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}" class="{% if order == 'price-asc' %}buttonSortActive{% else %}buttonSort{% endif %}">Best Price</a>
-                <a href="/search?q={{ search_terms }}&order=size-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}" class="{% if order == 'size-desc' %}buttonSortActive{% else %}buttonSort{% endif %}">Greatest Quantity</a>
-            </div>
-            <div id="priceRange">
-                <b class="sortbytext">Price: $</b>
-                <input type="number" id="priceMin" name="price_min" min="0" step="1" placeholder="Min" value="{{ price_min if price_min else '' }}" style="width: 60px; padding: 8px; font-size: 14px;">
-                <b class="sortbytext"> - $</b>
-                <input type="number" id="priceMax" name="price_max" min="0" step="1" placeholder="Max" value="{{ price_max if price_max else '' }}" style="width: 60px; padding: 8px; font-size: 14px;">
-                <button onclick="applyPriceFilter()" style="padding: 8px 16px; font-size: 14px; background-color: #722f37; color: white; border: none; border-radius: 4px; cursor: pointer;">Apply</button>
-            </div>
-            <div id="retailerFilter">
-                <b class="sortbytext">Retailer:</b>
-                <select id="storeSelect" onchange="applyStoreFilter()" style="padding: 8px; font-size: 14px; background-color: #fff; color: #333; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">
-                    <option value="all" {% if store_filter == 'all' or not store_filter %}selected{% endif %}>All Retailers</option>
-                    <option value="bws" {% if store_filter == 'bws' %}selected{% endif %}>BWS</option>
-                    <option value="liquorland" {% if store_filter == 'liquorland' %}selected{% endif %}>Liquorland</option>
-                </select>
-            </div>
+          <div class="buttons">
+            <b class="sortbytext">Sort by:</b>
+            <a
+              href="/search?q={{ search_terms }}&order=score-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}"
+              class="{% if order == 'score-desc' or not order %}buttonSortActive{% else %}buttonSort{% endif %}"
+              >Best Score</a
+            >
+            <a
+              href="/search?q={{ search_terms }}&order=score-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}"
+              class="{% if order == 'score-asc' %}buttonSortActive{% else %}buttonSort{% endif %}"
+              >Worst Score</a
+            >
+            <a
+              href="/search?q={{ search_terms }}&order=price-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}"
+              class="{% if order == 'price-asc' %}buttonSortActive{% else %}buttonSort{% endif %}"
+              >Best Price</a
+            >
+            <a
+              href="/search?q={{ search_terms }}&order=size-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}"
+              class="{% if order == 'size-desc' %}buttonSortActive{% else %}buttonSort{% endif %}"
+              >Greatest Quantity</a
+            >
+          </div>
+          <div id="priceRange">
+            <b class="sortbytext">Price: $</b>
+            <input
+              type="number"
+              id="priceMin"
+              name="price_min"
+              min="0"
+              step="1"
+              placeholder="Min"
+              value="{{ price_min if price_min else '' }}"
+              style="width: 60px; padding: 8px; font-size: 14px"
+            />
+            <b class="sortbytext"> - $</b>
+            <input
+              type="number"
+              id="priceMax"
+              name="price_max"
+              min="0"
+              step="1"
+              placeholder="Max"
+              value="{{ price_max if price_max else '' }}"
+              style="width: 60px; padding: 8px; font-size: 14px"
+            />
+            <button
+              onclick="applySearchFilters()"
+              style="
+                padding: 8px 16px;
+                font-size: 14px;
+                background-color: #722f37;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+              "
+            >
+              Apply
+            </button>
+          </div>
+          <div id="retailerFilter">
+            <b class="sortbytext">Retailer:</b>
+            <select
+              id="storeSelect"
+              onchange="applySearchFilters()"
+              style="
+                padding: 8px;
+                font-size: 14px;
+                background-color: #fff;
+                color: #333;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                cursor: pointer;
+              "
+            >
+              <option
+                value="all"
+                {%
+                if
+                store_filter=="all"
+                or
+                not
+                store_filter
+                %}selected{%
+                endif
+                %}
+              >
+                All Retailers
+              </option>
+              <option
+                value="bws"
+                {%
+                if
+                store_filter=="bws"
+                %}selected{%
+                endif
+                %}
+              >
+                BWS
+              </option>
+              <option
+                value="liquorland"
+                {%
+                if
+                store_filter=="liquorland"
+                %}selected{%
+                endif
+                %}
+              >
+                Liquorland
+              </option>
+            </select>
+          </div>
         </div>
 
         <div class="light">
-            {% if total_results == 1 %}
-                Found 1 drink that matched your search.
-            {% else %}
-                Found {{ total_results }} drinks matching your search.
-            {% endif %}
-            <a href="#unique-id" class="btn" style="fill:#A7A7A7;vertical-align:middle;max-width:50px;float:right"><img src="/static/images/help.svg" alt=""></a>
+          {% if total_results == 1 %} Found 1 drink that matched your search. {%
+          else %} Found {{ total_results }} drinks matching your search. {%
+          endif %}
+          <a
+            href="#unique-id"
+            class="btn"
+            style="
+              fill: #a7a7a7;
+              vertical-align: middle;
+              max-width: 50px;
+              float: right;
+            "
+            ><img src="/static/images/help.svg" alt=""
+          /></a>
         </div>
         <div class="areaContainer">
-            <div id="resultsArea">
-                {% if results|length == 0 %}
-                    <h2>Sorry, we didn't find any results matching your search.</h2>
-                {% else %}
-                    <div id="cardsArea">
-                        {% for result in results[:16] %}
-                            <!-- If this item is a google ad item -->
-                            {% if result|length == 1 %}
-                                <div class="item">
-                                    <div class="resultCard ad" style="justify-content: center; align-items: center;">
-                                        <span style="font-size: 48px; color: #999;">AD</span>
-                                    </div>
-                                </div>
-                                <!-- If this item is a normal drink item -->
-                            {% else %}
-                                <!-- Testing phase, don't need to load every result atm. Just taking the first 8 -->
-                                <!-- Develop so only loads more when scrolls down -->
-                                <div class="item">
-                                    <a class="resultCard" href="{{ result[6] }}">
-                                        {% if result[1] %}
-                                        <div class="retailer-badge">
-                                            {{ result[1] }}
-                                        </div>
-                                        {% endif %}
-                                        <div class="cardImage">
-                                             {% if result[11] %}
-                                             <img src="{{ result[11] }}"
-                                                  onerror="this.onerror=null;this.src='/static/images/wine-glass-placeholder.png';"
-                                                  alt="{{ result[2] }} {{ result[3] }}" style="width:72px;height:96px;object-fit:contain;">
-                                             {% else %}
-                                             <img src="/static/images/drinkimages/{{ result[-1] }}.png"
-                                                  onerror="this.onerror=null;this.src='/static/images/wine-glass-placeholder.png';"
-                                                  style="width:72px;height:96px;object-fit:contain;">
-                                             {% endif %}
-                                        </div>
-                                        <div class="cardContent">
-                                            {% set brand_name = result[2] %}
-                                            {% set full_name = result[3] %}
-                                            {% if brand_name and brand_name in full_name %}
-                                            <div class="brand">
-                                                {{ brand_name }}
-                                            </div>
-                                            <div class="name">
-                                                {{ full_name.replace(brand_name, '').strip() }}
-                                            </div>
-                                            {% else %}
-                                            <div class="brand">
-                                                {{ brand_name }}
-                                            </div>
-                                            <div class="name">
-                                                {{ full_name }}
-                                            </div>
-                                            {% endif %}
-                                            <div class="cardDetails">
-                                                <span class="searchLine"></span>
-                                                <div class="details" style="white-space: nowrap; display: inline-block;">
-                                                    {{ (result[7] / 1000) | round(2) }}L - {{ '%0.1f'| format(result[9]) }} std.
-                                                    - {{ result[8] }}%
-                                                </div>
-                                                <div class="scorePriceContainer">
-                                                    <div class="score">
-                                                        <div class="sideways">
-                                                            <img src="/static/images/score.svg" alt="Score">
-                                                        </div>
-                                                        {{ '%0.0f'| format(result[10] * 100) }}
-                                                    </div>
-                                                    <div class="price">
-                                                        ${{ '%0.2f'| format(result[5]) }}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </div>
-                            {% endif %}
-                        {% endfor %}
+          <div id="resultsArea">
+            {% if results|length == 0 %}
+            <h2>Sorry, we didn't find any results matching your search.</h2>
+            {% else %}
+            <div id="cardsArea">
+              {% for result in results[:16] %}
+              <!-- If this item is a google ad item -->
+              {% if result|length == 1 %}
+              <div class="item">
+                <div
+                  class="resultCard ad"
+                  style="justify-content: center; align-items: center"
+                >
+                  <span style="font-size: 48px; color: #999">AD</span>
+                </div>
+              </div>
+              <!-- If this item is a normal drink item -->
+              {% else %}
+              <!-- Testing phase, don't need to load every result atm. Just taking the first 8 -->
+              <!-- Develop so only loads more when scrolls down -->
+              <div class="item">
+                <a class="resultCard" href="{{ result[6] }}">
+                  {% if result[1] %}
+                  <div class="retailer-badge">{{ result[1] }}</div>
+                  {% endif %}
+                  <div class="cardImage">
+                    {% if result[11] %}
+                    <img
+                      src="{{ result[11] }}"
+                      onerror="
+                        this.onerror = null;
+                        this.src = '/static/images/wine-glass-placeholder.png';
+                      "
+                      alt="{{ result[2] }} {{ result[3] }}"
+                      style="width: 72px; height: 96px; object-fit: contain"
+                    />
+                    {% else %}
+                    <img
+                      src="/static/images/drinkimages/{{ result[-1] }}.png"
+                      onerror="
+                        this.onerror = null;
+                        this.src = '/static/images/wine-glass-placeholder.png';
+                      "
+                      style="width: 72px; height: 96px; object-fit: contain"
+                    />
+                    {% endif %}
+                  </div>
+                  <div class="cardContent">
+                    {% set brand_name = result[2] %} {% set full_name =
+                    result[3] %} {% if brand_name and brand_name in full_name %}
+                    <div class="brand">{{ brand_name }}</div>
+                    <div class="name">
+                      {{ full_name.replace(brand_name, '').strip() }}
                     </div>
-                {% endif %}
+                    {% else %}
+                    <div class="brand">{{ brand_name }}</div>
+                    <div class="name">{{ full_name }}</div>
+                    {% endif %}
+                    <div class="cardDetails">
+                      <span class="searchLine"></span>
+                      <div
+                        class="details"
+                        style="white-space: nowrap; display: inline-block"
+                      >
+                        {{ (result[7] / 1000) | round(2) }}L - {{ '%0.1f'|
+                        format(result[9]) }} std. - {{ result[8] }}%
+                      </div>
+                      <div class="scorePriceContainer">
+                        <div class="score">
+                          <div class="sideways">
+                            <img src="/static/images/score.svg" alt="Score" />
+                          </div>
+                          {{ '%0.0f'| format(result[10] * 100) }}
+                        </div>
+                        <div class="price">
+                          ${{ '%0.2f'| format(result[5]) }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              {% endif %} {% endfor %}
             </div>
-        </div>
-
-        <div class="light">
-
-        </div>
-        <div class="pagination" style="display: flex; justify-content: flex-end; align-items: center; margin: 20px 0; font-size: 24px;">
-            {% if current_page > 1 %}
-                <a href="/search?q={{ search_terms }}&order={{ order }}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}&page={{ current_page - 1 }}" class="buttonSort" style="margin-right: 10px;">&laquo; Previous</a>
             {% endif %}
-            <span style="color: #722f37; font-weight: bold; margin: 0 15px;">Page {{ current_page }} of {{ total_pages }}</span>
-            {% if current_page < total_pages %}
-                <a href="/search?q={{ search_terms }}&order={{ order }}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}&page={{ current_page + 1 }}" class="buttonSort" style="margin-left: 10px;">Next &raquo;</a>
-            {% endif %}
+          </div>
         </div>
 
-        <div id="mobileFooter">
-            <div id="footerLeft">
-
-                <b>©CompareTheBrew.com.au, 2019.
-            </div>
-            <div id="footerRight">
-                Drink responsibly.</b>
-            </div>
+        <div
+          class="pagination"
+          style="
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin: 20px 0;
+            font-size: 24px;
+          "
+        >
+          {% if current_page > 1 %}
+          <a
+            href="/search?q={{ search_terms }}&order={{ order }}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}&page={{ current_page - 1 }}"
+            class="buttonSort"
+            style="margin-right: 10px"
+            >&laquo; Previous</a
+          >
+          {% endif %}
+          <span style="color: #722f37; font-weight: bold; margin: 0 15px"
+            >Page {{ current_page }} of {{ total_pages }}</span
+          >
+          {% if current_page < total_pages %}
+          <a
+            href="/search?q={{ search_terms }}&order={{ order }}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}&page={{ current_page + 1 }}"
+            class="buttonSort"
+            style="margin-left: 10px"
+            >Next &raquo;</a
+          >
+          {% endif %}
         </div>
+      </div>
     </div>
-</div>
 
-<div id="footer">
-    <div id="footerLeft">
-        <b>©CompareTheBrew.com.au, 2019.
-    </div>
-    <div id="footerRight">
-        <form style="display:inline-block;position:absolute;margin-left:-15%"
-              action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-            <input type="hidden" name="cmd" value="_donations"/>
-            <input type="hidden" name="business" value="LTES4FLSL72YL"/>
-            <input type="hidden" name="currency_code" value="AUD"/>
-            <input type="image" style="max-height: 25px" src="/static/images/donate.png" border="0" name="submit"
-                   title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button"/>
-            <img alt="" border="0" src="https://www.paypal.com/en_AU/i/scr/pixel.gif" width="1" height="1"/>
-        </form>
+    {% include 'snippets/footer.html' %}
 
-
-        Drink responsibly.</b>
-    </div>
-</div>
-<script>
-    function applyPriceFilter() {
-        const priceMin = document.getElementById('priceMin').value;
-        const priceMax = document.getElementById('priceMax').value;
+    <script>
+      function applySearchFilters() {
+        const priceMin = document.getElementById("priceMin").value;
+        const priceMax = document.getElementById("priceMax").value;
         const urlParams = new URLSearchParams(window.location.search);
-        const q = urlParams.get('q') || '';
-        const order = urlParams.get('order') || 'score-desc';
-        const store = document.getElementById('storeSelect').value;
-        
-        let url = '/search?q=' + encodeURIComponent(q) + '&order=' + order + '&store=' + store;
-        
+        const q = urlParams.get("q") || "";
+        const order = urlParams.get("order") || "score-desc";
+        const store = document.getElementById("storeSelect").value;
+
+        let url =
+          "/search?q=" +
+          encodeURIComponent(q) +
+          "&order=" +
+          order +
+          "&store=" +
+          store;
+
         if (priceMin) {
-            url += '&price_min=' + priceMin;
+          url += "&price_min=" + priceMin;
         }
         if (priceMax) {
-            url += '&price_max=' + priceMax;
+          url += "&price_max=" + priceMax;
         }
-        
+
         window.location.href = url;
-    }
+      }
 
-    function applyStoreFilter() {
-        applyPriceFilter();
-    }
-
-    // Allow pressing Enter in price inputs to trigger filter
-    document.getElementById('priceMin').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') applyPriceFilter();
-    });
-    document.getElementById('priceMax').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') applyPriceFilter();
-    });
-</script>
-</body>
+      // Allow pressing Enter in price inputs to trigger filter
+      document
+        .getElementById("priceMin")
+        .addEventListener("keypress", function (e) {
+          if (e.key === "Enter") applySearchFilters();
+        });
+      document
+        .getElementById("priceMax")
+        .addEventListener("keypress", function (e) {
+          if (e.key === "Enter") applySearchFilters();
+        });
+    </script>
+  </body>
 </html>
