@@ -13,8 +13,8 @@
       href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍺</text></svg>"
     />
 
+    <!-- <link rel="stylesheet" href="/static/css/reset.css" /> -->
     <link rel="stylesheet" href="/static/css/main.css" />
-    
     {% if dark_mode %}
       <link rel="stylesheet" href="/static/css/dark.css" />
     {% endif %}
@@ -50,18 +50,16 @@
       {% include 'snippets/search-controls.html' %}
     </header>
 
-    <div id="search-layout">
-      <section id="results" class="mainResults">
-        <header id="search-metadata">
-          {% include 'snippets/search-metadata.html' %}
-        </header>
-        <ol id="results">
-          {% include 'snippets/results-grid.html' %}
-        </ol>
-        <nav id="pagination">
-          {% include 'snippets/pagination.html' %}        
-        </nav>
-      </section>
+    <div id="searchLayout">
+      <header id="searchMetadata">
+        {% include 'snippets/search-metadata.html' %}
+      </header>
+      <ol id="resultsArea">
+        {% include 'snippets/results-grid.html' %}
+      </ol>
+      <nav id="pagination">
+        {% include 'snippets/pagination.html' %}        
+      </nav>
     </div>
 
     <footer>

@@ -63,6 +63,11 @@
   --color-bg: #ededed;
   --color-white: #ffffff;
   --color-orange: #eb7734;
+  
+  --search-width: 70%;
+  --results-width: 70%;
+
+  --footer-height: 58px;
 }
 
 
@@ -80,6 +85,7 @@ body {
   font-size: 15px;
   margin: 0;
   padding: 0;
+  height: 100%;
 }
 
 a {
@@ -145,24 +151,38 @@ input[type="search"]::-webkit-search-results-decoration {
 
 /* ---- Footer ---- */
 #footer {
-  font-size: 16px;
   position: fixed;
-  padding: 1%;
   left: 0;
   bottom: 0;
   width: 100%;
+  height: var(--footer-height);
+  padding: 0 1%;
+  font-size: 16px;
   background-color: var(--color-maroon);
   color: var(--color-yellow);
   z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 #footerRight {
   float: right;
   margin-right: 2%;
+  display: flex;
+  align-items: center;
 }
 
 #footerLeft {
   float: left;
+}
+
+#donate {
+  display: inline-block;
+  position: absolute;
+  margin-left: -15%;
+  padding: 0;
+  height: 25px;
 }
 
 /* Mobile-only footer (results / top50 pages) */
@@ -210,7 +230,13 @@ input[type="search"]::-webkit-search-results-decoration {
    ============================================================================= */
 
 #searchHeader {
-  width: 100%;
+  width: var(--search-width);
+  margin-top: 50px;
+  margin-bottom: 15px;
+  background-color: hotpink;
+  display: block;
+  justify-self: center;
+  position: relative;
 }
 
 .underline {
@@ -221,25 +247,10 @@ input[type="search"]::-webkit-search-results-decoration {
   left: 0px;
   margin-top: -4px;
   position: absolute;
-  /* top: 175px; */
   width: 100%;
   border-radius: 25px;
+  top: 45px;
 }
-
-/* #searchDrink:focus+.underline {
-    transition: height .075s ease-in-out;
-    height: 10px;
-} */
-
-/* .searchLine {
-    background-color: var(--color-gold);
-    display: block;
-    height: 3px;
-    left: 0px;
-    position: relative;
-    width: 100%;
-    border-radius: 5px;
-} */
 
 #searchButton {
   margin-top: -0.4% !important;
@@ -267,23 +278,166 @@ input[type="search"]::-webkit-search-results-decoration {
     left: -5.5%; */
 }
 
-/* Size variants used on results/top50 pages */
-.bigSearch {
-  font-size: 44px;
+/* #searchDrink:focus+.underline {
+    transition: height .075s ease-in-out;
+    height: 10px;
+} */
+
+/* .searchLine {
+    background-color: var(--color-gold);
+    display: block;
+    height: 3px;
+    left: 0px;
+    position: relative;
+    width: 100%;
+    border-radius: 5px;
+} */
+
+/* Sort/filter controls */
+#options {
+  display: block;
+  width: 100%;
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--color-maroon);
 }
 
+.optionItem {
+  margin-top: 7px;
+}
+
+#buttons {
+  display: flex;
+  align-items: center;
+}
+
+.buttonSort {
+  border: none;
+  /* padding: 5px 10px; */
+  padding: 11px 20px;
+  margin-left: 10px;
+  font-size: 16px;
+  background-color: var(--color-yellow);
+  color: var(--color-gold);
+  border-radius: 9px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.buttonSortActive {
+  background-color: var(--color-maroon);
+  color: white;
+}
+
+#priceRange {
+  /* margin-top: 11px; */
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--color-maroon);
+  right: 0;
+  position: absolute;
+  display: inline;
+}
+
+#retailerFilter {}
+
+/* Size variants used on results/top50 pages */
+/* .bigSearch {
+  font-size: 44px;
+} */
+
 /* Small search bar atop results page */
-.smallSearch {
+/* .smallSearch {
   position: relative;
   font-size: 88px;
   margin-top: 0;
   margin-bottom: 0;
   left: 0;
+} */
+
+
+/* =============================================================================
+   9. RESULTS / TOP-50 PAGES — specific styles
+   ============================================================================= */
+
+/* .main {
+  font-size: 30px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  margin-bottom: 80px;
+} */
+
+/* .resultsNumber {
+  padding-top: 50px;
+  font-size: 14px;
+  color: var(--color-light);
+} */
+
+#helpTooltip {
+  fill: #a7a7a7;
+  vertical-align: middle;
+  max-width: 50px;
+  float: right;
+  display: inline;
 }
 
-.smallLine {
-  top: 45px;
+/* Results page .light has extra top spacing */
+/* .mainResults .light {
+    padding-top: 48px;
+    margin-bottom: 40px;
+} */
+
+/* Main results container */
+#searchLayout {
+  width: var(--results-width);
+  justify-self: center;
+  margin-bottom: var(--footer-height);
+  
+  display: flex;
+  flex-direction: column;
 }
+
+#resultsArea {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  
+  display: flex;
+  flex-wrap: wrap;
+  overflow: scroll;
+  justify-content: center;
+  gap: 12px;
+}
+
+.item {
+  display: block;
+  margin: 0;
+  /* flex: 0 0 360px; */
+  /* width: auto; */
+  width: 360px;
+}
+
+.ad {
+  justify-content: center;
+  align-items: center;
+}
+
+/* Results search line */
+/* .searchLine {
+  background-color: var(--color-yellow);
+} */
+
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 20px 0;
+  font-size: 24px;
+}
+
 
 /* =============================================================================
    6. Card Components
@@ -513,128 +667,6 @@ input[type="search"]::-webkit-search-results-decoration {
   font-weight: bold;
   font-size: 3vh;
   color: var(--color-gold);
-}
-
-
-/* =============================================================================
-   9. RESULTS / TOP-50 PAGES — specific styles
-   ============================================================================= */
-
-/* Main results container */
-.mainResults {
-  position: absolute;
-  top: 80px;
-  margin-top: 6vh;
-  margin-bottom: 80px;
-  font-size: 30px;
-  left: 50%;
-  -webkit-transform: translate(-50%, 2.2%);
-  transform: translate(-50%, 2.2%);
-  width: 80%;
-  max-width: 1360px;
-}
-
-.main {
-  font-size: 30px;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  -webkit-transform: translate(-50%, -50%);
-  transform: translate(-50%, -50%);
-  margin-bottom: 80px;
-}
-
-.resultsNumber {
-  padding-top: 50px;
-  font-size: 14px;
-  color: var(--color-light);
-}
-
-/* Results page .light has extra top spacing */
-/* .mainResults .light {
-    padding-top: 48px;
-    margin-bottom: 40px;
-} */
-
-/* Sort/filter controls */
-#options {
-  padding-top: 24px;
-  font-size: 16px;
-  font-weight: bold;
-  color: var(--color-maroon);
-}
-
-.buttons {
-  display: inline;
-}
-
-.buttonSort {
-  border: none;
-  padding: 11px 20px;
-  margin-left: 10px;
-  font-size: 18px;
-  background-color: var(--color-yellow);
-  color: var(--color-gold);
-  border-radius: 9px;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.buttonSortActive {
-  border: none;
-  padding: 11px 20px;
-  margin-left: 10px;
-  font-size: 18px;
-  background-color: var(--color-maroon);
-  color: var(--color-gold);
-  border-radius: 9px;
-  text-decoration: none;
-  color: white;
-}
-
-#priceRange {
-  margin-top: 11px;
-  font-size: 16px;
-  font-weight: bold;
-  color: var(--color-maroon);
-  right: 0;
-  position: absolute;
-  display: inline;
-}
-
-/* Results layout */
-#areaContainer {
-  margin-bottom: 200px;
-}
-
-#resultsArea {
-  padding: 15px;
-}
-
-#cardsArea {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-
-.item {
-  display: block;
-  margin: 0;
-  /* flex: 0 0 360px; */
-  /* width: auto; */
-  width: 360px;
-}
-
-.ad {
-  justify-content: center;
-  align-items: center;
-}
-
-/* Results search line */
-.searchLine {
-  background-color: var(--color-yellow);
 }
 
 

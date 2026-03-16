@@ -4,47 +4,49 @@
     class="material-icons"
     >search</i
   >
-  <input
+  <!-- <div id="filtersContainer"> -->
+    <input
     name="q"
     id="searchDrink"
     type="text"
     class="smallSearch"
     placeholder="Search..."
     value="{{ search_terms if search_terms else '' }}"
-  />
-  <input
+    />
+    <input
     type="hidden"
     name="order"
     value="{{ order if order else 'score-desc' }}"
-  />
-  <span class="underline smallLine"></span>
+    />
+    <span class="underline"></span>
+  <!-- </div> -->
 </form>
 
 <div id="options">
-  <div class="buttons">
+  <div id="buttons" class="optionItem">
     <b class="sortbytext">Sort by:</b>
     <a
       href="/search?q={{ search_terms }}&order=score-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}"
-      class="{% if order == 'score-desc' or not order %}buttonSortActive{% else %}buttonSort{% endif %}"
+      class="buttonSort {% if order == 'score-desc' or not order %}buttonSortActive{% endif %}"
       >Best Score</a
     >
     <a
       href="/search?q={{ search_terms }}&order=score-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}"
-      class="{% if order == 'score-asc' %}buttonSortActive{% else %}buttonSort{% endif %}"
+      class="buttonSort {% if order == 'score-asc' %}buttonSortActive{% endif %}"
       >Worst Score</a
     >
     <a
       href="/search?q={{ search_terms }}&order=price-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}"
-      class="{% if order == 'price-asc' %}buttonSortActive{% else %}buttonSort{% endif %}"
+      class="buttonSort {% if order == 'price-asc' %}buttonSortActive{% endif %}"
       >Best Price</a
     >
     <a
       href="/search?q={{ search_terms }}&order=size-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}"
-      class="{% if order == 'size-desc' %}buttonSortActive{% else %}buttonSort{% endif %}"
+      class="buttonSort {% if order == 'size-desc' %}buttonSortActive{% endif %}"
       >Greatest Quantity</a
     >
   </div>
-  <div id="priceRange">
+  <div id="priceRange" class="optionItem">
     <b class="sortbytext">Price: $</b>
     <input
       type="number"
@@ -82,7 +84,7 @@
       Apply
     </button>
   </div>
-  <div id="retailerFilter">
+  <div id="retailerFilter" class="optionItem">
     <b class="sortbytext">Retailer:</b>
     <select
       id="storeSelect"
