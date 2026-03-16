@@ -107,7 +107,7 @@ def search_page():
     metrics(search_terms)
 
     return render_template(
-        "results-page.html",
+        "results.html",
         results=page_results,
         search_terms=search_terms,
         order=order_param,
@@ -237,7 +237,7 @@ def search_post():
 # Route for About Us page
 # @app.route('/about', methods=['GET', 'POST'])
 # def viewabout():
-#     return render_template('About.html')  # render a template
+#     return render_template('about.html')  # render a template
 
 # Route for About Us page
 @app.route('/faq', methods=['GET', 'POST'])
