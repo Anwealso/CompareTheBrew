@@ -39,16 +39,14 @@ Available flags:
 - `--discover`: Seeds the task queue with URLs to scrape
 - `--run`: Processes all pending tasks in the queue (sequential)
 - `--next`: Processes only the next single task (iterator mode)
-- `--parallel`: Run tasks using a pool of worker threads for concurrent processing
-- `--workers=N`: Number of worker threads in parallel mode (default: 4)
+- `--workers=N`: Number of worker threads (>1 for parallel, omit or 1 for sequential)
 - `--limit=N`: Limit the number of tasks to process in this run
 - `--category=CAT`: Filter discovery by category (beer, wine, spirits, premix)
 - `--help`: Display help in man page format
 
-**Limit Behavior:**
-- `--discover --limit N`: Creates a new scraping run and processes only the first N pages
-- `--limit N` (without discover): Resumes the most recent run and processes only the next N pages
-- `--run --limit N`: Processes only N tasks from pending queue
+**Workers Behavior:**
+- Not specified or `--workers=1`: Sequential processing (default)
+- `--workers=N` where N > 1: Parallel processing with N workers
 
 **Categories:** Discovery can be filtered by category:
 - `beer`, `wine`, `spirits`, `premix`
@@ -59,14 +57,17 @@ Available flags:
 
 **Examples:**
 ```bash
-# Full scrape with discovery and processing
+# Full scrape with discovery and processing (sequential)
 $ python3 -m scraping.controller bws --discover --run
 
 # Process one task at a time (iterator mode)
 $ python3 -m scraping.controller bws --next
 
 # Parallel processing with 8 workers
-$ python3 -m scraping.controller bws --discover --parallel --workers=8
+$ python3 -m scraping.controller bws --discover --run --workers=8
+
+# Sequential processing (explicit)
+$ python3 -m scraping.controller bws --discover --run --workers=1
 
 # Discover only beer category
 $ python3 -m scraping.controller bws --discover --category=beer
