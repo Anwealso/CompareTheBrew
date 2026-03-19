@@ -6,8 +6,10 @@ function applySearchFilters() {
   const q = urlParams.get("q") || "";
   const order = urlParams.get("order") || "score-desc";
   const store = document.getElementById("storeSelect").value;
+  const scrapedAge = document.getElementById("scrapedAgeSelect").value;
 
   console.log("Store:", store);
+  console.log("Scraped Age:", scrapedAge);
   let url =
     "/search?q=" +
     encodeURIComponent(q) +
@@ -21,6 +23,9 @@ function applySearchFilters() {
   }
   if (priceMax) {
     url += "&price_max=" + priceMax;
+  }
+  if (scrapedAge) {
+    url += "&scraped_age=" + scrapedAge;
   }
 
   window.location.href = url;

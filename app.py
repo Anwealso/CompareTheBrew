@@ -17,10 +17,48 @@ from config import Config
 import db.databaseHandler as db
 
 # Simple dark mode for dev QOL
-DARK_MODE = False
+DARK_MODE = True
 
 # Create a new flask application
 app = Flask(__name__)
+
+@app.template_filter('staleness')
+def staleness_filter(date_str):
+    if not date_str:
+        return {'label': '', 'class': ''}
+    try:
+        date_obj = None
+        formats = ['%Y-%m-%d %H:%M:%S', '%Y-%m-%d', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%dT%H:%M:%S.%f']
+        if isinstance(date_str, str):
+            for fmt in formats:
+                try:
+                    date_obj = datetime.strptime(date_str, fmt)
+                    break
+                except ValueError:
+                    continue
+        elif isinstance(date_str, datetime):
+            date_obj = date_str
+        
+        if date_obj is None:
+            return {'label': '', 'class': ''}
+        
+        days_old = (datetime.now().date() - date_obj.date()).days
+        if days_old <= 0:
+            return {'label': 'today', 'class': 'freshness-today'}
+        elif days_old == 1:
+            return {'label': '1 day ago', 'class': 'freshness-recent'}
+        elif days_old >= 2 and days_old <= 6:
+            return {'label': '2-6 days ago', 'class': 'freshness-recent'}
+        elif days_old >= 7 and days_old <= 13:
+            return {'label': 'a week ago', 'class': 'freshness-week'}
+        else:
+            return {'label': 'more than a week ago', 'class': 'freshness-stale'}
+    except (ValueError, TypeError, AttributeError):
+        return {'label': '', 'class': ''}
+
+@app.context_processor
+def inject_today():
+    return {'today_date': datetime.now().date()}
 
 # Working serve of the search page with css and js
 @app.route("/")
@@ -80,12 +118,20 @@ def search_page():
     price_min = request.args.get("price_min", "")
     price_max = request.args.get("price_max", "")
     store_filter = request.args.get("store", "all")
+    scraped_age = request.args.get("scraped_age", "")
+    if scraped_age is not None and scraped_age != "":
+        try:
+            scraped_age = int(scraped_age)
+        except ValueError:
+            scraped_age = None
+    else:
+        scraped_age = None
 
     per_page = 16
     sort_key = ORDER_MAP.get(order_param, "DESC_efficiency")
 
     conn = db.create_connection()
-    all_results = db.select_drink_by_smart_search(conn, search_terms, sort_key, price_min, price_max, store_filter)
+    all_results = db.select_drink_by_smart_search(conn, search_terms, sort_key, price_min, price_max, store_filter, scraped_age)
     
     # Insert ads into the full list before paginating, or just into the page?
     # Usually better to insert ads into the full list so they stay in consistent positions,
@@ -117,6 +163,7 @@ def search_page():
         price_min=price_min,
         price_max=price_max,
         store_filter=store_filter,
+        scraped_age=scraped_age,
         dark_mode=DARK_MODE,
     )
 

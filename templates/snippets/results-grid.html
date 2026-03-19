@@ -1,7 +1,7 @@
 
 <!-- Main results grid with drink cards -->
 {% if results|length == 0 %}
-<h2>Sorry, we didn't find any results matching your search.</h2>
+<h2 class="no-results-message">Sorry, we didn't find any results matching your search.</h2>
 {% else %}
   {% for result in results[:16] %}
   <!-- If this item is a google ad item -->
@@ -11,10 +11,14 @@
   </div>
   <!-- If this item is a normal drink item -->
   {% else %}
+  {% set staleness = result[15]|staleness %}
   <a class="resultCard" href="{{ result[6] }}">
     {% if result[1] %}
     <div class="retailer-badge">{{ result[1] }}</div>
     {% endif %}
+    <div class="scraped-badge {% if staleness.class %}{{ staleness.class }}{% else %}freshness-unknown{% endif %}">
+      {% if staleness.label %}{{ staleness.label }}{% else %}?{% endif %}
+    </div>
     <div class="cardImage">
       {% if result[11] %}
       <img

@@ -53,6 +53,10 @@ body {
   color: #ccc;
 }
 
+.scraped-badge {
+  color: #fff;
+}
+
 /* #menu {
   background-color: #353535;
 }

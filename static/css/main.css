@@ -742,6 +742,11 @@ input[type="search"]::-webkit-search-results-decoration {
   color: white;
 }
 
+.freshness-unknown {
+  background-color: #999;
+  color: white;
+}
+
 .medal {
   float: right;
   font-size: 16px;

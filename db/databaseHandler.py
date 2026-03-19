@@ -394,7 +394,7 @@ def select_image_links(conn):
     return rows
 
 
-def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="", store=""):
+def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="", store="", scraped_age=None):
     """Select all drinks that contain any of the search keywords given in their name, brand or type attributes
     
     Args:
@@ -404,6 +404,7 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
         price_min: minimum price filter (optional)
         price_max: maximum price filter (optional)
         store: retailer filter - 'all' or specific store like 'bws', 'liquorland' (optional)
+        scraped_age: max age in days to filter by date_created (optional)
     Returns:
         A list of rows from the drinks table matching the search terms
     """
@@ -462,6 +463,10 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
     price_filter = ""
     if price_conditions:
         price_filter = " AND " + " AND ".join(price_conditions)
+    
+    scraped_age_filter = ""
+    if scraped_age is not None and scraped_age != "":
+        scraped_age_filter = f" AND date_created >= datetime('now', '-{scraped_age} days')"
 
     # Deduplication subquery - keeps only the most recent row for each unique drink
     # Main attributes: name, brand, type, ml, percent, store (excluding promotional text, location, etc.)
@@ -476,7 +481,7 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
                 SELECT MAX(id) FROM drinks
                 WHERE search_text LIKE '%{term}%'
                 GROUP BY name, brand, type, ml, percent, store
-            ){price_filter}{store_filter} ORDER BY {category} {order}
+            ){price_filter}{scraped_age_filter}{store_filter} ORDER BY {category} {order}
         """
         cur.execute(dedupe_sql)
 

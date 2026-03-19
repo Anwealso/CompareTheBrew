@@ -26,22 +26,22 @@
   <div id="buttons" class="optionItem">
     <b class="sortbytext">Sort by:</b>
     <a
-      href="/search?q={{ search_terms }}&order=score-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}"
+      href="/search?q={{ search_terms }}&order=score-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
       class="buttonSort {% if order == 'score-desc' or not order %}buttonSortActive{% endif %}"
       >Best Score</a
     >
     <a
-      href="/search?q={{ search_terms }}&order=score-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}"
+      href="/search?q={{ search_terms }}&order=score-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
       class="buttonSort {% if order == 'score-asc' %}buttonSortActive{% endif %}"
       >Worst Score</a
     >
     <a
-      href="/search?q={{ search_terms }}&order=price-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}"
+      href="/search?q={{ search_terms }}&order=price-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
       class="buttonSort {% if order == 'price-asc' %}buttonSortActive{% endif %}"
       >Best Price</a
     >
     <a
-      href="/search?q={{ search_terms }}&order=size-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}"
+      href="/search?q={{ search_terms }}&order=size-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
       class="buttonSort {% if order == 'size-desc' %}buttonSortActive{% endif %}"
       >Greatest Quantity</a
     >
@@ -111,6 +111,33 @@
         %}
       >
         Liquorland
+      </option>
+    </select>
+  </div>
+  <div id="scrapedAgeFilter" class="optionItem">
+    <span class="filterLabel">Scraped:</span>
+    <select
+      id="scrapedAgeSelect"
+      onchange="applySearchFilters()"
+      class="filterSelect"
+    >
+      <option value="" {% if not scraped_age %}selected{% endif %}>
+        Any age
+      </option>
+      <option value="0" {% if scraped_age == 0 %}selected{% endif %}>
+        Today
+      </option>
+      <option value="3" {% if scraped_age == 3 %}selected{% endif %}>
+        Within 3 days
+      </option>
+      <option value="7" {% if scraped_age == 7 %}selected{% endif %}>
+        Within a week
+      </option>
+      <option value="14" {% if scraped_age == 14 %}selected{% endif %}>
+        Within 2 weeks
+      </option>
+      <option value="30" {% if scraped_age == 30 %}selected{% endif %}>
+        Within a month
       </option>
     </select>
   </div>
