@@ -150,7 +150,8 @@ def bws_handler(search_term: str) -> List:
                 if item_numb != 1 and std_drinks != -2 and std_drinks != -1:
                     std_drinks = item_numb * std_drinks # account for multiple items in a pack
                 
-                efficiency = std_drinks / float(subdrink["Price"])
+                price = float(subdrink["Price"]) if subdrink["Price"] else 0.0
+                efficiency = (std_drinks / price) if price > 0 and std_drinks > 0 else 0.0
             except:
                 print("\t", "failed ->", std_drinks, item_numb, subdrink["Price"])
         

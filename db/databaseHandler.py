@@ -551,12 +551,18 @@ def update_drink(conn, drink, newPrice):
         print('---------------')
         print(drink.brand + " " + drink.name)
         cur = conn.cursor()
+        try:
+            std_drinks = float(result) if result else 0.0
+            price = float(newPrice) if newPrice else 0.0
+            new_efficiency = (std_drinks / price) if price > 0 and std_drinks > 0 else 0.0
+        except (ValueError, TypeError):
+            new_efficiency = 0.0
         cur.execute(sql, (
-            newPrice, drink.link, drink.image, float(float(result) / float(newPrice)), drink.name, drink.brand,
+            newPrice, drink.link, drink.image, new_efficiency, drink.name, drink.brand,
             drink.store))
-        print(float(newPrice))
-        print(float(result))
-        print(float(result) / float(newPrice))
+        print(float(newPrice) if newPrice else 0)
+        print(float(result) if result else 0)
+        print(new_efficiency)
         conn.commit()
 
 
