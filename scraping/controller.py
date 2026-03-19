@@ -228,11 +228,23 @@ class ScrapingController:
         
         print("All workers stopped")
 
-    def process_all(self, retailer_name: str):
-        """Looping run_next until exhaustion."""
-        print(f"Processing all tasks for {retailer_name}...")
-        while self.run_next(retailer_name):
-            pass
+    def process_all(self, retailer_name: str, limit: int = None, run_id: str = None):
+        """Looping run_next until exhaustion or limit reached.
+        
+        Args:
+            retailer_name: The retailer to process
+            limit: Optional max number of tasks to process
+            run_id: Optional run_id to filter tasks
+        """
+        count = 0
+        print(f"Processing tasks for {retailer_name}" + (f" (limit: {limit})" if limit else "") + "...")
+        while self.run_next(retailer_name, run_id):
+            count += 1
+            if limit and count >= limit:
+                print(f"Reached limit of {limit} tasks. Stopping.")
+                break
+        if not limit:
+            print(f"Processed {count} tasks.")
 
 
 if __name__ == "__main__":
@@ -268,13 +280,24 @@ OPTIONS
        --next  Process only the next single task. Useful for debugging
               or controlled progression through the queue.
 
+       --limit=N
+              Limit the number of tasks to process. When combined with
+              --discover, creates a new run and processes only N tasks.
+              When used alone, resumes the most recent run and processes
+              only N tasks. When used with --run, overrides the default
+              "process all" behavior.
+
        --parallel
               Run tasks using a pool of worker threads for concurrent
               processing. More efficient for bulk scraping.
 
-       --workers N
+       --workers=N
               Number of worker threads in parallel mode.
               Default: 4
+
+       --category=CAT
+              Filter discovery by category. Supported values:
+              beer, wine, spirits, premix
 
 EXAMPLES
        # Full scrape with discovery and processing
@@ -284,10 +307,16 @@ EXAMPLES
        python3 -m scraping.controller bws --next
 
        # Parallel processing with 8 workers
-       python3 -m scraping.controller bws --discover --parallel --workers 8
+       python3 -m scraping.controller bws --discover --parallel --workers=8
 
        # Discover only beer category
-       python3 -m scraping.controller bws --discover --category beer
+       python3 -m scraping.controller bws --discover --category=beer
+
+       # Discover and process only first 3 pages
+       python3 -m scraping.controller bws --discover --limit=3
+
+       # Resume previous run and process only next 2 pages
+       python3 -m scraping.controller bws --limit=2
 
        # Auto-detect: discover if empty, then process all
        python3 -m scraping.controller bws
@@ -319,7 +348,7 @@ CompareTheBrew                      2024           SCRAPING CONTROLLER(1)"""
 
     parser = argparse.ArgumentParser(
         description='Task-based Scraping Controller',
-        usage='python3 -m scraping.controller RETAILER [OPTIONS]'
+        usage='python3 -m scraping.controller RETAILER [OPTIONS]\n\nOptions:\n  --discover              Seed the queue\n  --run                   Run all pending tasks\n  --next                  Process only the next single task\n  --parallel              Run with worker pool\n  --workers=N             Number of workers (default: 4)\n  --category=CAT          Filter by category (beer, wine, spirits, premix)\n  --limit=N               Limit tasks to process\n  -h, --help              Show this help message'
     )
     parser.add_argument('retailer', type=str, nargs='?', help='bws, ll, fc')
     parser.add_argument('--discover', action='store_true', help='Seed the queue')
@@ -328,6 +357,7 @@ CompareTheBrew                      2024           SCRAPING CONTROLLER(1)"""
     parser.add_argument('--parallel', action='store_true', help='Run with worker pool')
     parser.add_argument('--workers', type=int, default=NUM_WORKERS, help='Number of workers for parallel mode')
     parser.add_argument('--category', type=str, help='Filter discovery by category (beer, wine, spirits, premix)')
+    parser.add_argument('--limit', type=int, help='Limit the number of tasks to process')
     
     import sys
     if '--help' in sys.argv or '-h' in sys.argv:
@@ -338,19 +368,24 @@ CompareTheBrew                      2024           SCRAPING CONTROLLER(1)"""
     controller = ScrapingController()
     
     if args.discover:
-        controller.discover(args.retailer, category=args.category)
+        run_id = controller.discover(args.retailer, category=args.category)
+    else:
+        run_id = None
     
     if args.parallel:
-        controller.run_parallel(num_workers=args.workers, retailer=args.retailer)
+        controller.run_parallel(num_workers=args.workers, retailer=args.retailer, run_id=run_id)
     elif args.run:
-        controller.process_all(args.retailer)
+        controller.process_all(args.retailer, limit=args.limit, run_id=run_id)
     elif args.next:
-        controller.run_next(args.retailer)
+        controller.run_next(args.retailer, run_id=run_id)
+    elif args.limit:
+        # --limit alone: process N tasks (equivalent to --next if limit=1)
+        controller.process_all(args.retailer, limit=args.limit, run_id=run_id)
     elif not args.discover:
         conn = create_connection()
         count = get_pending_tasks_count(conn, args.retailer)
         conn.close()
         
         if count == 0:
-            controller.discover(args.retailer, category=args.category)
+            run_id = controller.discover(args.retailer, category=args.category)
         controller.process_all(args.retailer)

@@ -40,10 +40,17 @@ Available flags:
 - `--run`: Processes all pending tasks in the queue (sequential)
 - `--next`: Processes only the next single task (iterator mode)
 - `--parallel`: Run tasks using a pool of worker threads for concurrent processing
-- `--workers N`: Number of worker threads in parallel mode (default: 4)
+- `--workers=N`: Number of worker threads in parallel mode (default: 4)
+- `--limit=N`: Limit the number of tasks to process in this run
+- `--category=CAT`: Filter discovery by category (beer, wine, spirits, premix)
 - `--help`: Display help in man page format
 
-**Categories:** Discovery can be filtered by category using the `--category` flag:
+**Limit Behavior:**
+- `--discover --limit N`: Creates a new scraping run and processes only the first N pages
+- `--limit N` (without discover): Resumes the most recent run and processes only the next N pages
+- `--run --limit N`: Processes only N tasks from pending queue
+
+**Categories:** Discovery can be filtered by category:
 - `beer`, `wine`, `spirits`, `premix`
 
 **Task Types:** The system tracks two types of tasks:
@@ -59,10 +66,16 @@ $ python3 -m scraping.controller bws --discover --run
 $ python3 -m scraping.controller bws --next
 
 # Parallel processing with 8 workers
-$ python3 -m scraping.controller bws --discover --parallel --workers 8
+$ python3 -m scraping.controller bws --discover --parallel --workers=8
 
 # Discover only beer category
-$ python3 -m scraping.controller bws --discover --category beer
+$ python3 -m scraping.controller bws --discover --category=beer
+
+# Discover and process only first 3 pages
+$ python3 -m scraping.controller bws --discover --limit=3
+
+# Resume and process only next 2 pages
+$ python3 -m scraping.controller bws --limit=2
 
 # Show help
 $ python3 -m scraping.controller --help
