@@ -347,6 +347,10 @@ CompareTheBrew                      2024           SCRAPING CONTROLLER(1)"""
         description='Task-based Scraping Controller',
         usage='python3 -m scraping.controller RETAILER [OPTIONS]\n\nOptions:\n  --discover              Seed the queue\n  --run                   Run all pending tasks\n  --next                  Process only the next single task\n  --workers=N             Number of workers (>1 for parallel, 1 or omit for sequential)\n  --category=CAT          Filter by category (beer, wine, spirits, premix)\n  --limit=N               Limit tasks to process\n  -h, --help              Show this help message'
     )
+    parser.add_argument('retailer', type=str, nargs='?', help='bws, ll, fc')
+    parser.add_argument('--discover', action='store_true', help='Seed the queue')
+    parser.add_argument('--run', action='store_true', help='Run all pending tasks')
+    parser.add_argument('--next', action='store_true', help='Process only the next single task')
     parser.add_argument('--workers', type=int, default=1, help='Number of workers (1=sequential, >1=parallel)')
     parser.add_argument('--category', type=str, help='Filter discovery by category (beer, wine, spirits, premix)')
     parser.add_argument('--limit', type=int, help='Limit the number of tasks to process')

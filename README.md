@@ -66,9 +66,6 @@ $ python3 -m scraping.controller bws --next
 # Parallel processing with 8 workers
 $ python3 -m scraping.controller bws --discover --run --workers=8
 
-# Sequential processing (explicit)
-$ python3 -m scraping.controller bws --discover --run --workers=1
-
 # Discover only beer category
 $ python3 -m scraping.controller bws --discover --category=beer
 
