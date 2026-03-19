@@ -31,20 +31,43 @@ $ source venv/bin/activate
 ```
 
 ### 1. Scraping (New Task-Queue Architecture)
-The scraping system has been re-architected into a task-based pipeline.
-Run the full discovery and processing for a retailer:
+The scraping system has been re-architected into a task-based pipeline. Run the full discovery and processing for a retailer:
 ```bash
 $ python3 -m scraping.controller bws
 ```
 Available flags:
 - `--discover`: Seeds the task queue with URLs to scrape
-- `--run`: Processes all pending tasks in the queue
+- `--run`: Processes all pending tasks in the queue (sequential)
 - `--next`: Processes only the next single task (iterator mode)
+- `--parallel`: Run tasks using a pool of worker threads for concurrent processing
+- `--workers N`: Number of worker threads in parallel mode (default: 4)
+- `--help`: Display help in man page format
 
-Example:
+**Categories:** Discovery can be filtered by category using the `--category` flag:
+- `beer`, `wine`, `spirits`, `premix`
+
+**Task Types:** The system tracks two types of tasks:
+- `page`: Full page scraping (default)
+- `drink_detail`: Individual drink detail pages
+
+**Examples:**
 ```bash
+# Full scrape with discovery and processing
 $ python3 -m scraping.controller bws --discover --run
+
+# Process one task at a time (iterator mode)
+$ python3 -m scraping.controller bws --next
+
+# Parallel processing with 8 workers
+$ python3 -m scraping.controller bws --discover --parallel --workers 8
+
+# Discover only beer category
+$ python3 -m scraping.controller bws --discover --category beer
+
+# Show help
+$ python3 -m scraping.controller --help
 ```
+
 See `scraping/SCRAPING_GUIDELINES.md` for more details.
 
 ### 2. Web Server

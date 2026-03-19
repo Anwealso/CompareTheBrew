@@ -237,19 +237,108 @@ class ScrapingController:
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description='Task-based Scraping Controller')
-    parser.add_argument('retailer', type=str, help='bws, ll, fc')
+
+    MAN_PAGE = """SCRAPING CONTROLLER(1)     CompareTheBrew     SCRAPING CONTROLLER(1)
+
+NAME
+       scraping.controller - Task-based scraping controller for CompareTheBrew
+
+SYNOPSIS
+       python3 -m scraping.controller RETAILER [OPTIONS]
+
+DESCRIPTION
+       Coordinates the scraping pipeline across different retailers using
+       a Task Queue system with a progressive iterator approach.
+
+ARGUMENTS
+       RETAILER
+              The retailer to scrape. Supported values:
+              bws, ll (Liquorland), fc (First Choice)
+
+OPTIONS
+       -h, --help
+              Display this man page.
+
+       --discover
+              Seeds the task queue with URLs to scrape. For pagination
+              retailers (like BWS), it adds all pages at once.
+
+       --run   Process all pending tasks in the queue sequentially.
+
+       --next  Process only the next single task. Useful for debugging
+              or controlled progression through the queue.
+
+       --parallel
+              Run tasks using a pool of worker threads for concurrent
+              processing. More efficient for bulk scraping.
+
+       --workers N
+              Number of worker threads in parallel mode.
+              Default: 4
+
+EXAMPLES
+       # Full scrape with discovery and processing
+       python3 -m scraping.controller bws --discover --run
+
+       # Process one task at a time (iterator mode)
+       python3 -m scraping.controller bws --next
+
+       # Parallel processing with 8 workers
+       python3 -m scraping.controller bws --discover --parallel --workers 8
+
+       # Discover only beer category
+       python3 -m scraping.controller bws --discover --category beer
+
+       # Auto-detect: discover if empty, then process all
+       python3 -m scraping.controller bws
+
+TASK TYPES
+       page         Full page scraping (default)
+       drink_detail Individual drink detail pages
+
+RETRIERS
+       Tasks are retried up to 3 times before being marked as failed.
+       The max_retries setting can be adjusted in ScrapingController.
+
+FILES
+       scraping/sitemaps.json
+              JSON file containing retailer URLs for discovery.
+
+       scraping/SCRAPING_GUIDELINES.md
+              Detailed guidelines for the scraping system.
+
+SEE ALSO
+       tools/task_queue_cli.py - View task queue status
+       scraping/bws_processor.py - BWS-specific processor
+       scraping/liquorland_processor.py - Liquorland processor
+
+AUTHORS
+       CompareTheBrew Team
+
+CompareTheBrew                      2024           SCRAPING CONTROLLER(1)"""
+
+    parser = argparse.ArgumentParser(
+        description='Task-based Scraping Controller',
+        usage='python3 -m scraping.controller RETAILER [OPTIONS]'
+    )
+    parser.add_argument('retailer', type=str, nargs='?', help='bws, ll, fc')
     parser.add_argument('--discover', action='store_true', help='Seed the queue')
     parser.add_argument('--run', action='store_true', help='Run all pending tasks')
     parser.add_argument('--next', action='store_true', help='Process only the next single task')
     parser.add_argument('--parallel', action='store_true', help='Run with worker pool')
     parser.add_argument('--workers', type=int, default=NUM_WORKERS, help='Number of workers for parallel mode')
+    parser.add_argument('--category', type=str, help='Filter discovery by category (beer, wine, spirits, premix)')
+    
+    import sys
+    if '--help' in sys.argv or '-h' in sys.argv:
+        print(MAN_PAGE)
+        sys.exit(0)
     
     args = parser.parse_args()
     controller = ScrapingController()
     
     if args.discover:
-        controller.discover(args.retailer)
+        controller.discover(args.retailer, category=args.category)
     
     if args.parallel:
         controller.run_parallel(num_workers=args.workers, retailer=args.retailer)
@@ -263,5 +352,5 @@ if __name__ == "__main__":
         conn.close()
         
         if count == 0:
-            controller.discover(args.retailer)
+            controller.discover(args.retailer, category=args.category)
         controller.process_all(args.retailer)
