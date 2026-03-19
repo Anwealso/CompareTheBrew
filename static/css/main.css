@@ -537,6 +537,15 @@ input[type="search"]::-webkit-search-results-decoration {
    6. Card Components
    ============================================================================= */
 
+/* ---- No Results Message ---- */
+.no-results-message {
+  color: var(--color-maroon);
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  padding: 40px 20px;
+}
+
 /* ---- Result Card ---- */
 .resultCard {
   height: 216px;
@@ -696,6 +705,41 @@ input[type="search"]::-webkit-search-results-decoration {
   letter-spacing: 0.5px;
   z-index: 2;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.scraped-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  z-index: 2;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.freshness-today {
+  background-color: #28a745;
+  color: white;
+}
+
+.freshness-recent {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.freshness-week {
+  background-color: #ffc107;
+  color: #333;
+}
+
+.freshness-stale {
+  background-color: #6c757d;
+  color: white;
 }
 
 .medal {
