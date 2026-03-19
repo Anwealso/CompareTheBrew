@@ -1,3 +1,31 @@
+function applySearchFilters() {
+  console.log("Applying search filters...");
+  const priceMin = document.getElementById("priceMin").value;
+  const priceMax = document.getElementById("priceMax").value;
+  const urlParams = new URLSearchParams(window.location.search);
+  const q = urlParams.get("q") || "";
+  const order = urlParams.get("order") || "score-desc";
+  const store = document.getElementById("storeSelect").value;
+
+  console.log("Store:", store);
+  let url =
+    "/search?q=" +
+    encodeURIComponent(q) +
+    "&order=" +
+    order +
+    "&store=" +
+    store;
+
+  if (priceMin) {
+    url += "&price_min=" + priceMin;
+  }
+  if (priceMax) {
+    url += "&price_max=" + priceMax;
+  }
+
+  window.location.href = url;
+}
+
 $(document).ready(function (e) {
   // document.getElementById("slide").addEventListener("click", function () {
   //   document.getElementById("cover").classList.toggle("shadow");
@@ -92,33 +120,6 @@ $(document).ready(function (e) {
     document.getElementById("volume").className = "buttonSortActive";
   }
 
-  function applySearchFilters() {
-    const priceMin = document.getElementById("priceMin").value;
-    const priceMax = document.getElementById("priceMax").value;
-    const urlParams = new URLSearchParams(window.location.search);
-    const q = urlParams.get("q") || "";
-    const order = urlParams.get("order") || "score-desc";
-    const store = document.getElementById("storeSelect").value;
-
-    let url =
-      "/search?q=" +
-      encodeURIComponent(q) +
-      "&order=" +
-      order +
-      "&store=" +
-      store;
-
-    if (priceMin) {
-      url += "&price_min=" + priceMin;
-    }
-    if (priceMax) {
-      url += "&price_max=" + priceMax;
-    }
-
-    window.location.href = url;
-  }
-
-  // Allow pressing Enter in price inputs to trigger filter
   document
     .getElementById("priceMin")
     .addEventListener("keypress", function (e) {

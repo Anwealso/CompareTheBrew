@@ -47,7 +47,8 @@
     >
   </div>
   <div id="priceRange" class="optionItem">
-    <b class="sortbytext">Price: $</b>
+    <span class="filterLabel">Price:</span>
+    <span class="filterLabel">$</span>
     <input
       type="number"
       id="priceMin"
@@ -56,9 +57,9 @@
       step="1"
       placeholder="Min"
       value="{{ price_min if price_min else '' }}"
-      style="width: 60px; padding: 8px; font-size: 14px"
+      class="filterInput"
     />
-    <b class="sortbytext"> - $</b>
+    <span class="filterLabel">- $</span>
     <input
       type="number"
       id="priceMax"
@@ -67,37 +68,21 @@
       step="1"
       placeholder="Max"
       value="{{ price_max if price_max else '' }}"
-      style="width: 60px; padding: 8px; font-size: 14px"
+      class="filterInput"
     />
     <button
       onclick="applySearchFilters()"
-      style="
-        padding: 8px 16px;
-        font-size: 14px;
-        background-color: #722f37;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-      "
+      class="filterApplyBtn"
     >
       Apply
     </button>
   </div>
   <div id="retailerFilter" class="optionItem">
-    <b class="sortbytext">Retailer:</b>
+    <span class="filterLabel">Retailer:</span>
     <select
       id="storeSelect"
       onchange="applySearchFilters()"
-      style="
-        padding: 8px;
-        font-size: 14px;
-        background-color: #fff;
-        color: #333;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        cursor: pointer;
-      "
+      class="filterSelect"
     >
       <option
         value="all"
