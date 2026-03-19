@@ -29,6 +29,7 @@ def get_runs_with_tasks(conn):
     cur = conn.cursor()
     cur.execute("""
         SELECT DISTINCT r.uuid, r.retailer, r.category, r.start_time, r.status,
+               (SELECT COUNT(*) FROM scrape_tasks t WHERE t.run_id = r.uuid) as total,
                (SELECT COUNT(*) FROM scrape_tasks t WHERE t.run_id = r.uuid AND t.status = 'pending') as pending,
                (SELECT COUNT(*) FROM scrape_tasks t WHERE t.run_id = r.uuid AND t.status = 'in_progress') as in_progress,
                (SELECT COUNT(*) FROM scrape_tasks t WHERE t.run_id = r.uuid AND t.status = 'completed') as completed,
@@ -221,7 +222,7 @@ class TaskQueueApp(App):
 
     def on_mount(self) -> None:
         table = self.query_one("#task-table", TaskQueueTable)
-        table.add_columns("Run ID", "Retailer", "Category", "Pending", "In Progress", "Completed", "Failed")
+        table.add_columns("Run ID", "Retailer", "Category", "Total", "Pending", "In Progress", "Completed", "Failed")
         table.focus()
         self.query_one("#footer-text", Static).update("[b]Enter[/b]: Select/View | [b]↑/↓[/b]: Navigate | [b]Backspace[/b]: Go Back | [b]Q[/b]: Quit")
         self.refresh_data()
@@ -291,7 +292,7 @@ class TaskQueueApp(App):
                 completed = sum(1 for t in tasks if t[3] == 'completed')
                 failed = sum(1 for t in tasks if t[3] == 'failed')
                 
-                header_text = f"[DETAILED VIEW] Run: {self.selected_run_id[:12]}... | {self.selected_retailer} | {self.selected_category} | P:{pending} IP:{in_progress} C:{completed} F:{failed}"
+                header_text = f"[DETAILED VIEW] Run: {self.selected_run_id[:12]}... | {self.selected_retailer} | {self.selected_category} | T:{len(tasks)} P:{pending} IP:{in_progress} C:{completed} F:{failed}"
                 self.query_one("#stats-text", Static).update(header_text)
                 
                 table.add_columns("Run ID", "Task ID", "Retailer", "Category", "Status", "URL", "Att")
@@ -341,16 +342,17 @@ class TaskQueueApp(App):
                 
                 self.query_one("#stats-text", Static).update(stats_text)
                 
-                table.add_columns("Run ID", "Retailer", "Category", "Pending", "In Progress", "Completed", "Failed")
+                table.add_columns("Run ID", "Retailer", "Category", "Total", "Pending", "In Progress", "Completed", "Failed")
                 
                 for row in runs:
-                    run_id, retailer, category, start_time, run_status, pending, in_progress, completed_count, failed = row
+                    run_id, retailer, category, start_time, run_status, total, pending, in_progress, completed_count, failed = row
                     run_id_short = run_id[:10] + ".." if run_id and len(run_id) > 12 else (run_id or "")
                     category_short = (category or "")[:15]
                     table.add_row(
                         run_id_short,
                         retailer,
                         category_short,
+                        str(total),
                         str(pending),
                         str(in_progress),
                         str(completed_count),
