@@ -1,10 +1,10 @@
-  <!-- Results counter -->
-  <div class="light">
-    {% if total_results == 1 %} Found 1 drink that matched your search. {% else
-    %} Found {{ total_results }} drinks matching your search. {% endif %}
-    <a
-      href="#help"
-      id="helpTooltip"
-      ><img src="/static/images/help.svg" alt=""
-    /></a>
-  </div>
+<!-- Results counter -->
+<p id="resultsCounter">
+  {% if total_results == 1 %} Found 1 drink that matched your search. 
+  {% else %} Found {{ total_results }} drinks matching your search. {% endif %}
+</p>
+<a
+  href="#help"
+  id="helpTooltip"
+  ><img src="/static/images/help.svg" alt=""
+/></a>

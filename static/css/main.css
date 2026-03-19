@@ -75,6 +75,16 @@
    3. Global Reset & Base
    ============================================================================= */
 
+/* 6. Improve media defaults */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -233,7 +243,6 @@ input[type="search"]::-webkit-search-results-decoration {
   width: var(--search-width);
   margin-top: 50px;
   margin-bottom: 15px;
-  background-color: hotpink;
   display: block;
   justify-self: center;
   position: relative;
@@ -376,28 +385,42 @@ input[type="search"]::-webkit-search-results-decoration {
   color: var(--color-light);
 } */
 
+/* Results page .light has extra top spacing */
+/* .mainResults .light {
+  padding-top: 48px;
+  margin-bottom: 40px;
+  } */
+  
+  /* Main results container */
+  #searchLayout {
+    width: var(--results-width);
+    justify-self: center;
+    margin-bottom: var(--footer-height);
+    
+    display: flex;
+    flex-direction: column;
+  }
+  
+#searchMetadata {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  /* margin-bottom: 20px; */
+}
+
+#resultsCounter {
+  padding-top: 50px;
+  font-size: 14px;
+  color: var(--color-light);
+}
+
 #helpTooltip {
   fill: #a7a7a7;
   vertical-align: middle;
-  max-width: 50px;
+  width: 50px;
   float: right;
   display: inline;
-}
-
-/* Results page .light has extra top spacing */
-/* .mainResults .light {
-    padding-top: 48px;
-    margin-bottom: 40px;
-} */
-
-/* Main results container */
-#searchLayout {
-  width: var(--results-width);
-  justify-self: center;
-  margin-bottom: var(--footer-height);
-  
-  display: flex;
-  flex-direction: column;
+  padding-bottom: 5px;
 }
 
 #resultsArea {
