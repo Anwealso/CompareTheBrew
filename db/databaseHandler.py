@@ -541,18 +541,22 @@ def update_drink(conn, drink, newPrice):
               AND store = ? '''
 
     result = get_drinks_stddrinks(conn, drink)
-    if result == False:
+    
+    # Explicit checks for False (not found) vs 0.0 (found but std_drinks is 0)
+    if result is False:
+        # Drink not found in database
         print("failed to update drink... here are the details")
         try:
             print(drink)
         except:
             print("couldnt print drink!")
     else:
+        # Drink found - result is the std_drinks value (can be 0.0)
+        std_drinks = float(result) if result is not None else 0.0
         print('---------------')
         print(drink.brand + " " + drink.name)
         cur = conn.cursor()
         try:
-            std_drinks = float(result) if result else 0.0
             price = float(newPrice) if newPrice else 0.0
             new_efficiency = (std_drinks / price) if price > 0 and std_drinks > 0 else 0.0
         except (ValueError, TypeError):
@@ -561,7 +565,7 @@ def update_drink(conn, drink, newPrice):
             newPrice, drink.link, drink.image, new_efficiency, drink.name, drink.brand,
             drink.store))
         print(float(newPrice) if newPrice else 0)
-        print(float(result) if result else 0)
+        print(std_drinks)
         print(new_efficiency)
         conn.commit()
 
@@ -594,15 +598,16 @@ def get_drinks_stddrinks(conn, drink):
     get the standard drinks of a drink
     :param conn:
     :param drink:
-    :return: project id
+    :return: standard drinks value or False if not found
     """
     sql = ''' SELECT * FROM drinks
               WHERE store = ?
               AND brand = ?
               AND name = ?
+              AND link = ?
               '''
     cur = conn.cursor()
-    cur.execute(sql, (drink.store, drink.brand, drink.name))
+    cur.execute(sql, (drink.store, drink.brand, drink.name, drink.link))
 
     rows = cur.fetchall()
     if len(rows) > 0:
