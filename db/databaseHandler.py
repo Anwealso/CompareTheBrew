@@ -59,11 +59,13 @@ def create_entry(conn, task):
     :param task:
     :return:
     """
-
-    sql = ''' INSERT INTO drinks(store,brand,name,type,price,link,ml,percent,stdDrinks,efficiency,image,search_text)
-              VALUES(?,?,?,?,?,?,?,?,?,?,?,?) '''
+    from datetime import datetime
+    now = datetime.now().isoformat()
+    
+    sql = ''' INSERT INTO drinks(store,brand,name,type,price,link,ml,percent,stdDrinks,efficiency,image,search_text,date_created)
+              VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) '''
     cur = conn.cursor()
-    cur.execute(sql, task)
+    cur.execute(sql, task + (now,))
     return cur.lastrowid
 
 
