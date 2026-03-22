@@ -1,69 +1,165 @@
-body {
-  background-color: #1a1a1a;
-}
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #1a1a1a;
+  }
 
-.resultCard {
-  background-color: #4a4a4a;
-}
+  .resultCard {
+    background-color: #4a4a4a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
 
-.resultCard .name {
-  color: #ffdc52;
-}
+  .resultCard:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), 0 8px 16px rgba(0, 0, 0, 0.3);
+  }
 
-.resultCard .details {
-  color: #ccc;
-}
+  .resultCard .name {
+    color: #ffdc52;
+  }
 
-.resultCard .brand {
-  color: #cda20b;
-}
+  .resultCard .details {
+    color: #ccc;
+  }
 
-.light {
-  color: #ccc;
-}
+  .resultCard .brand {
+    color: #cda20b;
+  }
 
-#searchDrink {
-  color: #fff;
-}
+  .resultCard .indexdetails {
+    color: #ccc;
+  }
 
-.buttonSort {
-  background-color: #4a4a4a;
-  color: #cda20b;
-}
+  .light {
+    color: #ccc;
+  }
 
-.buttonSortActive {
-  background-color: #722f37;
-  color: #cda20b;
-}
+  #searchDrink {
+    color: #fff;
+  }
 
-#priceRange {
-  color: #ccc;
-}
+  .buttonSort {
+    background-color: #4a4a4a;
+    color: #cda20b;
+  }
 
-#retailerFilter {
-  color: #ccc;
-  margin-left: 20px;
-}
+  .buttonSortActive {
+    background-color: #722f37;
+    color: #cda20b;
+  }
 
-#options {
-  color: #ccc;
-}
+  #priceRange {
+    color: #ccc;
+  }
 
-.no-results-message {
-  color: #ccc;
-}
+  #retailerFilter {
+    color: #ccc;
+    margin-left: 20px;
+  }
 
-.scraped-badge {
-  color: #fff;
-}
+  #options {
+    color: #ccc;
+  }
 
-/* #menu {
-  background-color: #353535;
+  .no-results-message {
+    color: #ccc;
+  }
+
+  .scraped-badge {
+    color: #fff;
+  }
+
+  #menu {
+    background-color: #353535;
+  }
+
+  #menu a {
+    color: #fff;
+  }
+
+  #menu .navButton {
+    background-color: #4a4a4a;
+    color: #fff;
+  }
+
+  .filterInput {
+    color: #fff;
+    border-color: #cda20b;
+  }
+
+  .filterInput::placeholder {
+    color: #ccc;
+    opacity: 0.7;
+  }
+
+  .filterInput:focus {
+    border-color: #cda20b;
+    box-shadow: 0 0 0 3px rgba(205, 162, 11, 0.2);
+  }
+
+  .filterSelect {
+    color: #fff;
+    border-color: #cda20b;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23cda20b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  }
+
+  .filterSelect:focus {
+    border-color: #cda20b;
+    box-shadow: 0 0 0 3px rgba(205, 162, 11, 0.2);
+  }
+
+  .filterApplyBtn {
+    background-color: #722f37;
+    color: #fff;
+    border-color: #722f37;
+  }
+
+  .filterApplyBtn:hover {
+    background-color: #5a252c;
+  }
+
+  .filterLabel {
+    color: #cda20b;
+  }
+
+  #question {
+    color: #ffdc52;
+  }
+
+  #footer {
+    background-color: #722f37;
+  }
+
+  #siteLogo {
+    color: #cda20b;
+  }
+
+  #siteLogo:hover {
+    color: #ffdc52;
+  }
+
+  .cardCard {
+    background-color: #4a4a4a;
+  }
+
+  .light-modal-content {
+    background: #353535;
+    color: #fff;
+  }
+
+  .light-modal-header {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .light-modal-footer {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .light-modal-close-btn,
+  .light-modal-close-icon {
+    color: #fff;
+  }
+
+  .light-modal-close-btn:hover,
+  .light-modal-close-icon:hover {
+    color: #ffdc52;
+  }
 }
-#menu a {
-  color: #fff;
-}
-#menu .navButton {
-  background-color: #4a4a4a;
-  color: #fff;
-} */

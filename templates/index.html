@@ -18,41 +18,41 @@
       rel="stylesheet"
     />
 
-    {% if dark_mode %}
     <style>
-      body {
-        background-color: #1a1a1a;
-      }
-      .resultCard {
-        background-color: #4a4a4a;
-      }
-      .resultCard .name {
-        color: #ffdc52;
-      }
-      .resultCard .indexdetails {
-        color: #ccc;
-      }
-      .resultCard .brand {
-        color: #cda20b;
-      }
-      .light {
-        color: #ccc;
-      }
-      #searchDrink {
-        color: #fff;
-      }
-      #menu {
-        background-color: #353535;
-      }
-      #menu a {
-        color: #fff;
-      }
-      #menu .navButton {
-        background-color: #4a4a4a;
-        color: #fff;
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #1a1a1a;
+        }
+        .resultCard {
+          background-color: #4a4a4a;
+        }
+        .resultCard .name {
+          color: #ffdc52;
+        }
+        .resultCard .indexdetails {
+          color: #ccc;
+        }
+        .resultCard .brand {
+          color: #cda20b;
+        }
+        .light {
+          color: #ccc;
+        }
+        #searchDrink {
+          color: #fff;
+        }
+        #menu {
+          background-color: #353535;
+        }
+        #menu a {
+          color: #fff;
+        }
+        #menu .navButton {
+          background-color: #4a4a4a;
+          color: #fff;
+        }
       }
     </style>
-    {% endif %}
 
     <script
       data-ad-client="ca-pub-2690757346374030"

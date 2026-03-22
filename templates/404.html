@@ -18,26 +18,26 @@
       rel="stylesheet"
     />
 
-    {% if dark_mode %}
     <style>
-      body {
-        background-color: #1a1a1a;
-      }
-      #question {
-        color: #ccc;
-      }
-      #menu {
-        background-color: #353535;
-      }
-      #menu a {
-        color: #fff;
-      }
-      #menu .navButton {
-        background-color: #4a4a4a;
-        color: #fff;
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #1a1a1a;
+        }
+        #question {
+          color: #ccc;
+        }
+        #menu {
+          background-color: #353535;
+        }
+        #menu a {
+          color: #fff;
+        }
+        #menu .navButton {
+          background-color: #4a4a4a;
+          color: #fff;
+        }
       }
     </style>
-    {% endif %}
   </head>
 
   <body>

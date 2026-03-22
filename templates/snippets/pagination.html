@@ -8,7 +8,9 @@
       class="buttonSort"
       style="margin-right: 10px"
       >&laquo; Previous</a
-    >
+      >
+    {% endif %}
+    {% if total_pages > 0 %}
     <span style="color: #722f37; font-weight: bold; margin: 0 15px"
     >Page {{ current_page }} of {{ total_pages }}</span
     >
