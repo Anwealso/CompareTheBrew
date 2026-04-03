@@ -18,6 +18,7 @@ import db.databaseHandler as db
 
 # Create a new flask application
 app = Flask(__name__)
+app.config.from_object(Config)
 
 @app.template_filter('staleness')
 def staleness_filter(date_str):
@@ -56,6 +57,10 @@ def staleness_filter(date_str):
 @app.context_processor
 def inject_today():
     return {'today_date': datetime.now().date()}
+
+@app.context_processor
+def inject_feature_flags():
+    return {'flag_show_staleness': app.config.get('FLAG_SHOW_STALENESS', True)}
 
 # Working serve of the search page with css and js
 @app.route("/")

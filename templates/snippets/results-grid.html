@@ -11,14 +11,16 @@
   </div>
   <!-- If this item is a normal drink item -->
   {% else %}
-  {% set staleness = result[14]|staleness %}
   <a class="resultCard" href="{{ result[6] }}">
     {% if result[1] %}
     <div class="retailer-badge">{{ result[1] }}</div>
     {% endif %}
-    <div class="scraped-badge {% if staleness.class %}{{ staleness.class }}{% else %}freshness-unknown{% endif %}">
-      {% if staleness.label %}{{ staleness.label }}{% else %}?{% endif %}
-    </div>
+    {% if flag_show_staleness %}
+      {% set staleness = result[14]|staleness %}
+      <div class="scraped-badge {% if staleness.class %}{{ staleness.class }}{% else %}freshness-unknown{% endif %}">
+        {% if staleness.label %}{{ staleness.label }}{% else %}?{% endif %}
+      </div>
+    {% endif %}
     <div class="cardImage">
       {% if result[11] %}
       <img

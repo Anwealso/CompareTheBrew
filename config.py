@@ -17,7 +17,7 @@ class Config(object):
     BRIGHTDATA_CUSTOMER_ID = os.environ.get('BRIGHTDATA_CUSTOMER_ID')
     BRIGHTDATA_ZONE = os.environ.get('BRIGHTDATA_ZONE')
     BRIGHTDATA_PASSWORD = os.environ.get('BRIGHTDATA_PASSWORD')
-
+    FLAG_SHOW_STALENESS = True
 
 class ProductionConfig(Config):
     DEBUG = False
