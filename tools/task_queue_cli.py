@@ -292,18 +292,16 @@ class TaskQueueApp(App):
                 completed = sum(1 for t in tasks if t[3] == 'completed')
                 failed = sum(1 for t in tasks if t[3] == 'failed')
                 
-                header_text = f"[DETAILED VIEW] Run: {self.selected_run_id[:12]}... | {self.selected_retailer} | {self.selected_category} | T:{len(tasks)} P:{pending} IP:{in_progress} C:{completed} F:{failed}"
+                header_text = f"[DETAILED VIEW] Run: {self.selected_run_id} | {self.selected_retailer} | {self.selected_category} | T:{len(tasks)} P:{pending} IP:{in_progress} C:{completed} F:{failed}"
                 self.query_one("#stats-text", Static).update(header_text)
                 
-                table.add_columns("Run ID", "Task ID", "Retailer", "Category", "Status", "URL", "Att")
+                table.add_columns("Task ID", "Retailer", "Category", "Status", "URL", "Attempts")
                 
                 for row in tasks:
                     task_id, retailer, url, status, attempts, created_at, updated_at, run_id = row
                     category = self.selected_category
-                    run_id_short = (run_id or "")[:12] + ".." if run_id and len(run_id) > 14 else (run_id or "")
-                    url_display = "..." + url[-50:] if len(url) > 53 else url
+                    url_display = url[:80] + "..." if len(url) > 83 else url
                     table.add_row(
-                        run_id_short,
                         str(task_id),
                         retailer,
                         category,
