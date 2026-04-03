@@ -275,7 +275,8 @@ OPTIONS
               Seeds the task queue with URLs to scrape. For pagination
               retailers (like BWS), it adds all pages at once.
 
-       --run   Process all pending tasks in the queue sequentially.
+       --run [RUN_ID]
+              Process all pending tasks in the queue sequentially (optionally resume RUN_ID).
 
        --next  Process only the next single task. Useful for debugging
               or controlled progression through the queue.
@@ -345,11 +346,12 @@ CompareTheBrew                      2024           SCRAPING CONTROLLER(1)"""
 
     parser = argparse.ArgumentParser(
         description='Task-based Scraping Controller',
-        usage='python3 -m scraping.controller RETAILER [OPTIONS]\n\nOptions:\n  --discover              Seed the queue\n  --run                   Run all pending tasks\n  --next                  Process only the next single task\n  --workers=N             Number of workers (>1 for parallel, 1 or omit for sequential)\n  --category=CAT          Filter by category (beer, wine, spirits, premix)\n  --limit=N               Limit tasks to process\n  -h, --help              Show this help message'
+        usage='python3 -m scraping.controller RETAILER [OPTIONS]\n\nOptions:\n  --discover              Seed the queue\n  --run [RUN_ID]          Run all pending tasks (resume RUN_ID if provided)\n  --next                  Process only the next single task\n  --workers=N             Number of workers (>1 for parallel, 1 or omit for sequential)\n  --category=CAT          Filter by category (beer, wine, spirits, premix)\n  --limit=N               Limit tasks to process\n  -h, --help              Show this help message'
     )
     parser.add_argument('retailer', type=str, nargs='?', help='bws, ll, fc')
     parser.add_argument('--discover', action='store_true', help='Seed the queue')
-    parser.add_argument('--run', action='store_true', help='Run all pending tasks')
+    parser.add_argument('--run', nargs='?', const='__LATEST__', metavar='RUN_ID',
+                        help='Process all pending tasks or resume a specific run when RUN_ID is provided')
     parser.add_argument('--next', action='store_true', help='Process only the next single task')
     parser.add_argument('--workers', type=int, default=1, help='Number of workers (1=sequential, >1=parallel)')
     parser.add_argument('--category', type=str, help='Filter discovery by category (beer, wine, spirits, premix)')
@@ -367,11 +369,15 @@ CompareTheBrew                      2024           SCRAPING CONTROLLER(1)"""
         run_id = controller.discover(args.retailer, category=args.category)
     else:
         run_id = None
+
+    run_target_id = None
+    if args.run:
+        run_target_id = run_id if args.run == '__LATEST__' else args.run
     
     if args.workers > 1:
-        controller.run_parallel(num_workers=args.workers, retailer=args.retailer, run_id=run_id)
+        controller.run_parallel(num_workers=args.workers, retailer=args.retailer, run_id=run_target_id or run_id)
     elif args.run:
-        controller.process_all(args.retailer, limit=args.limit, run_id=run_id)
+        controller.process_all(args.retailer, limit=args.limit, run_id=run_target_id)
     elif args.next:
         controller.run_next(args.retailer, run_id=run_id)
     elif args.limit:
