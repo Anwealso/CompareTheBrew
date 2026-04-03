@@ -134,7 +134,9 @@ class ScrapingController:
         processor = self.processors[retailer_name]
         processor.progress_callback = self.progress_callback
         
-        print(f"Processing Task {task_id} ({task_type}) (Attempt {current_attempts + 1}/{self.max_retries}): {url}")
+        page_info = metadata.get("page") if isinstance(metadata, dict) else None
+        page_hint = f" (page {page_info})" if page_info not in (None, "", 0) else ""
+        print(f"Processing Task {task_id} ({task_type}){page_hint} (Attempt {current_attempts + 1}/{self.max_retries}): {url}")
         
         self.current_url = url
         
@@ -173,6 +175,27 @@ class ScrapingController:
             
         conn.close()
         return True
+
+    def get_latest_run_id(self, retailer_name: str) -> str | None:
+        """Return the most recent run id for a given retailer, if any."""
+        if not retailer_name:
+            return None
+        conn = create_connection()
+        if not conn:
+            return None
+        try:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT uuid 
+                FROM runs 
+                WHERE retailer = ?
+                ORDER BY start_time DESC 
+                LIMIT 1
+            """, (retailer_name.lower(),))
+            row = cur.fetchone()
+            return row[0] if row else None
+        finally:
+            conn.close()
 
     def _worker_thread(self, worker_id: int, task_queue: queue.Queue, run_id: str = None):
         """Worker thread that processes tasks from the queue."""
@@ -277,6 +300,7 @@ OPTIONS
 
        --run [RUN_ID]
               Process all pending tasks in the queue sequentially (optionally resume RUN_ID).
+              If RUN_ID is omitted, the most recent run for RETAILER is resumed automatically.
 
        --next  Process only the next single task. Useful for debugging
               or controlled progression through the queue.
@@ -290,8 +314,8 @@ OPTIONS
               Limit the number of tasks to process. When combined with
               --discover, creates a new run and processes only N tasks.
               When used alone, resumes the most recent run and processes
-              only N tasks. When used with --run, overrides the default
-              "process all" behavior.
+              only N tasks. When used with --run or --run RUN_ID, overrides
+              the default "process all" behavior for that run.
 
        --category=CAT
               Filter discovery by category. Supported values:
@@ -372,8 +396,13 @@ CompareTheBrew                      2024           SCRAPING CONTROLLER(1)"""
 
     run_target_id = None
     if args.run:
-        run_target_id = run_id if args.run == '__LATEST__' else args.run
-    
+        if args.run == '__LATEST__':
+            run_target_id = run_id or controller.get_latest_run_id(args.retailer)
+            if not run_target_id:
+                print("Warning: no previous run found; processing whatever tasks are available.")
+        else:
+            run_target_id = args.run
+
     if args.workers > 1:
         controller.run_parallel(num_workers=args.workers, retailer=args.retailer, run_id=run_target_id or run_id)
     elif args.run:

@@ -197,7 +197,7 @@ def run_scraping_jobs(args):
             nonlocal current_drink, drink_count
             current_drink = item_name
             drink_count += 1
-            url_truncated = controller.current_url[-40:] if controller.current_url else ""
+            url_truncated = controller.current_url[:40] if controller.current_url else ""
             desc = f"[green]{store}: {url_truncated} | Drink: {item_name[:30]}"
             progress.update(task, description=desc)
         
