@@ -26,6 +26,29 @@ class LiquorlandProcessor(RetailerProcessor):
         super().__init__()
         self.store_id = "liquorland"
 
+    def _infer_category_from_url(self, url: str) -> str:
+        """
+        Derive a product category label from the crawl URL so the search_text includes generic terms
+        like "wine" / "beer" / "spirits". Falls back to "Other" when nothing matches.
+        """
+        if not url:
+            return "Other"
+
+        parsed = urllib.parse.urlparse(url)
+        segments = [segment for segment in parsed.path.split("/") if segment]
+        if not segments:
+            return "Other"
+
+        primary = segments[0].lower()
+
+        if primary == "spirits" and len(segments) > 1 and segments[1].lower() in {"premixed", "premix"}:
+            return "Premixed Spirits"
+
+        if primary in {"wine", "beer", "spirits"}:
+            return primary.capitalize()
+
+        return primary.capitalize()
+
     def fetch_url(self, url: str) -> Optional[str]:
         """
         Override fetch_url with multi-strategy approach for Liquorland.
@@ -173,6 +196,7 @@ class LiquorlandProcessor(RetailerProcessor):
 
         cached = self._get_cached_details(url)
         if cached:
+            print(f"[temp_scraper_debug] LiquorlandProcessor cache hit for {url}")  # TODO: Remove this temp_scraper_debug print info.
             return cached
 
         content = self.fetch_url(url)
@@ -220,12 +244,15 @@ class LiquorlandProcessor(RetailerProcessor):
             conn.close()
 
         if not row:
+            print(f"[temp_scraper_debug] LiquorlandProcessor cache miss (no row) for {url}")  # TODO: Remove this temp_scraper_debug print info.
             return None
 
         percent = float(row[8]) if row[8] is not None else 0.0
         std_drinks = float(row[9]) if row[9] is not None else 0.0
         if percent > 0 and std_drinks > 0:
+            print(f"[temp_scraper_debug] LiquorlandProcessor cache hit with healthy data for {url}")  # TODO: Remove this temp_scraper_debug print info.
             return {"percent": percent, "std_drinks": std_drinks}
+        print(f"[temp_scraper_debug] LiquorlandProcessor cache hit but data invalid for {url} (percent={percent}, std_drinks={std_drinks})")  # TODO: Remove this temp_scraper_debug print info.
         return None
 
     def get_items(self, url: str, metadata: Optional[dict] = None) -> Tuple[List[Item], Optional[dict]]:
@@ -242,6 +269,7 @@ class LiquorlandProcessor(RetailerProcessor):
 
         soup = BeautifulSoup(content, "html.parser")
         product_tiles = soup.find_all("div", class_="ProductTileV3")
+        category_type = self._infer_category_from_url(url)
 
         for tile in product_tiles:
             try:
@@ -298,7 +326,7 @@ class LiquorlandProcessor(RetailerProcessor):
                     store=self.store_id,
                     brand=brand,
                     name=name,
-                    type="Other",
+                    type=category_type,
                     price=price,
                     link=link,
                     ml=vol,
