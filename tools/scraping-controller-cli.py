@@ -179,7 +179,6 @@ def discover_tasks_for_store_category(store, category=None, run_id=None):
 
 
 def monitor_run_progress(event_queue: queue.Queue, store: str, limit: int | None):
-    drinks_expected = 0
     drinks_processed = 0
     page_completed = 0
     detail_completed = 0
@@ -205,7 +204,7 @@ def monitor_run_progress(event_queue: queue.Queue, store: str, limit: int | None
         while True:
             event = event_queue.get()
             event_type = event.get("type")
-            console.print(f"[dim]Received event {event_type}: {event}")
+            progress.console.log(f"[dim]Received event {event_type}: {event}")
 
             if event_type == "run_started":
                 pending = event.get("pending", 0)
@@ -213,27 +212,34 @@ def monitor_run_progress(event_queue: queue.Queue, store: str, limit: int | None
                 desc = f"[green]{store}: Tasks 0/{page_total_target} | Pending {pending}"
                 progress.update(page_task, total=max(page_total_target, 1), completed=0, description=desc)
 
-            elif event_type == "page_items":
-                drinks_expected += event.get("count", 0)
-                progress.update(drink_task, total=max(drinks_expected, drinks_processed))
+            elif event_type == "page_completed":
+                page_completed += 1
+                total_goal = limit or max(page_completed + pending, 1)
+                desc = f"[green]{store}: Tasks {page_completed}/{total_goal} | Pending {pending}"
+                if limit:
+                    desc += f" (limit {limit})"
+                if detail_completed:
+                    desc += f" | Detail updates: {detail_completed}"
+                progress.update(
+                    page_task,
+                    completed=page_completed,
+                    total=max(total_goal, page_total_target),
+                    description=desc
+                )
+                page_total_target = max(page_total_target, total_goal)
 
-            elif event_type == "drink_processed":
-                drinks_processed = event.get("drinks_processed", drinks_processed + 1)
-                action = "inserted" if event.get("inserted") else "updated"
-                brand = event.get("brand") or ""
-                name = event.get("name") or ""
+            elif event_type == "drink_detail_processed":
+                drinks_processed += 1
+                detail_completed += 1
+                metadata = event.get("metadata", {})
+                brand = metadata.get("brand") or ""
+                name = metadata.get("name") or ""
                 drink_label = f"{brand} {name}".strip()
                 progress.update(drink_task, completed=drinks_processed, description=f"[cyan]{drink_label}")
-                absolute_index = event.get("absolute_index", drinks_processed)
-                page_total = event.get("page_total")
-                if not page_total:
-                    page_total = drinks_expected or drinks_processed
                 console.print(
-                    f"[dim]Drink {absolute_index}/{page_total} ({action}):[/dim] "
-                    f"{drink_label} | "
+                    f"[dim]Drink detail {drinks_processed} ({drink_label}):[/dim] "
                     f"ABV {event.get('percent', 0.0):.2f}% | "
-                    f"StdDrinks {event.get('std_drinks', 0.0):.2f} | "
-                    f"Price ${event.get('price', 0.0):.2f}"
+                    f"StdDrinks {event.get('std_drinks', 0.0):.2f}"
                 )
 
             elif event_type == "task_completed":

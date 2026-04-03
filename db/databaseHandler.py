@@ -177,7 +177,13 @@ def get_next_pending_task_by_run(conn, run_id, retailer=None, task_type=None):
     cur.execute(f"""
         SELECT * FROM scrape_tasks 
         WHERE {where_clause} AND status = 'pending' 
-        ORDER BY created_at ASC LIMIT 1
+        ORDER BY 
+            CASE task_type 
+                WHEN 'drink_detail' THEN 0 
+                ELSE 1 
+            END,
+            created_at ASC 
+        LIMIT 1
     """, params)
     
     return cur.fetchone()
@@ -193,7 +199,17 @@ def get_next_pending_task(conn, retailer=None, task_type=None):
     if retailer:
         cur.execute("SELECT * FROM scrape_tasks WHERE retailer=? AND status='pending' ORDER BY updated_at ASC LIMIT 1", (retailer,))
     else:
-        cur.execute("SELECT * FROM scrape_tasks WHERE status='pending' ORDER BY updated_at ASC LIMIT 1")
+        cur.execute("""
+            SELECT * FROM scrape_tasks 
+            WHERE status='pending' 
+            ORDER BY 
+                CASE task_type 
+                    WHEN 'drink_detail' THEN 0 
+                    ELSE 1 
+                END,
+                updated_at ASC
+            LIMIT 1
+        """)
     return cur.fetchone()
 
 

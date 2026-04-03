@@ -72,27 +72,6 @@ class ScrapingController:
         if self._event_queue is not None:
             self._event_queue.put(event)
 
-    def _handle_drink_event(self, drink, absolute_index, page_total, inserted):
-        """Callback passed to dbhandler so each drink produces an event."""
-        with self._stats_lock:
-            self._drinks_processed += 1
-            drinks_processed = self._drinks_processed
-
-        event = {
-            "type": "drink_processed",
-            "brand": drink.brand,
-            "name": drink.name,
-            "absolute_index": absolute_index,
-            "page_total": page_total,
-            "inserted": bool(inserted),
-            "percent": float(drink.percent or 0.0),
-            "std_drinks": float(drink.stdDrinks or 0.0),
-            "price": float(drink.price or 0.0),
-            "drinks_processed": drinks_processed
-        }
-        self._emit_event(event)
-        if self.drink_callback:
-            self.drink_callback(drink, absolute_index, page_total, inserted)
 
     def discover(self, retailer_name: str = None, category: str = None, run_id: str = None):
         """
@@ -206,6 +185,17 @@ class ScrapingController:
                     if link:
                         update_drink_details(conn, store, link, percent, std_drinks)
                 update_task_status(conn, task_id, 'completed')
+                with self._stats_lock:
+                    self._drinks_processed += 1
+                self._emit_event({
+                    "type": "drink_detail_processed",
+                    "task_id": task_id,
+                    "url": url,
+                    "metadata": metadata,
+                    "percent": details.get("percent"),
+                    "std_drinks": details.get("std_drinks"),
+                    "drinks_processed": self._drinks_processed
+                })
             else:
                 print(f"[temp_scraper_debug] processing page task for url={url}")  # TODO: Remove this temp_scraper_debug print info.
                 items, next_metadata = processor.get_items(url, metadata)
@@ -224,7 +214,6 @@ class ScrapingController:
                     items,
                     "u",
                     True,
-                    item_callback=self._handle_drink_event,
                     start_index=self._drink_counter
                 )
                 self._drink_counter += processed_items
@@ -242,6 +231,12 @@ class ScrapingController:
                     print(f"  - Discovered follow-up task: {next_url}")
 
                 update_task_status(conn, task_id, 'completed')
+                self._emit_event({
+                    "type": "page_completed",
+                    "task_id": task_id,
+                    "url": url,
+                    "count": len(items)
+                })
             success = True
         except Exception as e:
             print(f"Error during task {task_id}: {e}")
