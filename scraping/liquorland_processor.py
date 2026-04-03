@@ -11,6 +11,7 @@ from typing import List, Optional, Tuple
 from scripts.classItem import Item
 from scraping.processor import RetailerProcessor
 from config import Config
+from db.databaseHandler import create_connection, get_drink_by_store_link
 
 BRIGHTDATA_ENABLED = False
 LIQOURLAND_MAX_RESULTS_PER_PAGE = 80 if BRIGHTDATA_ENABLED else 60
@@ -24,7 +25,6 @@ class LiquorlandProcessor(RetailerProcessor):
     def __init__(self):
         super().__init__()
         self.store_id = "liquorland"
-        self._detail_cache = {}
 
     def fetch_url(self, url: str) -> Optional[str]:
         """
@@ -170,15 +170,15 @@ class LiquorlandProcessor(RetailerProcessor):
         
         if not url:
             return details
-        
-        if url in self._detail_cache:
-            return self._detail_cache[url]
-        
-        print(f"[temp_scraper_debug] enter LiquorlandProcessor.get_details_from_item_page(url={url})")  # TODO: Remove this temp_scraper_debug print info.
+
+        cached = self._get_cached_details(url)
+        if cached:
+            return cached
+
         content = self.fetch_url(url)
         if not content:
             return details
-        
+
         soup = BeautifulSoup(content, "html.parser")
         
         props_list = soup.find("ul", class_="product-properties")
@@ -206,8 +206,27 @@ class LiquorlandProcessor(RetailerProcessor):
                         except ValueError:
                             pass
         
-        self._detail_cache[url] = details
         return details
+
+    def _get_cached_details(self, url: str) -> Optional[dict]:
+        if not url:
+            return None
+        conn = create_connection()
+        if not conn:
+            return None
+        try:
+            row = get_drink_by_store_link(conn, self.store_id, url)
+        finally:
+            conn.close()
+
+        if not row:
+            return None
+
+        percent = float(row[8]) if row[8] is not None else 0.0
+        std_drinks = float(row[9]) if row[9] is not None else 0.0
+        if percent > 0 and std_drinks > 0:
+            return {"percent": percent, "std_drinks": std_drinks}
+        return None
 
     def get_items(self, url: str, metadata: Optional[dict] = None) -> Tuple[List[Item], Optional[dict]]:
         """

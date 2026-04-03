@@ -582,9 +582,8 @@ def update_drink(conn, drink, newPrice):
     """
     sql = ''' UPDATE drinks
               SET price = ?, link = ?, image = ?, efficiency = ?
-              WHERE name = ?
-              AND brand = ?
-              AND store = ? '''
+              WHERE store = ?
+              AND link = ? '''
 
     result = get_drinks_stddrinks(conn, drink)
     
@@ -606,8 +605,7 @@ def update_drink(conn, drink, newPrice):
         except (ValueError, TypeError):
             new_efficiency = 0.0
         cur.execute(sql, (
-            newPrice, drink.link, drink.image, new_efficiency, drink.name, drink.brand,
-            drink.store))
+            newPrice, drink.link, drink.image, new_efficiency, drink.store, drink.link))
         conn.commit()
 
 
@@ -620,12 +618,10 @@ def is_drink_in_table(conn, drink):
     """
     sql = ''' SELECT * FROM drinks
               WHERE store = ?
-              AND brand = ?
-              AND name = ?
               AND link = ?
               '''
     cur = conn.cursor()
-    cur.execute(sql, (drink.store, drink.brand, drink.name, drink.link))
+    cur.execute(sql, (drink.store, drink.link))
 
     rows = cur.fetchall()
     if len(rows) > 0:
@@ -643,18 +639,29 @@ def get_drinks_stddrinks(conn, drink):
     """
     sql = ''' SELECT * FROM drinks
               WHERE store = ?
-              AND brand = ?
-              AND name = ?
               AND link = ?
+              ORDER BY ID DESC
+              LIMIT 1
               '''
     cur = conn.cursor()
-    cur.execute(sql, (drink.store, drink.brand, drink.name, drink.link))
+    cur.execute(sql, (drink.store, drink.link))
 
     rows = cur.fetchall()
-    if len(rows) > 0:
+    if rows:
         return rows[0][9]
-    else:
-        return False
+    return False
+
+
+def get_drink_by_store_link(conn, store, link):
+    """Fetch the latest drink row for a given store/link pair."""
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT * FROM drinks
+        WHERE store = ? AND link = ?
+        ORDER BY ID DESC
+        LIMIT 1
+    """, (store, link))
+    return cur.fetchone()
 
 
 def save_short_link(conn, image):

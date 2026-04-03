@@ -26,3 +26,4 @@ CREATE INDEX IF NOT EXISTS idx_drinks_type ON drinks(type);
 CREATE INDEX IF NOT EXISTS idx_drinks_efficiency ON drinks(efficiency);
 CREATE INDEX IF NOT EXISTS idx_drinks_price ON drinks(price);
 CREATE INDEX IF NOT EXISTS idx_drinks_ml ON drinks(ml);
+CREATE INDEX IF NOT EXISTS idx_drinks_store_link ON drinks(store, link);
