@@ -211,6 +211,11 @@ class TaskQueueApp(App):
         self.retailer_filter = retailer or ""
         self.status_filter = status or ""
         self.conn = create_connection()
+        self._current_table_mode = "overview"
+        self._scroll_positions = {
+            "overview": (0.0, 0.0),
+            "details": (0.0, 0.0),
+        }
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -258,16 +263,22 @@ class TaskQueueApp(App):
             self.selected_run_id = run[0] or ""
             self.selected_retailer = run[1] or ""
             self.selected_category = run[2] or ""
+            self._store_current_scroll()
             self.view_mode = "details"
             self.refresh_data()
 
     def action_go_back(self) -> None:
         if self.view_mode == "details":
+            self._store_current_scroll()
             self.view_mode = "overview"
             self.selected_run_id = ""
             self.selected_retailer = ""
             self.selected_category = ""
             self.refresh_data()
+
+    def _store_current_scroll(self) -> None:
+        table = self.query_one("#task-table", TaskQueueTable)
+        self._scroll_positions[self.view_mode] = (table.scroll_x, table.scroll_y)
 
     def refresh_data(self) -> None:
         if not self.conn:
@@ -278,12 +289,19 @@ class TaskQueueApp(App):
 
         try:
             table = self.query_one("#task-table", TaskQueueTable)
+            view_changed = self.view_mode != self._current_table_mode
             cursor_row = table.cursor_row
             cursor_column = table.cursor_column
-            
-            table.clear()
-            for col in list(table.columns.keys()):
-                table.remove_column(col)
+            if view_changed:
+                prev_scroll_x, prev_scroll_y = self._scroll_positions.get(self.view_mode, (0.0, 0.0))
+            else:
+                prev_scroll_x = table.scroll_x
+                prev_scroll_y = table.scroll_y
+
+            if view_changed:
+                table.clear(columns=True)
+            else:
+                table.clear()
 
             if self.view_mode == "details" and self.selected_run_id:
                 tasks = get_tasks_for_run(self.conn, self.selected_run_id)
@@ -296,7 +314,8 @@ class TaskQueueApp(App):
                 header_text = f"[DETAILED VIEW] Run: {self.selected_run_id} | {self.selected_retailer} | {self.selected_category} | T:{len(tasks)} P:{pending} IP:{in_progress} C:{completed} F:{failed}"
                 self.query_one("#stats-text", Static).update(header_text)
                 
-                table.add_columns("Task ID", "Retailer", "Category", "Status", "Task Type", "URL", "Attempts")
+                if not table.columns:
+                    table.add_columns("Task ID", "Retailer", "Category", "Status", "Task Type", "URL", "Attempts")
                 
                 for row in tasks:
                     task_id, retailer, url, status, task_type, attempts, created_at, updated_at, run_id = row
@@ -315,7 +334,7 @@ class TaskQueueApp(App):
                 if tasks:
                     max_row = len(tasks) - 1
                     restore_row = min(cursor_row, max_row)
-                    table.move_cursor(row=restore_row, column=cursor_column)
+                    table.move_cursor(row=restore_row, column=cursor_column, scroll=False)
                 
                 self.query_one("#footer-text", Static).update("[b]Backspace[/b]: Back to Overview | [b]↑/↓[/b]: Navigate | [b]Q[/b]: Quit")
             else:
@@ -342,7 +361,8 @@ class TaskQueueApp(App):
                 
                 self.query_one("#stats-text", Static).update(stats_text)
                 
-                table.add_columns("Run ID", "Retailer", "Category", "Total", "Pending", "In Progress", "Completed", "Failed")
+                if not table.columns:
+                    table.add_columns("Run ID", "Retailer", "Category", "Total", "Pending", "In Progress", "Completed", "Failed")
                 
                 for row in runs:
                     run_id, retailer, category, start_time, run_status, total, pending, in_progress, completed_count, failed = row
@@ -362,9 +382,19 @@ class TaskQueueApp(App):
                 if runs:
                     max_row = len(runs) - 1
                     restore_row = min(cursor_row, max_row)
-                    table.move_cursor(row=restore_row, column=cursor_column)
+                    table.move_cursor(row=restore_row, column=cursor_column, scroll=False)
                 
                 self.query_one("#footer-text", Static).update("[b]Enter[/b]: Select/View | [b]↑/↓[/b]: Navigate | [b]Q[/b]: Quit")
+
+
+            table.scroll_to(
+                x=prev_scroll_x,
+                y=prev_scroll_y,
+                animate=False,
+                immediate=True,
+            )
+            self._scroll_positions[self.view_mode] = (prev_scroll_x, prev_scroll_y)
+            self._current_table_mode = self.view_mode
 
         except Exception as e:
             self.query_one("#stats-text", Static).update(f"Error: {e}")
