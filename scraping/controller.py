@@ -6,13 +6,15 @@ import queue
 import time
 from datetime import datetime
 from typing import Dict, List
+from rich.console import Console
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
 from scraping.processor import RetailerProcessor
 from scraping.bws_processor import BWSProcessor
 from scraping.liquorland_processor import LiquorlandProcessor
 from db.databaseHandler import (
     create_connection, upsert_source, dbhandler, 
     add_scrape_task, get_next_pending_task, get_next_pending_task_by_run,
-    update_task_status, get_pending_tasks_count,
+    update_task_status, get_pending_tasks_count, get_pending_tasks_count_by_run,
     increment_task_attempts, create_run, update_drink_details
 )
 
@@ -32,6 +34,7 @@ class ScrapingController:
             sitemaps_file (str): Path to the JSON file containing retailer URLs.
             max_retries (int): Maximum number of times a task can be attempted before failing.
         """
+        print(f"[temp_scraper_debug] enter ScrapingController.__init__(sitemaps_file={sitemaps_file}, max_retries={max_retries})")  # TODO: Remove this temp_scraper_debug print info.
         self.sitemaps_file = sitemaps_file
         self.max_retries = max_retries
         self.progress_callback = None
@@ -71,6 +74,7 @@ class ScrapingController:
 
         TODO: Refactor to allow bulk discovery for all retailers at once and make retailer_name optional.
         """
+        print(f"[temp_scraper_debug] enter ScrapingController.discover(retailer={retailer_name}, category={category}, run_id={run_id})")  # TODO: Remove this temp_scraper_debug print info.
         retailer_name = retailer_name.lower()
         if retailer_name not in self.processors:
             print(f"No processor found for retailer: {retailer_name}")
@@ -112,6 +116,7 @@ class ScrapingController:
             retailer_name: The retailer to process tasks for
             run_id: Optional run_id to filter tasks
         """
+        print(f"[temp_scraper_debug] enter ScrapingController.run_next(retailer={retailer_name}, run_id={run_id})")  # TODO: Remove this temp_scraper_debug print info.
         retailer_name = retailer_name.lower()
         conn = create_connection()
         if not conn:
@@ -139,7 +144,7 @@ class ScrapingController:
         metadata = json.loads(metadata_str) if metadata_str else {}
         processor = self.processors[retailer_name]
         processor.progress_callback = self.progress_callback
-        
+
         print(f"Processing Task {task_id} (Type: {task_type}) (Attempt {current_attempts + 1}/{self.max_retries}): {url}")
         
         self.current_url = url
@@ -152,6 +157,7 @@ class ScrapingController:
         
         try:
             if task_type == 'drink_detail':
+                print(f"[temp_scraper_debug] processing drink_detail task for url={url}")  # TODO: Remove this temp_scraper_debug print info.
                 details = processor.process_drink_detail(url, metadata)
                 print(f"Got details: percent={details.get('percent')}, std_drinks={details.get('std_drinks')}")
                 if metadata:
@@ -163,6 +169,7 @@ class ScrapingController:
                         update_drink_details(conn, store, link, percent, std_drinks)
                 update_task_status(conn, task_id, 'completed')
             else:
+                print(f"[temp_scraper_debug] processing page task for url={url}")  # TODO: Remove this temp_scraper_debug print info.
                 items, next_metadata = processor.get_items(url, metadata)
                 if self.page_items_callback:
                     self.page_items_callback(len(items))
@@ -226,6 +233,7 @@ class ScrapingController:
 
     def _worker_thread(self, worker_id: int, task_queue: queue.Queue, run_id: str = None):
         """Worker thread that processes tasks from the queue."""
+        print(f"[temp_scraper_debug] worker {worker_id} start run_id={run_id}")  # TODO: Remove this temp_scraper_debug print info.
         print(f"Worker {worker_id} started")
         
         while not self._stop_workers:
@@ -251,6 +259,7 @@ class ScrapingController:
         self._stop_workers = False
         workers = []
         
+        print(f"[temp_scraper_debug] enter run_parallel(num_workers={num_workers}, retailer={retailer}, run_id={run_id})")  # TODO: Remove this temp_scraper_debug print info.
         print(f"Starting {num_workers} workers...")
         
         for i in range(num_workers):
@@ -278,6 +287,18 @@ class ScrapingController:
         
         print("All workers stopped")
 
+    def _count_pending_tasks(self, retailer_name: str, run_id: str | None = None) -> int:
+        """Count pending tasks for a retailer/run."""
+        conn = create_connection()
+        if not conn:
+            return 0
+        try:
+            if run_id:
+                return get_pending_tasks_count_by_run(conn, run_id, retailer_name)
+            return get_pending_tasks_count(conn, retailer_name)
+        finally:
+            conn.close()
+
     def process_all(self, retailer_name: str, limit: int = None, run_id: str = None):
         """Looping run_next until exhaustion or limit reached.
         
@@ -286,15 +307,98 @@ class ScrapingController:
             limit: Optional max number of tasks to process
             run_id: Optional run_id to filter tasks
         """
-        count = 0
-        print(f"Processing tasks for {retailer_name}" + (f" (limit: {limit})" if limit else "") + "...")
-        while self.run_next(retailer_name, run_id):
-            count += 1
-            if limit and count >= limit:
-                print(f"Reached limit of {limit} tasks. Stopping.")
-                break
-        if not limit:
-            print(f"Processed {count} tasks.")
+        console = Console()
+        pending_start = self._count_pending_tasks(retailer_name, run_id)
+        target_task_total = limit if limit else max(pending_start, 1)
+        page_completed = 0
+        detail_completed = 0
+        drinks_expected = 0
+        drinks_processed = 0
+        self._drink_counter = 0
+
+        console.print(f"[temp_scraper_debug] starting process_all for {retailer_name} (limit={limit})")  # TODO: Remove this temp_scraper_debug print info.
+        console.print(f"[temp_scraper_debug] initial pending tasks: {pending_start}, target total: {target_task_total}")  # TODO: Remove this temp_scraper_debug print info.
+
+        def on_page_items(count: int):
+            nonlocal drinks_expected
+            drinks_expected += count
+            progress.update(drink_task, total=max(drinks_expected, drinks_processed))
+
+        def on_drink(drink, absolute_index, page_total, inserted):
+            nonlocal drinks_processed
+            drinks_processed += 1
+            total_label = max(drinks_expected, page_total or absolute_index)
+            status = "inserted" if inserted else "updated"
+            progress.update(drink_task, completed=drinks_processed, description=f"[cyan]{drink.brand} {drink.name}")
+            price_value = float(drink.price) if drink.price is not None else 0.0
+            console.print(
+                f"[dim]Drink {absolute_index}/{total_label} ({status}):[/dim] "
+                f"{drink.brand} {drink.name} | "
+                f"ABV {float(drink.percent or 0.0):.2f}% | "
+                f"StdDrinks {float(drink.stdDrinks or 0.0):.2f} | "
+                f"Price ${price_value:.2f}"
+            )  # TODO: Remove this temp_scraper_debug print info.
+
+        self.page_items_callback = on_page_items
+        self.drink_callback = on_drink
+
+        try:
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                BarColumn(),
+                TaskProgressColumn(),
+                console=console
+            ) as progress:
+                page_task = progress.add_task(
+                    description=f"[green]{retailer_name} Pages | [cyan]Pending {pending_start}",
+                    total=target_task_total
+                )
+                drink_task = progress.add_task(
+                    description=f"[cyan]{retailer_name} Drinks | Awaiting drinks...",
+                    total=0
+                )
+
+                while True:
+                    if limit and page_completed >= limit:
+                        progress.update(page_task, description=f"[yellow]{retailer_name}: Limit reached ({limit})")
+                        break
+
+                    result = self.run_next(retailer_name, run_id)
+                    if not result:
+                        pending_now = self._count_pending_tasks(retailer_name, run_id)
+                        final_status = "[green]Completed - no more tasks" if pending_now == 0 else "[red]Stopped - no more pending tasks"
+                        progress.update(page_task, description=final_status)
+                        break
+
+                    task_type = self.last_task_type
+                    if task_type == 'drink_detail':
+                        detail_completed += 1
+                    else:
+                        page_completed += 1
+
+                    pending_now = self._count_pending_tasks(retailer_name, run_id)
+                    total_goal = target_task_total if limit else max(page_completed + pending_now, target_task_total)
+                    desc = (
+                        f"[green]{retailer_name}: Tasks {page_completed}/{total_goal} | "
+                        f"Pending {pending_now}"
+                    )
+                    if limit:
+                        desc += f" (limit {limit})"
+                    if detail_completed:
+                        desc += f" | Detail updates: {detail_completed}"
+
+                    progress.update(
+                        page_task,
+                        completed=page_completed,
+                        total=max(total_goal, target_task_total),
+                        description=desc
+                    )
+        finally:
+            self.page_items_callback = None
+            self.drink_callback = None
+
+        console.print(f"[temp_scraper_debug] finished process_all: {page_completed} page tasks, {detail_completed} detail tasks, {drinks_processed} drinks processed")  # TODO: Remove this temp_scraper_debug print info.
 
 
 if __name__ == "__main__":

@@ -248,6 +248,25 @@ def get_pending_tasks_count(conn, retailer=None):
     return cur.fetchone()[0]
 
 
+def get_pending_tasks_count_by_run(conn, run_id, retailer=None):
+    """
+    Get count of pending tasks scoped to a specific run.
+    """
+    cur = conn.cursor()
+    if retailer:
+        cur.execute("""
+            SELECT COUNT(*) FROM scrape_tasks
+            WHERE run_id = ? AND retailer = ? AND status = 'pending'
+        """, (run_id, retailer))
+    else:
+        cur.execute("""
+            SELECT COUNT(*) FROM scrape_tasks
+            WHERE run_id = ? AND status = 'pending'
+        """, (run_id,))
+    row = cur.fetchone()
+    return row[0] if row else 0
+
+
 def create_metric_entry(conn, task):
     """
     Create a new task
@@ -564,8 +583,6 @@ def update_drink(conn, drink, newPrice):
     else:
         # Drink found - result is the std_drinks value (can be 0.0)
         std_drinks = float(result) if result is not None else 0.0
-        print('---------------')
-        print(drink.brand + " " + drink.name)
         cur = conn.cursor()
         try:
             price = float(newPrice) if newPrice else 0.0
@@ -575,9 +592,6 @@ def update_drink(conn, drink, newPrice):
         cur.execute(sql, (
             newPrice, drink.link, drink.image, new_efficiency, drink.name, drink.brand,
             drink.store))
-        print(float(newPrice) if newPrice else 0)
-        print(std_drinks)
-        print(new_efficiency)
         conn.commit()
 
 

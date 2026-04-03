@@ -114,7 +114,7 @@ def get_tasks_for_run(conn, run_id, limit=50000):
         return []
     cur = conn.cursor()
     cur.execute("""
-        SELECT t.ID, t.retailer, t.url, t.status, t.attempts, t.created_at, t.updated_at, t.run_id
+        SELECT t.ID, t.retailer, t.url, t.status, t.task_type, t.attempts, t.created_at, t.updated_at, t.run_id
         FROM scrape_tasks t
         WHERE t.run_id LIKE ?
         ORDER BY 
@@ -124,6 +124,7 @@ def get_tasks_for_run(conn, run_id, limit=50000):
                 WHEN 'pending' THEN 2 
                 WHEN 'failed' THEN 3 
             END,
+            t.task_type ASC,
             t.updated_at ASC
         LIMIT ?
     """, (run_id + "%", limit))
@@ -295,10 +296,10 @@ class TaskQueueApp(App):
                 header_text = f"[DETAILED VIEW] Run: {self.selected_run_id} | {self.selected_retailer} | {self.selected_category} | T:{len(tasks)} P:{pending} IP:{in_progress} C:{completed} F:{failed}"
                 self.query_one("#stats-text", Static).update(header_text)
                 
-                table.add_columns("Task ID", "Retailer", "Category", "Status", "URL", "Attempts")
+                table.add_columns("Task ID", "Retailer", "Category", "Status", "Task Type", "URL", "Attempts")
                 
                 for row in tasks:
-                    task_id, retailer, url, status, attempts, created_at, updated_at, run_id = row
+                    task_id, retailer, url, status, task_type, attempts, created_at, updated_at, run_id = row
                     category = self.selected_category
                     url_display = url[:80] + "..." if len(url) > 83 else url
                     table.add_row(
@@ -306,6 +307,7 @@ class TaskQueueApp(App):
                         retailer,
                         category,
                         status,
+                        task_type,
                         url_display,
                         str(attempts)
                     )

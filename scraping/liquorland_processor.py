@@ -174,6 +174,7 @@ class LiquorlandProcessor(RetailerProcessor):
         if url in self._detail_cache:
             return self._detail_cache[url]
         
+        print(f"[temp_scraper_debug] enter LiquorlandProcessor.get_details_from_item_page(url={url})")  # TODO: Remove this temp_scraper_debug print info.
         content = self.fetch_url(url)
         if not content:
             return details
@@ -215,6 +216,7 @@ class LiquorlandProcessor(RetailerProcessor):
         For 'drink_detail' tasks: fetches the detail page and updates cached item.
         """        
         result = []
+        print(f"[temp_scraper_debug] enter LiquorlandProcessor.get_items(url={url})")  # TODO: Remove this temp_scraper_debug print info.
         content = self.fetch_url_max_rpp(url)
         if not content:
             return result, None
@@ -272,13 +274,6 @@ class LiquorlandProcessor(RetailerProcessor):
 
                 percent = 0.0
                 std_drinks = 0.0
-                if link:
-                    # TODO: Should probably be raising an error here instead of silently 
-                    # returning 0s, as these details are critical for the app's functionality. 
-                    # Need to decide how to handle missing details gracefully.
-                    details = self.get_details_from_item_page(link)
-                    percent = details.get("percent", 0.0)
-                    std_drinks = details.get("std_drinks", 0.0)
 
                 item = Item(
                     store=self.store_id,
@@ -315,6 +310,7 @@ class LiquorlandProcessor(RetailerProcessor):
                         "link": item.link
                     }
                 })
+        print(f"[temp_scraper_debug] LiquorlandProcessor.build_detail_tasks created {len(tasks)} tasks")  # TODO: Remove this temp_scraper_debug print info.
         return tasks
 
     def process_drink_detail(self, url: str, metadata: Optional[dict] = None) -> dict:
@@ -322,5 +318,7 @@ class LiquorlandProcessor(RetailerProcessor):
         Process a drink detail page task.
         Fetches the detail page and returns the additional details.
         """
+        print(f"[temp_scraper_debug] enter LiquorlandProcessor.process_drink_detail(url={url}, metadata={metadata})")  # TODO: Remove this temp_scraper_debug print info.
         details = self.get_details_from_item_page(url)
+        print(f"[temp_scraper_debug] LiquorlandProcessor.process_drink_detail returning {details}")  # TODO: Remove this temp_scraper_debug print info.
         return details
