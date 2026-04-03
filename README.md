@@ -30,56 +30,42 @@ Activate the environment before running any scripts:
 $ source venv/bin/activate
 ```
 
-### 1. Scraping (New Task-Queue Architecture)
-The scraping system has been re-architected into a task-based pipeline. Run the full discovery and processing for a retailer:
+### 1. Scraping (via CLI)
+The preferred way to run scraping workloads is with the dedicated CLI wrapper, which keeps tasks queued, workers coordinated, and progress streamed explicitly back to your terminal. Example:
 ```bash
-$ python3 -m scraping.controller bws
+$ python3 tools/scraping-controller-cli.py --store=ll --category=wine --limit=3 --workers=2
 ```
+
 Available flags:
-- `--discover`: Seeds the task queue with URLs to scrape
-- `--run`: Processes all pending tasks in the queue (sequential)
-- `--next`: Processes only the next single task (iterator mode)
-- `--workers=N`: Number of worker threads (>1 for parallel, omit or 1 for sequential)
-- `--limit=N`: Limit the number of tasks to process in this run
-- `--category=CAT`: Filter discovery by category (beer, wine, spirits, premix)
-- `--help`: Display help in man page format
-
-**Workers Behavior:**
-- Not specified or `--workers=1`: Sequential processing (default)
-- `--workers=N` where N > 1: Parallel processing with N workers
-
-**Categories:** Discovery can be filtered by category:
-- `beer`, `wine`, `spirits`, `premix`
-
-**Task Types:** The system tracks two types of tasks:
-- `page`: Full page scraping (default)
-- `drink_detail`: Individual drink detail pages
+- `--store=STORE`: Which retailer to scrape (`bws`, `ll`, `fc`, or `all`)
+- `--category=CAT`: Filter discovery to `beer`, `wine`, `spirits`, or `premix`
+- `--limit=N`: Limit the number of tasks processed before the run stops
+- `--workers=N`: Number of worker threads to consume the queue (default: 1)
+- `--discover`: Seed the queue with fresh tasks before processing
+- `--new`: Start a new run (implies discovery)
+- `--continue`: Continue from the existing queue tasks (default unless `--new`)
+- `--resume-last`: Resume the last run for the chosen retailer/category
+- `--man`: Print the full man-style page (also available via `--help`)
 
 **Examples:**
 ```bash
 # Full scrape with discovery and processing (sequential)
-$ python3 -m scraping.controller bws --discover --run
+$ python3 tools/scraping-controller-cli.py --store=ll --new
 
-# Process one task at a time (iterator mode)
-$ python3 -m scraping.controller bws --next
+# Discover only beer category and limit to three page tasks
+$ python3 tools/scraping-controller-cli.py --store=bws --category=beer --discover --limit=3
 
 # Parallel processing with 8 workers
-$ python3 -m scraping.controller bws --discover --run --workers=8
+$ python3 tools/scraping-controller-cli.py --store=fc --discover --workers=8
 
-# Discover only beer category
-$ python3 -m scraping.controller bws --discover --category=beer
+# Resume the latest pending run for wine
+$ python3 tools/scraping-controller-cli.py --store=ll --category=wine --continue --limit=5
 
-# Discover and process only first 3 pages
-$ python3 -m scraping.controller bws --discover --limit=3
-
-# Resume and process only next 2 pages
-$ python3 -m scraping.controller bws --limit=2
-
-# Show help
-$ python3 -m scraping.controller --help
+# Show the CLI man page
+$ python3 tools/scraping-controller-cli.py --man
 ```
 
-See `scraping/SCRAPING_GUIDELINES.md` for more details.
+See `scraping/SCRAPING_GUIDELINES.md` for implementation details and processor-specific guidance.
 
 ### 2. Web Server
 Launch the Flask application locally:

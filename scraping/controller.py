@@ -530,11 +530,10 @@ CompareTheBrew                      2024           SCRAPING CONTROLLER(1)"""
     
     args = parser.parse_args()
     controller = ScrapingController()
-    
+
+    run_id = None
     if args.discover:
         run_id = controller.discover(args.retailer, category=args.category)
-    else:
-        run_id = None
 
     run_target_id = None
     if args.run:
@@ -544,20 +543,15 @@ CompareTheBrew                      2024           SCRAPING CONTROLLER(1)"""
                 print("Warning: no previous run found; processing whatever tasks are available.")
         else:
             run_target_id = args.run
+    elif run_id:
+        run_target_id = run_id
 
-    if args.workers > 1:
-        controller.run_parallel(num_workers=args.workers, retailer=args.retailer, run_id=run_target_id or run_id)
-    elif args.run:
-        controller.process_all(args.retailer, limit=args.limit, run_id=run_target_id)
-    elif args.next:
-        controller.run_next(args.retailer, run_id=run_id)
-    elif args.limit:
-        controller.process_all(args.retailer, limit=args.limit, run_id=run_id)
-    elif not args.discover:
-        conn = create_connection()
-        count = get_pending_tasks_count(conn, args.retailer)
-        conn.close()
-        
-        if count == 0:
-            run_id = controller.discover(args.retailer, category=args.category)
-        controller.process_all(args.retailer)
+    limit = args.limit
+    if args.next:
+        limit = 1
+
+    workers = args.workers if args.workers and args.workers > 0 else 1
+    result = controller.run_parallel(num_workers=workers, retailer=args.retailer, run_id=run_target_id, limit=limit)
+    if result:
+        print(f"Run {result.get('run_id')} completed: {result.get('pages', 0)} pages, "
+              f"{result.get('details', 0)} details, pending {result.get('pending', 0)}")

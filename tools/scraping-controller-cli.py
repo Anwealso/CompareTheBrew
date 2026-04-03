@@ -6,9 +6,9 @@ A command-line tool for managing the scraping pipeline across different retailer
 Provides options to run new scraping jobs or continue from existing queue tasks.
 
 Usage:
-    python scraping-controller-cli.py --store ll --category wine --limit 10
-    python scraping-controller-cli.py --store all --new
-    python scraping-controller-cli.py --store bws --continue
+    python scraping-controller-cli.py --store=ll --category=wine --limit=10
+    python scraping-controller-cli.py --store=all --new
+    python scraping-controller-cli.py --store=bws --continue
 """
 import argparse
 import sys
@@ -27,6 +27,60 @@ from scraping.controller import ScrapingController
 from db.databaseHandler import (
     create_connection, get_pending_tasks_count
 )
+
+MAN_PAGE = """SCRAPING CONTROLLER CLI(1)     CompareTheBrew     SCRAPING CONTROLLER CLI(1)
+
+NAME
+       scraping-controller-cli - Task-based scraping controller CLI for CompareTheBrew
+
+SYNOPSIS
+       python scraping-controller-cli.py [OPTIONS]
+
+DESCRIPTION
+       Coordinates the scraping pipeline across different retailers using
+       a Task Queue system and exposes progress through Rich-based CLI output.
+
+ARGUMENTS
+       --store=STORE
+              The retailer to scrape. Supported values: bws, ll, fc, all
+
+       --discover
+              Seeds the task queue with URLs to scrape.
+
+       --new
+              Start a new scraping run (discovers new tasks) before processing.
+
+       --continue
+              Continue from the existing queue tasks (default behavior when not --new).
+
+       --resume-last
+              Resume the most recent run for the specified retailer/category.
+
+       --category=CAT
+              Filter discovery by category (beer, wine, spirits, premix).
+
+       --limit=N
+              Limit the number of tasks to process in this run.
+
+       --workers=N
+              Number of worker threads to use (default: 1). Use >1 for parallelism.
+
+       --man
+              Display this detailed man page.
+
+       -h, --help
+              Show brief help text provided by argparse.
+
+EXAMPLES
+       python scraping-controller-cli.py --store=ll --category=wine --limit=10 --workers=2
+       python scraping-controller-cli.py --store=bws --new --limit=3
+       python scraping-controller-cli.py --store=fc --workers=4 --category=spirits
+       python scraping-controller-cli.py --store=ll --continue --limit=2
+       python scraping-controller-cli.py --man
+
+AUTHORS
+       CompareTheBrew Team
+"""
 
 
 RETAILER_MAP = {
@@ -151,6 +205,7 @@ def monitor_run_progress(event_queue: queue.Queue, store: str, limit: int | None
         while True:
             event = event_queue.get()
             event_type = event.get("type")
+            console.print(f"[dim]Received event {event_type}: {event}")
 
             if event_type == "run_started":
                 pending = event.get("pending", 0)
@@ -304,10 +359,10 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s --store ll --category wine --limit 10
-  %(prog)s --store bws --new
-  %(prog)s --store all --category beer --limit 50
-  %(prog)s --store ll --continue
+  %(prog)s --store=ll --category=wine --limit=10
+  %(prog)s --store=bws --new
+  %(prog)s --store=all --category=beer --limit=50
+  %(prog)s --store=ll --continue
   
 Store options: bws, ll (liquorland), fc (first choice), all
 Category options: beer, wine, spirits, premix
@@ -341,25 +396,31 @@ Category options: beer, wine, spirits, premix
         action='store_true',
         help='Start a new scraping run (discovers new tasks)'
     )
-    
+
     parser.add_argument(
         '--resume-last',
         action='store_true',
         help='Resume the last run for the specified retailer/category'
     )
-    
+
     parser.add_argument(
         '--continue',
         dest='continue_run',
         action='store_true',
         help='Continue from existing queue tasks (default behavior)'
     )
-    
+
     parser.add_argument(
         '--workers',
         type=int,
         default=1,
         help='Number of worker threads to use (default: 1)'
+    )
+
+    parser.add_argument(
+        '--man',
+        action='store_true',
+        help='Display the detailed manual for this CLI'
     )
 
     parser.add_argument(
@@ -370,6 +431,10 @@ Category options: beer, wine, spirits, premix
     
     args = parser.parse_args()
     
+    if args.man:
+        print(MAN_PAGE)
+        sys.exit(0)
+
     if args.verbose:
         print(f"Store: {args.store}")
         print(f"Category: {args.category}")
