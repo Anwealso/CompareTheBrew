@@ -3,8 +3,10 @@
   {% if total_results == 1 %} Found 1 drink that matched your search. 
   {% else %} Found {{ total_results }} drinks matching your search. {% endif %}
 </p>
-<a
-  href="#help"
-  id="helpTooltip"
-  ><img src="/static/images/help.svg" alt=""
-/></a>
+<a href="#help" id="helpTooltip">
+  <img src="/static/images/help.svg" alt="" />
+  <span class="helpTooltipText">
+    <strong>What is Score?</strong>
+    <span>Score is the number of standard drinks per dollar, multiplied by 100.</span>
+  </span>
+</a>

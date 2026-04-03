@@ -494,8 +494,48 @@ input[type="search"]::-webkit-search-results-decoration {
   vertical-align: middle;
   width: 50px;
   float: right;
-  display: inline;
+  display: inline-flex;
+  align-items: center;
   padding-bottom: 5px;
+  position: relative;
+}
+
+#helpTooltip img {
+  width: 100%;
+  height: auto;
+}
+
+.helpTooltipText {
+  position: absolute;
+  right: 100%;
+  bottom: 80%;
+  transform: translate(30%, -6px);
+  width: 220px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--color-white);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.16);
+  font-size: 13px;
+  color: var(--color-dark);
+  line-height: 1.3;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 10;
+  text-align: left;
+}
+
+.helpTooltipText strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+#helpTooltip:hover .helpTooltipText,
+#helpTooltip:focus-within .helpTooltipText {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(30%, -18px);
 }
 
 #resultsArea {
