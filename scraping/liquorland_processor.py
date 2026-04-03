@@ -347,7 +347,7 @@ class LiquorlandProcessor(RetailerProcessor):
     def build_detail_tasks(self, items: List[Item]) -> List[dict]:
         tasks = []
         for item in items:
-            if item.link:
+            if item.link and not self._get_cached_details(item.link):
                 tasks.append({
                     "url": item.link,
                     "metadata": {

@@ -52,22 +52,21 @@ def create_metrics_connection():
     return conn
 
 
-def create_entry(conn, task):
+def create_entry(conn, drink_data):
     """
-    Create a new task
+    Create a new drink item
     :param conn:
-    :param task:
+    :param drink_data:
     :return:
     """
     from datetime import datetime
     now = datetime.now().isoformat()
-    
+
     sql = ''' INSERT INTO drinks(store,brand,name,type,price,link,ml,percent,stdDrinks,efficiency,image,search_text,date_created)
               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) '''
     cur = conn.cursor()
-    cur.execute(sql, task + (now,))
+    cur.execute(sql, drink_data + (now,))
     return cur.lastrowid
-
 
 
 def upsert_source(conn, url, retailer, last_scraped):
@@ -238,8 +237,6 @@ def update_task_status(conn, task_id, status, metadata=None):
             sql = ''' UPDATE scrape_tasks SET status=?, updated_at=? WHERE ID=? '''
             cur.execute(sql, (status, now, task_id))
     conn.commit()
-
-
 
 
 def increment_task_attempts(conn, task_id):
@@ -581,7 +578,7 @@ def update_drink(conn, drink, newPrice):
     :return: project id
     """
     sql = ''' UPDATE drinks
-              SET price = ?, link = ?, image = ?, efficiency = ?
+              SET price = ?, link = ?, image = ?, efficiency = ?, date_created = datetime('now')
               WHERE store = ?
               AND link = ? '''
 
@@ -743,10 +740,10 @@ def dbhandler(conn, list, mode, populate, item_callback=None, start_index=0):
                 efficiency = float(drink.efficiency) if drink.efficiency is not None else 0.0
                 search_text = build_search_text(drink.name, drink.brand, drink.type)
                 
-                drink_task = (
+                drink_data = (
                     drink.store, drink.brand, drink.name, drink.type, price, drink.link, ml,
                     percent, std_drinks, efficiency, drink.image, search_text)
-                create_entry(conn, drink_task)
+                create_entry(conn, drink_data)
                 inserted = True
             except Exception as e:
                 print(f"Error inserting drink {drink.name}: {e}")
@@ -770,10 +767,10 @@ def dbhandler(conn, list, mode, populate, item_callback=None, start_index=0):
                         efficiency = float(drink.efficiency) if drink.efficiency is not None else 0.0
                         search_text = build_search_text(drink.name, drink.brand, drink.type)
                         
-                        drink_task = (drink.store, drink.brand, drink.name, drink.type, price, drink.link,
+                        drink_data = (drink.store, drink.brand, drink.name, drink.type, price, drink.link,
                                     ml, percent, std_drinks, efficiency,
                                     drink.image, search_text)
-                        create_entry(conn, drink_task)
+                        create_entry(conn, drink_data)
                         inserted = True
                     except Exception as e:
                         print(f"Error creating drink {drink.name}: {e}")
