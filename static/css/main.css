@@ -484,7 +484,7 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 #resultsCounter {
-  padding-top: 50px;
+  padding-top: 10px; /* 50px */
   font-size: 14px;
   color: var(--color-light);
 }
