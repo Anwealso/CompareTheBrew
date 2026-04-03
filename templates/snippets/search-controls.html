@@ -27,6 +27,14 @@
     name="order"
     value="{{ order if order else 'score-desc' }}"
   />
+  <input type="hidden" name="price_min" value="{{ price_min if price_min else '' }}" />
+  <input type="hidden" name="price_max" value="{{ price_max if price_max else '' }}" />
+  <input type="hidden" name="store" value="{{ store_filter if store_filter else 'all' }}" />
+  <input
+    type="hidden"
+    name="scraped_age"
+    value="{{ scraped_age if scraped_age or scraped_age == 0 else '' }}"
+  />
   <span class="underline"></span>
 </form>
 
