@@ -14,6 +14,7 @@ import argparse
 import sys
 import os
 import uuid
+import queue
 from pathlib import Path
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
@@ -24,8 +25,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from scraping.controller import ScrapingController
 from db.databaseHandler import (
-    create_connection, add_scrape_task, get_pending_tasks_count,
-    get_next_pending_task
+    create_connection, get_pending_tasks_count
 )
 
 
@@ -124,6 +124,89 @@ def discover_tasks_for_store_category(store, category=None, run_id=None):
     return count, discovered_run_id
 
 
+def monitor_run_progress(event_queue: queue.Queue, store: str, limit: int | None):
+    drinks_expected = 0
+    drinks_processed = 0
+    page_completed = 0
+    detail_completed = 0
+    page_total_target = limit or 1
+    pending = 0
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TaskProgressColumn(),
+        console=console
+    ) as progress:
+        page_task = progress.add_task(
+            description=f"[green]{store} Pages | Pending 0",
+            total=page_total_target
+        )
+        drink_task = progress.add_task(
+            description=f"[cyan]{store} Drinks | Awaiting drinks...",
+            total=0
+        )
+
+        while True:
+            event = event_queue.get()
+            event_type = event.get("type")
+
+            if event_type == "run_started":
+                pending = event.get("pending", 0)
+                page_total_target = limit or max(pending, 1)
+                desc = f"[green]{store}: Tasks 0/{page_total_target} | Pending {pending}"
+                progress.update(page_task, total=max(page_total_target, 1), completed=0, description=desc)
+
+            elif event_type == "page_items":
+                drinks_expected += event.get("count", 0)
+                progress.update(drink_task, total=max(drinks_expected, drinks_processed))
+
+            elif event_type == "drink_processed":
+                drinks_processed = event.get("drinks_processed", drinks_processed + 1)
+                action = "inserted" if event.get("inserted") else "updated"
+                brand = event.get("brand") or ""
+                name = event.get("name") or ""
+                drink_label = f"{brand} {name}".strip()
+                progress.update(drink_task, completed=drinks_processed, description=f"[cyan]{drink_label}")
+                absolute_index = event.get("absolute_index", drinks_processed)
+                page_total = event.get("page_total")
+                if not page_total:
+                    page_total = drinks_expected or drinks_processed
+                console.print(
+                    f"[dim]Drink {absolute_index}/{page_total} ({action}):[/dim] "
+                    f"{drink_label} | "
+                    f"ABV {event.get('percent', 0.0):.2f}% | "
+                    f"StdDrinks {event.get('std_drinks', 0.0):.2f} | "
+                    f"Price ${event.get('price', 0.0):.2f}"
+                )
+
+            elif event_type == "task_completed":
+                page_completed = event.get("page_completed", page_completed)
+                detail_completed = event.get("detail_completed", detail_completed)
+                pending = event.get("pending", pending)
+                total_goal = limit or max(page_completed + pending, 1)
+                desc = f"[green]{store}: Tasks {page_completed}/{total_goal} | Pending {pending}"
+                if limit:
+                    desc += f" (limit {limit})"
+                if detail_completed:
+                    desc += f" | Detail updates: {detail_completed}"
+                progress.update(
+                    page_task,
+                    completed=page_completed,
+                    total=max(total_goal, page_total_target),
+                    description=desc
+                )
+                page_total_target = max(page_total_target, total_goal)
+
+            elif event_type == "run_completed":
+                pending = event.get("pending", pending)
+                summary = event
+                progress.update(page_task, completed=summary.get("pages", page_completed))
+                break
+
+    return summary
+
 def run_scraping_jobs(args):
     """Run the scraping jobs based on parsed arguments."""
     controller = ScrapingController()
@@ -153,6 +236,8 @@ def run_scraping_jobs(args):
         else:
             # When continuing (not --new), get the most recent run for this store/category
             conn = create_connection()
+            if not conn:
+                continue
             cur = conn.cursor()
             if args.category:
                 cur.execute("""
@@ -170,11 +255,10 @@ def run_scraping_jobs(args):
             if row:
                 current_run_id = row[0]
             conn.close()
-            conn = create_connection()
-            
-            if not conn:
-                continue
-        
+
+        conn = create_connection()
+        if not conn:
+            continue
         # Get pending count - use run_id if available
         if current_run_id:
             pending_count = count_pending_tasks_by_run(
@@ -191,8 +275,9 @@ def run_scraping_jobs(args):
             print(f"No pending tasks for {store}. Use --new to start a fresh scrape.")
             conn.close()
             continue
-        
+
         limit = args.limit if args.limit else None
+        num_workers = args.workers if getattr(args, "workers", None) and args.workers > 0 else 1
 
         print(f"\nStarting scraping for {store}...")
         print(f"Pending tasks: {pending_count}")
@@ -201,105 +286,13 @@ def run_scraping_jobs(args):
         if limit:
             console.print(f"[bold]Task limit:[/bold] {limit}")
         console.print("-" * 40)
-        
-        controller._drink_counter = 0
-        page_completed = 0
-        target_task_total = limit if limit else max(pending_count, 1)
-        drinks_expected = 0
-        drinks_processed = 0
-        detail_completed = 0
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            BarColumn(),
-            TaskProgressColumn(),
-            console=console
-        ) as progress:
-            page_task = progress.add_task(
-                f"[green]{store} Pages",
-                total=target_task_total,
-                description="[cyan]Waiting for tasks..."
-            )
-            drink_task = progress.add_task(
-                f"[cyan]{store} Drinks",
-                total=0,
-                description="[cyan]Awaiting drinks..."
-            )
 
-            def on_page_items(count: int):
-                nonlocal drinks_expected
-                drinks_expected += count
-                progress.update(drink_task, total=drinks_expected)
-
-            def on_drink(drink, absolute_index, page_total, inserted):
-                nonlocal drinks_processed
-                drinks_processed += 1
-                total_label = drinks_expected or page_total or absolute_index
-                label = max(int(total_label), absolute_index)
-                progress.update(drink_task, completed=drinks_processed, description=f"[cyan]{drink.name}")
-                action = "inserted" if inserted else "updated"
-                console.print(
-                    f"[dim]Drink {absolute_index}/{label} ({action}):[/dim] "
-                    f"{drink.brand} {drink.name} | "
-                    f"ABV {drink.percent:.2f}% | "
-                    f"StdDrinks {drink.stdDrinks:.2f} | "
-                    f"Price ${drink.price:.2f}"
-                )
-
-            controller.page_items_callback = on_page_items
-            controller.drink_callback = on_drink
-            
-            while True:
-                if limit and page_completed >= limit:
-                    progress.update(page_task, description=f"[yellow]{store}: Limit reached ({limit})")
-                    break
-
-                result = controller.run_next(store, run_id=current_run_id)
-                
-                if not result:
-                    if current_run_id:
-                        pending_now = count_pending_tasks_by_run(conn, current_run_id, args.category if args.category else None)
-                    else:
-                        pending_now = count_pending_tasks_for_store(conn, store, args.category if args.category else None)
-                    status_desc = "[green]Completed - no more tasks" if pending_now == 0 else "[red]Stopped - error or limit"
-                    progress.update(page_task, description=status_desc)
-                    break
-
-                task_type = controller.last_task_type
-                if task_type == 'drink_detail':
-                    detail_completed += 1
-                else:
-                    page_completed += 1
-                    total_completed += 1
-
-                if current_run_id:
-                    pending_now = count_pending_tasks_by_run(conn, current_run_id, args.category if args.category else None)
-                else:
-                    pending_now = count_pending_tasks_for_store(conn, store, args.category if args.category else None)
-
-                if limit:
-                    total_goal = target_task_total
-                else:
-                    total_goal = max(page_completed + pending_now, 1)
-
-                desc = f"[green]{store}: Tasks {page_completed}/{total_goal} | Pending {pending_now}"
-                if limit:
-                    desc += f" (limit {limit})"
-                if detail_completed:
-                    desc += f" | Detail updates: {detail_completed}"
-
-                progress.update(
-                    page_task,
-                    completed=page_completed,
-                    total=total_goal,
-                    description=desc
-                )
-        
-        controller.page_items_callback = None
-        controller.drink_callback = None
-        
-        console.print(f"\n[bold green]Completed {page_completed} page tasks "
-                      f"(detail updates: {detail_completed}) for {store}[/bold green]")
+        event_queue = controller.start_run(store, limit=limit, run_id=current_run_id, num_workers=num_workers)
+        summary = monitor_run_progress(event_queue, store, limit)
+        if summary:
+            total_completed += summary.get("pages", 0)
+            console.print(f"\n[bold green]Completed {summary.get('pages', 0)} page tasks "
+                          f"(detail updates: {summary.get('details', 0)}) for {store}[/bold green]")
         conn.close()
     
     return total_completed, total_discovered
@@ -362,6 +355,13 @@ Category options: beer, wine, spirits, premix
         help='Continue from existing queue tasks (default behavior)'
     )
     
+    parser.add_argument(
+        '--workers',
+        type=int,
+        default=1,
+        help='Number of worker threads to use (default: 1)'
+    )
+
     parser.add_argument(
         '-v', '--verbose',
         action='store_true',
