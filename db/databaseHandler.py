@@ -6,6 +6,8 @@ from search.intellisearch import build_search_text, get_additional_quality_filte
 import itertools
 import operator
 import json
+from datetime import datetime
+import time
 
 
 def get_schema_dir():
@@ -144,72 +146,101 @@ def add_scrape_task(conn, retailer, url, metadata=None, run_id=None, task_type='
 def get_next_pending_task_by_run(conn, run_id, retailer=None, task_type=None):
     """
     Get the next task for a specific run.
-    First checks for in_progress tasks (retry), then falls back to pending tasks.
+    Atomically claims the next pending task, marks it in_progress, and returns it.
     """
-    cur = conn.cursor()
-    
-    # Build query conditions
-    conditions = ["run_id = ?"]
-    params = [run_id]
-    
+    conditions = []
+    params = []
+    if run_id:
+        conditions.append("run_id = ?")
+        params.append(run_id)
     if retailer:
         conditions.append("retailer = ?")
         params.append(retailer)
     if task_type:
         conditions.append("task_type = ?")
         params.append(task_type)
-    
-    where_clause = " AND ".join(conditions)
-    
-    # First try to find an in_progress task for this run (retry case)
-    cur.execute(f"""
-        SELECT * FROM scrape_tasks 
-        WHERE {where_clause} AND status = 'in_progress' 
-        ORDER BY updated_at ASC LIMIT 1
-    """, params)
-    
-    task = cur.fetchone()
-    if task:
-        return task
-    
-    # Fall back to pending tasks
-    cur.execute(f"""
-        SELECT * FROM scrape_tasks 
-        WHERE {where_clause} AND status = 'pending' 
-        ORDER BY 
-            CASE task_type 
-                WHEN 'drink_detail' THEN 0 
-                ELSE 1 
-            END,
-            created_at ASC 
-        LIMIT 1
-    """, params)
-    
-    return cur.fetchone()
+
+    order_clause = """
+        CASE task_type 
+            WHEN 'drink_detail' THEN 0 
+            ELSE 1 
+        END,
+        created_at ASC
+    """
+    return _claim_next_pending_task(conn, conditions, params, order_clause)
 
 
 def get_next_pending_task(conn, retailer=None, task_type=None):
     """
     Get the next pending task, optionally filtered by retailer.
-    Sorted by updated_at (asc) to ensure failed/re-queued tasks 
-    (with fresh updated_at) move to the back.
+    Sorted by updated_at (asc) to ensure failed/re-queued tasks move to the back.
+    """
+    conditions = []
+    params = []
+    if retailer:
+        conditions.append("retailer = ?")
+        params.append(retailer)
+    if task_type:
+        conditions.append("task_type = ?")
+        params.append(task_type)
+
+    order_clause = """
+        CASE task_type 
+            WHEN 'drink_detail' THEN 0 
+            ELSE 1 
+        END,
+        updated_at ASC
+    """
+    return _claim_next_pending_task(conn, conditions, params, order_clause)
+
+
+def _claim_next_pending_task(conn, conditions, params, order_clause):
+    """
+    Atomically claim the next pending task that matches the provided conditions.
     """
     cur = conn.cursor()
-    if retailer:
-        cur.execute("SELECT * FROM scrape_tasks WHERE retailer=? AND status='pending' ORDER BY updated_at ASC LIMIT 1", (retailer,))
-    else:
-        cur.execute("""
-            SELECT * FROM scrape_tasks 
-            WHERE status='pending' 
-            ORDER BY 
-                CASE task_type 
-                    WHEN 'drink_detail' THEN 0 
-                    ELSE 1 
-                END,
-                updated_at ASC
+    now = datetime.now().isoformat()
+    base_conditions = ["status = 'pending'"] + conditions
+    where_clause = " AND ".join(base_conditions)
+
+    _begin_immediate_transaction(conn)
+    try:
+        select_sql = f"""
+            SELECT ID FROM scrape_tasks
+            WHERE {where_clause}
+            ORDER BY {order_clause}
             LIMIT 1
-        """)
-    return cur.fetchone()
+        """
+        cur.execute(select_sql, params)
+        row = cur.fetchone()
+        if not row:
+            conn.commit()
+            return None
+
+        task_id = row[0]
+        cur.execute("UPDATE scrape_tasks SET status = 'in_progress', updated_at = ? WHERE ID = ?", (now, task_id))
+        cur.execute("SELECT * FROM scrape_tasks WHERE ID = ?", (task_id,))
+        task = cur.fetchone()
+        conn.commit()
+        return task
+    except Exception:
+        conn.rollback()
+        raise
+
+
+def _begin_immediate_transaction(conn):
+    """
+    Acquire an IMMEDIATE transaction so we can atomically claim work.
+    """
+    while True:
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            return
+        except sqlite3.OperationalError as e:
+            if "locked" in str(e).lower():
+                time.sleep(0.05)
+                continue
+            raise
 
 
 def update_task_status(conn, task_id, status, metadata=None):
@@ -278,6 +309,31 @@ def get_pending_tasks_count_by_run(conn, run_id, retailer=None):
         """, (run_id,))
     row = cur.fetchone()
     return row[0] if row else 0
+
+
+def reset_in_progress_tasks(conn, run_id=None, retailer=None):
+    """
+    Reset tasks marked as in_progress back to pending so they can be resumed.
+    """
+    cur = conn.cursor()
+    now = datetime.now().isoformat()
+    conditions = ["status = 'in_progress'"]
+    params = []
+    if run_id:
+        conditions.append("run_id = ?")
+        params.append(run_id)
+    if retailer:
+        conditions.append("retailer = ?")
+        params.append(retailer)
+    where_clause = " AND ".join(conditions)
+    sql = f"""
+        UPDATE scrape_tasks
+        SET status = 'pending', updated_at = ?
+        WHERE {where_clause}
+    """
+    cur.execute(sql, (now, *params))
+    conn.commit()
+    return cur.rowcount
 
 
 def create_metric_entry(conn, task):

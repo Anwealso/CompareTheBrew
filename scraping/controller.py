@@ -13,7 +13,8 @@ from db.databaseHandler import (
     create_connection, upsert_source, dbhandler, 
     add_scrape_task, get_next_pending_task, get_next_pending_task_by_run,
     update_task_status, get_pending_tasks_count, get_pending_tasks_count_by_run,
-    increment_task_attempts, create_run, update_drink_details
+    increment_task_attempts, create_run, update_drink_details,
+    reset_in_progress_tasks
 )
 
 NUM_WORKERS = 4
@@ -54,6 +55,7 @@ class ScrapingController:
         self._drinks_processed = 0
         self._limit = None
         self._current_run_id = None
+        self._active_retailer = None
         self._stats_lock = threading.Lock()
 
     def _load_sitemaps(self) -> Dict[str, List[str]]:
@@ -166,7 +168,6 @@ class ScrapingController:
         self.current_url = url
         
         increment_task_attempts(conn, task_id)
-        update_task_status(conn, task_id, 'in_progress')
         
         now = datetime.now().isoformat()
         upsert_source(conn, url, retailer_name, now)
@@ -365,6 +366,7 @@ class ScrapingController:
 
         self._limit = limit
         self._current_run_id = run_id
+        self._active_retailer = retailer_name.lower()
         self._page_tasks_completed = 0
         self._detail_tasks_completed = 0
         self._drinks_processed = 0
@@ -395,6 +397,26 @@ class ScrapingController:
             if run_id:
                 return get_pending_tasks_count_by_run(conn, run_id, retailer_name)
             return get_pending_tasks_count(conn, retailer_name)
+        finally:
+            conn.close()
+
+    def reset_in_progress_tasks(self, retailer_name: str | None = None, run_id: str | None = None) -> int:
+        """
+        Reset tasks that are marked as in_progress back to pending to allow restarting.
+        """
+        target_run_id = run_id or self._current_run_id
+        target_retailer = retailer_name or self._active_retailer
+        if not target_run_id and not target_retailer:
+            return 0
+        conn = create_connection()
+        if not conn:
+            return 0
+        try:
+            return reset_in_progress_tasks(
+                conn,
+                run_id=target_run_id,
+                retailer=target_retailer
+            )
         finally:
             conn.close()
 

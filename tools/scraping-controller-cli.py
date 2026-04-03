@@ -268,9 +268,8 @@ def monitor_run_progress(event_queue: queue.Queue, store: str, limit: int | None
 
     return summary
 
-def run_scraping_jobs(args):
+def run_scraping_jobs(args, controller):
     """Run the scraping jobs based on parsed arguments."""
-    controller = ScrapingController()
     stores = get_stores_from_arg(args.store)
     
     total_completed = 0
@@ -516,8 +515,23 @@ Category options: beer, wine, spirits, premix
     if not args.new and not args.continue_run:
         args.continue_run = True
     
-    completed, discovered = run_scraping_jobs(args)
-    
+    controller = ScrapingController()
+    interrupted = False
+    reset_count = 0
+    completed = discovered = 0
+    try:
+        completed, discovered = run_scraping_jobs(args, controller)
+    except KeyboardInterrupt:
+        interrupted = True
+        console.print("\n[bold yellow]Scraping interrupted by user. Resetting claimed tasks...[/bold yellow]")
+    finally:
+        reset_count = controller.reset_in_progress_tasks()
+
+    if interrupted:
+        if reset_count:
+            console.print(f"[dim]{reset_count} previously claimed tasks were reset to pending.[/dim]")
+        sys.exit(1)
+
     print(f"\n{'='*60}")
     print(f"Scraping run complete!")
     print(f"Tasks discovered: {discovered}")
