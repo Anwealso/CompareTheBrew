@@ -61,3 +61,9 @@ class RetailerProcessor(ABC):
         Initial discovery of tasks for a given seed URL.
         """
         pass
+
+    def build_detail_tasks(self, items: List[Item]) -> List[dict]:
+        """
+        Optionally build detail-page tasks after a page is parsed.
+        """
+        return []

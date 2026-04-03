@@ -273,6 +273,9 @@ class LiquorlandProcessor(RetailerProcessor):
                 percent = 0.0
                 std_drinks = 0.0
                 if link:
+                    # TODO: Should probably be raising an error here instead of silently 
+                    # returning 0s, as these details are critical for the app's functionality. 
+                    # Need to decide how to handle missing details gracefully.
                     details = self.get_details_from_item_page(link)
                     percent = details.get("percent", 0.0)
                     std_drinks = details.get("std_drinks", 0.0)
@@ -298,6 +301,21 @@ class LiquorlandProcessor(RetailerProcessor):
                 print(f"Error parsing Liquorland HTML product: {e}")
 
         return result, None
+
+    def build_detail_tasks(self, items: List[Item]) -> List[dict]:
+        tasks = []
+        for item in items:
+            if item.link:
+                tasks.append({
+                    "url": item.link,
+                    "metadata": {
+                        "store": item.store,
+                        "brand": item.brand,
+                        "name": item.name,
+                        "link": item.link
+                    }
+                })
+        return tasks
 
     def process_drink_detail(self, url: str, metadata: Optional[dict] = None) -> dict:
         """

@@ -13,7 +13,7 @@ from db.databaseHandler import (
     create_connection, upsert_source, dbhandler, 
     add_scrape_task, get_next_pending_task, get_next_pending_task_by_run,
     update_task_status, get_pending_tasks_count,
-    increment_task_attempts, create_run
+    increment_task_attempts, create_run, update_drink_details
 )
 
 NUM_WORKERS = 4
@@ -27,7 +27,7 @@ class ScrapingController:
     def __init__(self, sitemaps_file: str = "scraping/sitemaps.json", max_retries: int = 3):
         """
         Initializes the controller with a sitemaps file and retry limit.
-        
+
         Args:
             sitemaps_file (str): Path to the JSON file containing retailer URLs.
             max_retries (int): Maximum number of times a task can be attempted before failing.
@@ -35,7 +35,11 @@ class ScrapingController:
         self.sitemaps_file = sitemaps_file
         self.max_retries = max_retries
         self.progress_callback = None
+        self.page_items_callback = None
+        self.drink_callback = None
         self.current_url = ""
+        self._drink_counter = 0
+        self.last_task_type = None
         self.processors: Dict[str, RetailerProcessor] = {
             "bws": BWSProcessor(),
             "ll": LiquorlandProcessor(),
@@ -119,6 +123,7 @@ class ScrapingController:
             task = get_next_pending_task(conn, retailer_name)
         
         if not task:
+            self.last_task_type = None
             conn.close()
             return False
 
@@ -129,14 +134,13 @@ class ScrapingController:
         run_id = task[5] if len(task) > 5 else None
         current_attempts = task[6] if len(task) > 6 else 0
         task_type = task[9] if len(task) > 9 else 'page'
+        self.last_task_type = task_type
         
         metadata = json.loads(metadata_str) if metadata_str else {}
         processor = self.processors[retailer_name]
         processor.progress_callback = self.progress_callback
         
-        page_info = metadata.get("page") if isinstance(metadata, dict) else None
-        page_hint = f" (page {page_info})" if page_info not in (None, "", 0) else ""
-        print(f"Processing Task {task_id} ({task_type}){page_hint} (Attempt {current_attempts + 1}/{self.max_retries}): {url}")
+        print(f"Processing Task {task_id} (Type: {task_type}) (Attempt {current_attempts + 1}/{self.max_retries}): {url}")
         
         self.current_url = url
         
@@ -150,19 +154,42 @@ class ScrapingController:
             if task_type == 'drink_detail':
                 details = processor.process_drink_detail(url, metadata)
                 print(f"Got details: percent={details.get('percent')}, std_drinks={details.get('std_drinks')}")
+                if metadata:
+                    store = metadata.get("store", retailer_name)
+                    link = metadata.get("link")
+                    percent = details.get("percent", 0.0)
+                    std_drinks = details.get("std_drinks", 0.0)
+                    if link:
+                        update_drink_details(conn, store, link, percent, std_drinks)
                 update_task_status(conn, task_id, 'completed')
             else:
                 items, next_metadata = processor.get_items(url, metadata)
+                if self.page_items_callback:
+                    self.page_items_callback(len(items))
                 print(f"Found {len(items)} items.")
-                
-                if items:
-                    dbhandler(conn, items, "u", True)
-                
+
+                processed_items = dbhandler(
+                    conn,
+                    items,
+                    "u",
+                    True,
+                    item_callback=self.drink_callback,
+                    start_index=self._drink_counter
+                )
+                self._drink_counter += processed_items
+
+                detail_tasks = processor.build_detail_tasks(items)
+                for detail in detail_tasks:
+                    url_detail = detail.get("url")
+                    metadata_detail = detail.get("metadata")
+                    if url_detail:
+                        add_scrape_task(conn, retailer_name, url_detail, metadata_detail, run_id, task_type='drink_detail')
+
                 if next_metadata:
                     next_url = next_metadata.get("next_url", url)
                     add_scrape_task(conn, retailer_name, next_url, next_metadata, run_id, task_type='page')
                     print(f"  - Discovered follow-up task: {next_url}")
-                
+
                 update_task_status(conn, task_id, 'completed')
         except Exception as e:
             print(f"Error during task {task_id}: {e}")

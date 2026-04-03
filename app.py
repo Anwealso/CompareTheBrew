@@ -62,7 +62,6 @@ def inject_today():
 def inject_feature_flags():
     return {'flag_show_staleness': app.config.get('FLAG_SHOW_STALENESS', True)}
 
-# Working serve of the search page with css and js
 @app.route("/")
 def displaySearchPage():
     """
@@ -73,11 +72,10 @@ def displaySearchPage():
     topDrink = db.select_all_drinks_by_efficiency(conn)[0] # get the first result from all of the drinks sorted by efficiency desc
     return render_template('index.html', result=topDrink)
 
-# A function to get search terms from the search page
 @app.route('/', methods=['POST'])
 def postSearchTerms():
     """
-    ...
+    A function to get search terms from the search page
     """
     # Get the search terms inputted by the user
     searchTerms = request.form['searchTerms']

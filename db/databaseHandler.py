@@ -692,10 +692,12 @@ def fix_missing_beer_images(conn):
                                 conn.commit()
 
 
-def dbhandler(conn, list, mode, populate):
-    # populate or update mode
+def dbhandler(conn, list, mode, populate, item_callback=None, start_index=0):
+    total_items = len(list)
+    processed = 0
+    
     if mode == "p":
-        for drink in list:
+        for idx, drink in enumerate(list, start=1):
             try:
                 price = float(drink.price) if drink.price is not None else 0.0
                 ml = float(drink.ml) if drink.ml is not None else 0.0
@@ -708,15 +710,19 @@ def dbhandler(conn, list, mode, populate):
                     drink.store, drink.brand, drink.name, drink.type, price, drink.link, ml,
                     percent, std_drinks, efficiency, drink.image, search_text)
                 create_entry(conn, drink_task)
+                inserted = True
             except Exception as e:
                 print(f"Error inserting drink {drink.name}: {e}")
+                inserted = False
+            if item_callback:
+                item_callback(drink, start_index + idx, total_items, inserted)
+            processed += 1
 
     elif mode == "u":
-        # update entries with the same name / add entries who's names do not exist.
-        for drink in list:
+        for idx, drink in enumerate(list, start=1):
+            inserted = False
             if is_drink_in_table(conn, drink):
                 update_drink(conn, drink, drink.price)
-
             else:
                 if populate:
                     try:
@@ -731,10 +737,35 @@ def dbhandler(conn, list, mode, populate):
                                     ml, percent, std_drinks, efficiency,
                                     drink.image, search_text)
                         create_entry(conn, drink_task)
+                        inserted = True
                     except Exception as e:
                         print(f"Error creating drink {drink.name}: {e}")
+            if item_callback:
+                item_callback(drink, start_index + idx, total_items, inserted)
+            processed += 1
+
+    conn.commit()
+    return processed
 
 
+def update_drink_details(conn, store, link, percent, std_drinks):
+    """
+    Update percent, stdDrinks, and derived efficiency for a drink by link.
+    """
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT price FROM drinks
+        WHERE store = ? AND link = ?
+        ORDER BY ID DESC LIMIT 1
+    """, (store, link))
+    row = cur.fetchone()
+    price = float(row[0]) if row and row[0] is not None else 0.0
+    efficiency = ((std_drinks / price) if price > 0 and std_drinks > 0 else 0.0)
+    cur.execute("""
+        UPDATE drinks
+        SET percent = ?, stdDrinks = ?, efficiency = ?
+        WHERE store = ? AND link = ?
+    """, (percent, std_drinks, efficiency, store, link))
     conn.commit()
 
 

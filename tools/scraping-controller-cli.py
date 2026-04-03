@@ -16,7 +16,7 @@ import os
 import uuid
 from pathlib import Path
 from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn, TimeRemainingColumn
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
 
 console = Console()
 
@@ -53,41 +53,54 @@ def get_categories_from_arg(category_arg):
     return [category_arg.lower()]
 
 
-def count_pending_tasks_for_store(conn, store, category=None):
+def count_pending_tasks_for_store(conn, store, category=None, task_type='page'):
     """Count pending tasks for a store, optionally filtered by category."""
     cur = conn.cursor()
     
     if category:
-        cur.execute("""
+        query = """
             SELECT COUNT(*) FROM scrape_tasks 
             WHERE retailer = ? AND status = 'pending' 
             AND url LIKE ?
-        """, (store, f'%{category}%'))
+        """
+        params = [store, f'%{category}%']
     else:
-        cur.execute("""
+        query = """
             SELECT COUNT(*) FROM scrape_tasks 
             WHERE retailer = ? AND status = 'pending'
-        """, (store,))
+        """
+        params = [store]
     
+    if task_type:
+        query += " AND task_type = ?"
+        params.append(task_type)
+    
+    cur.execute(query, params)
     return cur.fetchone()[0]
 
-
-def count_pending_tasks_by_run(conn, run_id, category=None):
+def count_pending_tasks_by_run(conn, run_id, category=None, task_type='page'):
     """Count pending tasks for a specific run, optionally filtered by category."""
     cur = conn.cursor()
     
     if category:
-        cur.execute("""
+        query = """
             SELECT COUNT(*) FROM scrape_tasks 
             WHERE run_id = ? AND status = 'pending' 
             AND url LIKE ?
-        """, (run_id, f'%{category}%'))
+        """
+        params = [run_id, f'%{category}%']
     else:
-        cur.execute("""
+        query = """
             SELECT COUNT(*) FROM scrape_tasks 
             WHERE run_id = ? AND status = 'pending'
-        """, (run_id,))
-    
+        """
+        params = [run_id]
+
+    if task_type:
+        query += " AND task_type = ?"
+        params.append(task_type)
+
+    cur.execute(query, params)
     return cur.fetchone()[0]
 
 
@@ -180,8 +193,7 @@ def run_scraping_jobs(args):
             continue
         
         limit = args.limit if args.limit else None
-        completed = 0
-        
+
         print(f"\nStarting scraping for {store}...")
         print(f"Pending tasks: {pending_count}")
         if current_run_id:
@@ -190,50 +202,58 @@ def run_scraping_jobs(args):
             console.print(f"[bold]Task limit:[/bold] {limit}")
         console.print("-" * 40)
         
-        current_drink = ""
-        drink_count = 0
-        
-        def progress_callback(item_name: str):
-            nonlocal current_drink, drink_count
-            current_drink = item_name
-            drink_count += 1
-            url_truncated = controller.current_url[:40] if controller.current_url else ""
-            desc = f"[green]{store}: {url_truncated} | Drink: {item_name[:30]}"
-            progress.update(task, description=desc)
-        
-        controller.progress_callback = progress_callback
-        
-        # Create progress bar
+        controller._drink_counter = 0
+        page_completed = 0
+        target_task_total = limit if limit else max(pending_count, 1)
+        drinks_expected = 0
+        drinks_processed = 0
+        detail_completed = 0
         with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),
             TaskProgressColumn(),
-            TextColumn("[cyan]{task.fields[current_drink]}"),
             console=console
         ) as progress:
-            
-            if limit:
-                task = progress.add_task(
-                    f"[green]Scraping {store}", 
-                    total=limit, 
-                    remaining=pending_count,
-                    current_drink=""
+            page_task = progress.add_task(
+                f"[green]{store} Pages",
+                total=target_task_total,
+                description="[cyan]Waiting for tasks..."
+            )
+            drink_task = progress.add_task(
+                f"[cyan]{store} Drinks",
+                total=0,
+                description="[cyan]Awaiting drinks..."
+            )
+
+            def on_page_items(count: int):
+                nonlocal drinks_expected
+                drinks_expected += count
+                progress.update(drink_task, total=drinks_expected)
+
+            def on_drink(drink, absolute_index, page_total, inserted):
+                nonlocal drinks_processed
+                drinks_processed += 1
+                total_label = drinks_expected or page_total or absolute_index
+                label = max(int(total_label), absolute_index)
+                progress.update(drink_task, completed=drinks_processed, description=f"[cyan]{drink.name}")
+                action = "inserted" if inserted else "updated"
+                console.print(
+                    f"[dim]Drink {absolute_index}/{label} ({action}):[/dim] "
+                    f"{drink.brand} {drink.name} | "
+                    f"ABV {drink.percent:.2f}% | "
+                    f"StdDrinks {drink.stdDrinks:.2f} | "
+                    f"Price ${drink.price:.2f}"
                 )
-            else:
-                task = progress.add_task(
-                    f"[green]Scraping {store}", 
-                    total=pending_count, 
-                    remaining=pending_count,
-                    current_drink=""
-                )
+
+            controller.page_items_callback = on_page_items
+            controller.drink_callback = on_drink
             
             while True:
-                if limit and completed >= limit:
-                    progress.update(task, description=f"[yellow]Limit reached")
+                if limit and page_completed >= limit:
+                    progress.update(page_task, description=f"[yellow]{store}: Limit reached ({limit})")
                     break
-                
-                drink_count = 0
+
                 result = controller.run_next(store, run_id=current_run_id)
                 
                 if not result:
@@ -241,29 +261,45 @@ def run_scraping_jobs(args):
                         pending_now = count_pending_tasks_by_run(conn, current_run_id, args.category if args.category else None)
                     else:
                         pending_now = count_pending_tasks_for_store(conn, store, args.category if args.category else None)
-                    if pending_now == 0:
-                        progress.update(task, description=f"[green]Completed - no more tasks")
-                    else:
-                        progress.update(task, description=f"[red]Stopped - error or limit")
+                    status_desc = "[green]Completed - no more tasks" if pending_now == 0 else "[red]Stopped - error or limit"
+                    progress.update(page_task, description=status_desc)
                     break
-                
-                completed += 1
-                total_completed += 1
-                
+
+                task_type = controller.last_task_type
+                if task_type == 'drink_detail':
+                    detail_completed += 1
+                else:
+                    page_completed += 1
+                    total_completed += 1
+
                 if current_run_id:
-                    remaining = count_pending_tasks_by_run(conn, current_run_id, args.category if args.category else None)
+                    pending_now = count_pending_tasks_by_run(conn, current_run_id, args.category if args.category else None)
                 else:
-                    remaining = count_pending_tasks_for_store(conn, store, args.category if args.category else None)
-                
-                url_truncated = controller.current_url[-40:] if controller.current_url else ""
-                desc = f"[green]{store}: Page {completed}/{completed + remaining} | Drinks: {drink_count}"
-                
+                    pending_now = count_pending_tasks_for_store(conn, store, args.category if args.category else None)
+
                 if limit:
-                    progress.update(task, completed=completed, remaining=remaining, description=desc, current_drink=f"{drink_count} drinks")
+                    total_goal = target_task_total
                 else:
-                    progress.update(task, completed=completed, total=completed + remaining, remaining=remaining, description=desc, current_drink=f"{drink_count} drinks")
+                    total_goal = max(page_completed + pending_now, 1)
+
+                desc = f"[green]{store}: Tasks {page_completed}/{total_goal} | Pending {pending_now}"
+                if limit:
+                    desc += f" (limit {limit})"
+                if detail_completed:
+                    desc += f" | Detail updates: {detail_completed}"
+
+                progress.update(
+                    page_task,
+                    completed=page_completed,
+                    total=total_goal,
+                    description=desc
+                )
         
-        console.print(f"\n[bold green]Completed {completed} tasks for {store}[/bold green]")
+        controller.page_items_callback = None
+        controller.drink_callback = None
+        
+        console.print(f"\n[bold green]Completed {page_completed} page tasks "
+                      f"(detail updates: {detail_completed}) for {store}[/bold green]")
         conn.close()
     
     return total_completed, total_discovered
@@ -354,7 +390,7 @@ Category options: beer, wine, spirits, premix
         
         for store in stores:
             if args.category:
-                count = count_pending_tasks_for_store(conn, store, args.category)
+                count = count_pending_tasks_for_store(conn, store, args.category, task_type=None)
             else:
                 count = get_pending_tasks_count(conn, store)
             
