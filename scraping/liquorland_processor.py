@@ -269,7 +269,14 @@ class LiquorlandProcessor(RetailerProcessor):
                             image = f"https://www.liquorland.com.au{image}"
                 
                 vol = self.parse_volume(name)
-                
+
+                percent = 0.0
+                std_drinks = 0.0
+                if link:
+                    details = self.get_details_from_item_page(link)
+                    percent = details.get("percent", 0.0)
+                    std_drinks = details.get("std_drinks", 0.0)
+
                 item = Item(
                     store=self.store_id,
                     brand=brand,
@@ -278,8 +285,8 @@ class LiquorlandProcessor(RetailerProcessor):
                     price=price,
                     link=link,
                     ml=vol,
-                    percent=0.0,
-                    std_drinks=0.0,
+                    percent=percent,
+                    std_drinks=std_drinks,
                     numb_items=1,
                     efficiency=0.0,
                     image=image,
