@@ -5,7 +5,7 @@ import threading
 import queue
 import time
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List
 from scraping.processor import RetailerProcessor
 from scraping.bws_processor import BWSProcessor
 from scraping.liquorland_processor import LiquorlandProcessor
@@ -13,7 +13,7 @@ from db.databaseHandler import (
     create_connection, upsert_source, dbhandler, 
     add_scrape_task, get_next_pending_task, get_next_pending_task_by_run,
     update_task_status, get_pending_tasks_count,
-    increment_task_attempts, create_run, update_run_completed
+    increment_task_attempts, create_run
 )
 
 NUM_WORKERS = 4

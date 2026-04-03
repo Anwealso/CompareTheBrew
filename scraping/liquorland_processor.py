@@ -232,7 +232,7 @@ class LiquorlandProcessor(RetailerProcessor):
                 name_elem = tile.find("div", class_="product-name")
                 name = name_elem.get_text(strip=True) if name_elem else ""
                 
-                current_price = 0.0
+                price = 0.0
                 current_price_elem = tile.find("span", class_="PriceTagV3")
                 if current_price_elem:
                     dollar_elem = current_price_elem.find("span", class_="dollarAmount")
@@ -241,7 +241,7 @@ class LiquorlandProcessor(RetailerProcessor):
                         dollars = dollar_elem.get_text(strip=True)
                         cents = cents_elem.get_text(strip=True) if cents_elem else "00"
                         try:
-                            current_price = float(f"{dollars}.{cents}")
+                            price = float(f"{dollars}.{cents}")
                         except:
                             pass
                 
@@ -275,7 +275,7 @@ class LiquorlandProcessor(RetailerProcessor):
                     brand=brand,
                     name=name,
                     type="Other",
-                    price=current_price,
+                    price=price,
                     link=link,
                     ml=vol,
                     percent=0.0,
