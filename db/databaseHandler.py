@@ -2,7 +2,7 @@ import sqlite3
 from sqlite3 import Error
 from pathlib import Path
 from scripts.classItem import Item
-from search.intellisearch import build_search_text, intellisearch
+from search.intellisearch import build_search_text, get_additional_quality_filters, intellisearch
 import itertools
 import operator
 import json
@@ -474,6 +474,15 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
     # Main attributes: name, brand, type, ml, percent, store (excluding promotional text, location, etc.)
     # Using MAX(id) as proxy for most recent (auto-increment aligns with date_created)
     
+    quality_filters = get_additional_quality_filters(
+        text_fields=["name", "brand", "type", "search_text"],
+        std_field="stdDrinks",
+        size_field="ml",
+    )
+    quality_clause = ""
+    if quality_filters:
+        quality_clause = " AND " + " AND ".join(quality_filters)
+
     # For each keyword, execute a new query at the cursor to find drinks matching that keyword
     for term in intelliterms:
         term = term.lower()
@@ -481,9 +490,9 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
         dedupe_sql = f"""
             SELECT * FROM drinks WHERE id IN (
                 SELECT MAX(id) FROM drinks
-                WHERE search_text LIKE '%{term}%'
+                WHERE search_text LIKE '%{term}%'{quality_clause}
                 GROUP BY name, brand, type, ml, percent, store
-            ){price_filter}{scraped_age_filter}{store_filter} ORDER BY {category} {order}
+            ){quality_clause}{price_filter}{scraped_age_filter}{store_filter} ORDER BY {category} {order}
         """
         cur.execute(dedupe_sql)
 

@@ -72,7 +72,7 @@ def normalize_query(query: str) -> dict:
     expanded = expand_synonyms(tokens)
     size_l = extract_size(query)
     pack_count = extract_pack_count(query)
-    
+
     return {
         "original": query,
         "tokens": tokens,
@@ -81,38 +81,61 @@ def normalize_query(query: str) -> dict:
         "pack_count": pack_count,
     }
 
+def get_additional_quality_filters(
+    *,
+    text_fields: list[str] | None = None,
+    price_field: str = "price",
+    std_field: str = "std_drinks",
+    size_field: str | None = "size_ml",
+) -> list[str]:
+    """Return SQL predicates that skip broken/empty product rows."""
+    if text_fields is None:
+        text_fields = ["name", "brand", "category", "search_text"]
+
+    conditions: list[str] = []
+    for field in text_fields:
+        conditions.append(f"{field} IS NOT NULL AND TRIM({field}) <> ''")
+
+    conditions.append(f"{price_field} IS NOT NULL AND {price_field} > 0")
+    conditions.append(f"{std_field} IS NOT NULL AND {std_field} > 0")
+    if size_field:
+        conditions.append(f"{size_field} IS NOT NULL AND {size_field} > 0")
+
+    return conditions
 
 def build_search_query(normalized: dict) -> tuple[str, list]:
     """Build SQL query from normalized search parameters."""
     tokens = normalized["expanded_tokens"]
     size_l = normalized["size_l"]
     pack_count = normalized["pack_count"]
-    
+
     conditions = []
     params = []
-    
+
     if tokens:
         token_conditions = []
         for token in tokens:
             token_conditions.append("search_text ILIKE %s")
             params.append(f"%{token}%")
         conditions.append(f"({' OR '.join(token_conditions)})")
-    
+
     if size_l:
         size_ml = int(size_l * 1000)
         margin = int(size_ml * 0.1)
         conditions.append("size_ml BETWEEN %s AND %s")
         params.extend([size_ml - margin, size_ml + margin])
-    
+
     if pack_count:
         conditions.append("pack_count = %s")
         params.append(pack_count)
-    
+
+    conditions.extend(get_additional_quality_filters())
+
     if not conditions:
         where_clause = ""
     else:
         where_clause = "WHERE " + " AND ".join(conditions)
-    
+
     query = f"SELECT id, name, brand, category, size_ml, pack_count, price FROM products {where_clause}"
     return query, params
 
