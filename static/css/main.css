@@ -437,6 +437,12 @@ input[type="search"]::-webkit-search-results-decoration {
   margin-right: 4px;
 }
 
+.zero-alc-faux-button {
+  /* margin-top: 6px; */
+  display: inline-flex;
+  align-items: center;
+}
+
 .zero-alc-label {
   display: inline-flex;
   align-items: center;
@@ -454,7 +460,7 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 .zero-alc-toggle {
-  padding: 10px 18px;
+  padding: 8px 18px;
   border-radius: 9px;
   border: 2px solid var(--color-maroon);
   background-color: var(--color-bg);
@@ -468,12 +474,6 @@ input[type="search"]::-webkit-search-results-decoration {
 .zero-alc-toggle.zero-alc-active {
   background-color: var(--color-maroon);
   color: var(--color-white);
-}
-
-.zero-alc-faux-button {
-  margin-top: 6px;
-  display: inline-flex;
-  align-items: center;
 }
 
 /* Size variants used on results/top50 pages */
@@ -1256,26 +1256,3 @@ input[type="search"]::-webkit-search-results-decoration {
    ============================================================================= */
 
 /* Don't add any responsive styling for now */
-
-
-/* =============================================================================
-   13. Dark Mode (commented out — preserved for future use)
-   =============================================================================
-
-@media (prefers-color-scheme: dark) {
-    body                { background-color: #1c1c1e; }
-    #menu               { background-color: #353535; }
-    li                  { color: white; }
-    .resultCard         { background-color: #48484a; }
-    .name               { color: #64d3ff; }
-    #priceRange         { color: #64d3ff; }
-    .buttonSort         { background-color: #346173; }
-    .buttonSortActive   { background-color: #64d3ff; color: black; }
-    .sortbytext         { color: #64d3ff; }
-    .indexdetails       { color: #a7a7a7; font-size: 0.75rem; font-weight: bolder; }
-    #question           { color: #64d3ff; }
-    #footer             { background-color: #346173; }
-    #mobileFooter       { background-color: #346173; }
-    #searchDrink        { color: #8e8e93; }
-}
-============================================================================= */
