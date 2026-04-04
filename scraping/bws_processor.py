@@ -1,4 +1,5 @@
 import json
+import re
 from typing import List, Optional, Tuple
 from entities.drink_item import Item
 from scraping.processor import RetailerProcessor
@@ -8,6 +9,52 @@ class BWSProcessor(RetailerProcessor):
     """
     Processor for BWS (Beer Wine Spirits).
     """
+
+    @staticmethod
+    def _extract_pack_qty(subdrink: dict) -> int:
+        """
+        Extract pack quantity from BWS search JSON.
+        Primary source is AdditionalDetails.productunitquantity.
+        """
+        def parse_qty(raw_value) -> Optional[int]:
+            if raw_value is None:
+                return None
+            if isinstance(raw_value, (int, float)):
+                qty = int(float(raw_value))
+                return qty if qty > 0 else None
+
+            match = re.search(r"\d+(?:\.\d+)?", str(raw_value))
+            if not match:
+                return None
+
+            try:
+                qty = int(float(match.group(0)))
+            except (TypeError, ValueError):
+                return None
+            return qty if qty > 0 else None
+
+        details = subdrink.get("AdditionalDetails", []) or []
+        detail_map = {}
+        for detail in details:
+            name = detail.get("Name")
+            if not name:
+                continue
+            detail_map[name.lower()] = detail.get("Value")
+
+        qty = parse_qty(detail_map.get("productunitquantity"))
+        if qty is not None:
+            return qty
+
+        # Fallbacks if productunitquantity is missing
+        qty = parse_qty(detail_map.get("displayunitquantity"))
+        if qty is not None:
+            return qty
+
+        qty = parse_qty(subdrink.get("DisplayQuantity"))
+        if qty is not None:
+            return qty
+
+        return 1
 
     def discover_tasks(self, url: str) -> List[dict]:
         """
@@ -77,7 +124,7 @@ class BWSProcessor(RetailerProcessor):
             for subdrink in products:
                 # Robust extraction logic with defaults
                 parentcode = "None"
-                item_num = 1.0
+                item_num = self._extract_pack_qty(subdrink)
                 percent_alcohol = 0.0
                 image_num = "None"
                 std_drinks = 0.0
@@ -89,16 +136,11 @@ class BWSProcessor(RetailerProcessor):
                 for i in subdrink.get("AdditionalDetails", []):
                     name = i.get("Name")
                     val = i.get("Value")
-                    if not val:
+                    if val is None or val == "":
                         continue
 
                     if name == "parentstockcode":
                         parentcode = val
-                    elif name == "productunitquantity":
-                        try:
-                            item_num = float(val)
-                        except:
-                            item_num = 1.0
                     elif name == "alcohol%":
                         # Strip '%' and convert to float
                         try:
@@ -148,16 +190,31 @@ class BWSProcessor(RetailerProcessor):
                 drink_link = f"https://bws.com.au/product/{parentcode}/{link}"
                 image_link = f"https://edgmedia.bws.com.au/bws/media/products/{image_num}"
 
-                # Safe price conversion
-                price_cents = 0.0
+                # Safe price conversion (BWS API may expose dollars or cents)
+                price_dollars = 0.0
                 try:
-                    p_val = subdrink.get("price_cents")
+                    p_val = subdrink.get("Price")
                     if p_val is not None:
-                        price_cents = float(p_val)
-                except:
-                    price_cents = 0.0
+                        price_dollars = float(p_val)
+                    else:
+                        p_val_cents = subdrink.get("price_cents")
+                        if p_val_cents is not None:
+                            price_dollars = float(p_val_cents) / 100.0
+                except (TypeError, ValueError):
+                    price_dollars = 0.0
 
-                price_dollars = price_cents / 100.0
+                old_price = 0.0
+                try:
+                    old_price_val = subdrink.get("WasPrice")
+                    if old_price_val is not None:
+                        old_price = float(old_price_val)
+                    else:
+                        old_price_cents_val = subdrink.get("Wasprice_cents")
+                        if old_price_cents_val is not None:
+                            old_price = float(old_price_cents_val) / 100.0
+                except (TypeError, ValueError):
+                    old_price = 0.0
+
                 score = (
                     (price_dollars / std_drinks)
                     if price_dollars > 0 and std_drinks > 0
@@ -171,12 +228,12 @@ class BWSProcessor(RetailerProcessor):
                     self.progress_callback(item_name)
 
                 zero_alc_flag = self.is_zero_alc(percent_alcohol)
-                item = DrinkItem(
+                item = Item(
                     store="bws",
                     brand=subdrink.get("BrandName", "Unknown"),
                     name=item_name,
                     type=style,
-                    price_cents=price_cents,
+                    price=price_dollars,
                     link=drink_link,
                     ml=size,
                     percent=percent_alcohol,
@@ -185,7 +242,7 @@ class BWSProcessor(RetailerProcessor):
                     score=score,
                     image=image_link,
                     promotion=subdrink.get("IsOnSpecial", False),
-                    old_price_cents=subdrink.get("Wasprice_cents", 0),
+                    old_price=old_price,
                     zero_alc=zero_alc_flag,
                 )
                 result.append(item)
