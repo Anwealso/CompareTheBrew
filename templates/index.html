@@ -132,15 +132,15 @@
               <div class="retailer-badge">{{ result[1] }}</div>
               {% endif %}
               <div class="cardImage">
-                {% if result[11] %}
+                {% if result[12] %}
                 <img
-                  src="{{ result[11] }}"
+                  src="{{ result[12] }}"
                   alt="{{ result[2] }} {{ result[3] }}"
                   style="width: 72px; height: 96px; object-fit: contain"
                 />
                 {% else %}
                 <img
-                  src="/static/images/drinkimages/{{ result[12] }}.png"
+                  src="/static/images/drinkimages/{{ result[13] }}.png"
                   alt="{{ result[2] }} {{ result[3] }}"
                   style="width: 72px; height: 96px; object-fit: contain"
                 />
@@ -161,7 +161,8 @@
                 <div class="cardDetails">
                   <span class="searchLine"></span>
                   <div class="indexdetails">
-                    {{ result[7] }}L - {{ result[9] }} std. - {{ result[8] }}%
+                    {{ (result[8] / 1000) | round(2) }}L - {{ '%0.1f'|
+                    format(result[10]) }} std. - {{ result[9] }}%
                   </div>
                   <div class="scorePriceContainer">
                     <div class="score scoreMaroon">

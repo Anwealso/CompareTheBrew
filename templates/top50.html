@@ -114,19 +114,19 @@
                   <div class="retailer-badge">{{ result[1] }}</div>
                   {% endif %}
                   <div class="cardImage">
-                    {% if result[11] %}
-                    <img
-                      src="{{ result[11] }}"
-                      onerror="
-                        this.onerror = null;
-                        this.src = '/static/images/wine-glass-placeholder.png';
+                {% if result[12] %}
+                <img
+                  src="{{ result[12] }}"
+                  onerror="
+                    this.onerror = null;
+                    this.src = '/static/images/wine-glass-placeholder.png';
                       "
                       alt="{{ result[2] }} {{ result[3] }}"
                       style="width: 72px; height: 96px; object-fit: contain"
                     />
                     {% else %}
                     <img
-                      src="/static/images/drinkimages/{{ result[-1] }}.png"
+                      src="/static/images/drinkimages/{{ result[13] }}.png"
                       onerror="
                         this.onerror = null;
                         this.src = '/static/images/wine-glass-placeholder.png';
@@ -152,8 +152,8 @@
                         class="details"
                         style="white-space: nowrap; display: inline-block"
                       >
-                        {{ (result[7] / 1000) | round(2) }}L - {{ '%0.1f'|
-                        format(result[9]) }} std. - {{ result[8] }}%
+                        {{ (result[8] / 1000) | round(2) }}L - {{ '%0.1f'|
+                        format(result[10]) }} std. - {{ result[9] }}%
                       </div>
                       <div class="scorePriceContainer">
                         <div class="score responsive_head">

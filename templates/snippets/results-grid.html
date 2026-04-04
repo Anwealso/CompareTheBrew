@@ -16,15 +16,15 @@
     <div class="retailer-badge">{{ result[1] }}</div>
     {% endif %}
     {% if flag_show_staleness %}
-      {% set staleness = result[14]|staleness %}
+      {% set staleness = result[16]|staleness %}
       <div class="scraped-badge {% if staleness.class %}{{ staleness.class }}{% else %}freshness-unknown{% endif %}">
         {% if staleness.label %}{{ staleness.label }}{% else %}?{% endif %}
       </div>
     {% endif %}
     <div class="cardImage">
-      {% if result[11] %}
+      {% if result[12] %}
       <img
-        src="{{ result[11] }}"
+        src="{{ result[12] }}"
         onerror="
           this.onerror = null;
           this.src = '/static/images/wine-glass-placeholder.png';
@@ -34,7 +34,7 @@
       />
       {% else %}
       <img
-        src="/static/images/drinkimages/{{ result[-1] }}.png"
+        src="/static/images/drinkimages/{{ result[13] }}.png"
         onerror="
           this.onerror = null;
           this.src = '/static/images/wine-glass-placeholder.png';
@@ -60,8 +60,8 @@
           class="details"
           style="white-space: nowrap; display: inline-block"
         >
-          {{ (result[7] / 1000) | round(2) }}L - {{ '%0.1f'|
-          format(result[9]) }} std. - {{ result[8] }}%
+          {{ (result[8] / 1000) | round(2) }}L - {{ '%0.1f'|
+          format(result[10]) }} std. - {{ result[9] }}%
         </div>
         <div class="scorePriceContainer">
           <div class="score">
