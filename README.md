@@ -82,13 +82,13 @@ Search for drinks directly from your terminal using the intelligent search syste
 
 ```bash
 $ python3 db_search_cli.py whiskey 2l
-$ python3 db_search_cli.py vodka --sort efficiency --order DESC --limit 10
+$ python3 db_search_cli.py vodka --sort score --order ASC --limit 10
 $ python3 db_search_cli.py "coke" "rum" --sort price --limit 5
 ```
 
 #### Arguments
 - **terms**: One or more search terms (e.g., "whiskey", "vodka party", "coke rum")
-- **--sort**: Sort by `efficiency`, `price`, `percent`, or `ml` (default: efficiency)
+- **--sort**: Sort by `score` (price per standard drink), `price`, `percent`, or `ml` (default: score)
 - **--order**: Sort order `ASC` or `DESC` (default: DESC)
 - **--limit**: Number of results to display (default: 10)
 
@@ -103,8 +103,8 @@ The search uses:
 
 #### Examples
 ```bash
-# Find cheap whiskey efficiently
-python3 db_search_cli.py whiskey --sort efficiency --order DESC
+# Find whiskey with the lowest $/Std
+python3 db_search_cli.py whiskey --sort score --order ASC
 
 # Search for specific size
 python3 db_search_cli.py "2l" "beer"

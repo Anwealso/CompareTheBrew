@@ -22,6 +22,21 @@ def _get_drink_pack_qty(drink) -> int:
     return max(1, qty)
 
 
+def calculate_score(price: float, std_drinks: float):
+    """Compute price per standard drink but leave as None when unavailable."""
+    if price is None or std_drinks is None:
+        return None
+    try:
+        price_val = float(price)
+        std_val = float(std_drinks)
+    except (TypeError, ValueError):
+        return None
+
+    if std_val > 0 and price_val > 0:
+        return price_val / std_val
+    return None
+
+
 def get_schema_dir():
 
     """Get the path to the schema directory."""
@@ -76,7 +91,7 @@ def create_entry(conn, drink_data):
     from datetime import datetime
     now = datetime.now().isoformat()
 
-    sql = ''' INSERT INTO drinks(store,brand,name,type,price,link,pack_qty,ml,percent,stdDrinks,efficiency,image,search_text,date_created)
+    sql = ''' INSERT INTO drinks(store,brand,name,type,price,link,pack_qty,ml,percent,stdDrinks,score,image,search_text,date_created)
               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?) '''
     cur = conn.cursor()
     cur.execute(sql, drink_data + (now,))
@@ -383,32 +398,32 @@ def select_all_drinks(conn):
     return rows
 
 
-def select_all_drinks_by_efficiency(conn):
+def select_all_drinks_by_score(conn):
     """
-    Query tasks by efficiency
-    :param conn: the Connection object
-    :return:
+    Query all drinks ordered by score (price per standard drink), lowest first.
     """
-    # Create a new cursor
     cur = conn.cursor()
-    # Ececute a new query at the cursor
-    cur.execute("SELECT * FROM drinks ORDER BY efficiency DESC")
-    # Fetch all of the rows that matched the query
+    cur.execute(
+        """
+        SELECT * FROM drinks
+        ORDER BY CASE WHEN score IS NULL THEN 1 ELSE 0 END, score ASC
+        """
+    )
     rows = cur.fetchall()
     return rows
 
 
-def select_all_drinks_by_worst_efficiency(conn):
+def select_all_drinks_by_worst_score(conn):
     """
-    Query tasks by efficiency
-    :param conn: the Connection object
-    :return:
+    Query drinks ordered by score descending (worst price per standard drink).
     """
-    # Create a new cursor
     cur = conn.cursor()
-    # Ececute a new query at the cursor
-    cur.execute("SELECT * FROM drinks ORDER BY efficiency ASC")
-    # Fetch all of the rows that matched the query
+    cur.execute(
+        """
+        SELECT * FROM drinks
+        ORDER BY CASE WHEN score IS NULL THEN 1 ELSE 0 END, score DESC
+        """
+    )
     rows = cur.fetchall()
     return rows
 
@@ -455,14 +470,17 @@ def select_all_drinks_between_cost(conn, value1, value2):
     cur = conn.cursor()
 
     # Ececute a new query at the cursor
-    cur.execute("SELECT * FROM drinks WHERE price BETWEEN {} AND {} ORDER BY efficiency DESC".format(value1, value2))
+    cur.execute(
+        "SELECT * FROM drinks WHERE price BETWEEN {} AND {} "
+        "ORDER BY CASE WHEN score IS NULL THEN 1 ELSE 0 END, score ASC".format(value1, value2)
+    )
     # Fetch all of the rows that matched the query
     rows = cur.fetchall()
 
     return rows
 
 
-def select_drink_by_efficiency_and_type(conn, type):
+def select_drink_by_score_and_type(conn, type):
     """
     Query tasks by priority
     :param conn: the Connection object
@@ -473,7 +491,10 @@ def select_drink_by_efficiency_and_type(conn, type):
     # Create a new cursor
     cur = conn.cursor()
     # Execute a new query at the cursor
-    cur.execute("SELECT * FROM drinks WHERE type LIKE '%{}%' ORDER BY efficiency DESC".format(type))
+    cur.execute(
+        "SELECT * FROM drinks WHERE type LIKE '%{}%' "
+        "ORDER BY CASE WHEN score IS NULL THEN 1 ELSE 0 END, score ASC".format(type)
+    )
     # Fetch all of the rows that matched the query
     rows = cur.fetchall()
 
@@ -502,7 +523,7 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
     Args:
         conn: the Connection object
         terms: the value in the type/name/brand column that we are querying for
-        thing: search by 'ASC_' | 'DESC_' += 'efficiency'; 'price'; 'percent'; 'ml';
+        thing: search by 'ASC_' | 'DESC_' += 'score'; 'price'; 'percent'; 'ml';
         price_min: minimum price filter (optional)
         price_max: maximum price filter (optional)
         store: retailer filter - 'all' or specific store like 'bws', 'liquorland' (optional)
@@ -587,12 +608,16 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
     for term in intelliterms:
         term = term.lower()
         # Use the deduplicated subquery to filter out older duplicates
+        order_clause = f"{category} {order}"
+        if category == "score":
+            order_clause = f"CASE WHEN score IS NULL THEN 1 ELSE 0 END, score {order}"
+
         dedupe_sql = f"""
             SELECT * FROM drinks WHERE id IN (
                 SELECT MAX(id) FROM drinks
                 WHERE search_text LIKE '%{term}%'{quality_clause}
                 GROUP BY name, brand, type, ml, percent, store, pack_qty
-            ){quality_clause}{price_filter}{scraped_age_filter}{store_filter} ORDER BY {category} {order}
+            ){quality_clause}{price_filter}{scraped_age_filter}{store_filter} ORDER BY {order_clause}
         """
         cur.execute(dedupe_sql)
 
@@ -608,11 +633,11 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
     print("NUMBER OF RESULTS FOUND: " + str(len(results)))
 
     # organise results based on category and order - currently only sorted per term.
-    if category == 'efficiency':
+    if category == 'score':
         if order == 'ASC':
-            results.sort(key=lambda tup: tup[10], reverse=False)
+            results.sort(key=lambda tup: (tup[11] is None, tup[11] if tup[11] is not None else 0.0))
         elif order == 'DESC':
-            results.sort(key=lambda tup: tup[10], reverse=True)
+            results.sort(key=lambda tup: (tup[11] is None, -tup[11] if tup[11] is not None else 0.0))
 
     elif category == 'price':
         if order == 'ASC':
@@ -646,7 +671,7 @@ def update_drink(conn, drink, newPrice):
     :return: project id
     """
     sql = ''' UPDATE drinks
-              SET price = ?, link = ?, image = ?, efficiency = ?, date_created = datetime('now')
+              SET price = ?, link = ?, image = ?, score = ?, date_created = datetime('now')
               WHERE store = ?
               AND link = ?
               AND pack_qty = ? '''
@@ -667,12 +692,12 @@ def update_drink(conn, drink, newPrice):
         cur = conn.cursor()
         try:
             price = float(newPrice) if newPrice else 0.0
-            new_efficiency = (std_drinks / price) if price > 0 and std_drinks > 0 else 0.0
         except (ValueError, TypeError):
-            new_efficiency = 0.0
+            price = 0.0
+        new_score = calculate_score(price, std_drinks)
         pack_qty = _get_drink_pack_qty(drink)
         cur.execute(sql, (
-            newPrice, drink.link, drink.image, new_efficiency, drink.store, drink.link, pack_qty))
+            newPrice, drink.link, drink.image, new_score, drink.store, drink.link, pack_qty))
         conn.commit()
 
 
@@ -811,13 +836,13 @@ def dbhandler(conn, list, mode, populate, item_callback=None, start_index=0):
                 ml = float(drink.ml) if drink.ml is not None else 0.0
                 percent = float(drink.percent) if drink.percent is not None else 0.0
                 std_drinks = float(drink.stdDrinks) if drink.stdDrinks is not None else 0.0
-                efficiency = float(drink.efficiency) if drink.efficiency is not None else 0.0
+                score = calculate_score(price, std_drinks)
                 search_text = build_search_text(drink.name, drink.brand, drink.type)
                 
                 pack_qty = _get_drink_pack_qty(drink)
                 drink_data = (
                     drink.store, drink.brand, drink.name, drink.type, price, drink.link, pack_qty,
-                    ml, percent, std_drinks, efficiency, drink.image, search_text)
+                    ml, percent, std_drinks, score, drink.image, search_text)
                 create_entry(conn, drink_data)
                 inserted = True
             except Exception as e:
@@ -839,12 +864,12 @@ def dbhandler(conn, list, mode, populate, item_callback=None, start_index=0):
                         ml = float(drink.ml) if drink.ml is not None else 0.0
                         percent = float(drink.percent) if drink.percent is not None else 0.0
                         std_drinks = float(drink.stdDrinks) if drink.stdDrinks is not None else 0.0
-                        efficiency = float(drink.efficiency) if drink.efficiency is not None else 0.0
+                        score = calculate_score(price, std_drinks)
                         search_text = build_search_text(drink.name, drink.brand, drink.type)
                         
                         pack_qty = _get_drink_pack_qty(drink)
                         drink_data = (drink.store, drink.brand, drink.name, drink.type, price, drink.link, pack_qty,
-                                    ml, percent, std_drinks, efficiency,
+                                    ml, percent, std_drinks, score,
                                     drink.image, search_text)
                         create_entry(conn, drink_data)
                         inserted = True
@@ -860,7 +885,7 @@ def dbhandler(conn, list, mode, populate, item_callback=None, start_index=0):
 
 def update_drink_details(conn, store, link, percent, std_drinks, pack_qty=1):
     """
-    Update percent, stdDrinks, and derived efficiency for a drink by link.
+    Update percent, stdDrinks, and derived score for a drink by link.
     """
     cur = conn.cursor()
     cur.execute("""
@@ -870,12 +895,12 @@ def update_drink_details(conn, store, link, percent, std_drinks, pack_qty=1):
     """, (store, link, pack_qty))
     row = cur.fetchone()
     price = float(row[0]) if row and row[0] is not None else 0.0
-    efficiency = ((std_drinks / price) if price > 0 and std_drinks > 0 else 0.0)
+    score = calculate_score(price, std_drinks)
     cur.execute("""
         UPDATE drinks
-        SET percent = ?, stdDrinks = ?, efficiency = ?
+        SET percent = ?, stdDrinks = ?, score = ?
         WHERE store = ? AND link = ? AND pack_qty = ?
-    """, (percent, std_drinks, efficiency, store, link, pack_qty))
+    """, (percent, std_drinks, score, store, link, pack_qty))
     conn.commit()
 
 

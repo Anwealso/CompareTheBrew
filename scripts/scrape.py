@@ -150,7 +150,7 @@ def bws_handler(search_term: str) -> List:
                     std_drinks = item_numb * std_drinks # account for multiple items in a pack
 
                 price = float(subdrink["Price"]) if subdrink["Price"] else 0.0
-                efficiency = (std_drinks / price) if price > 0 and std_drinks > 0 else 0.0
+                score = (price / std_drinks) if price > 0 and std_drinks > 0 else None
             except:
                 print("\t", "failed ->", std_drinks, item_numb, subdrink["Price"])
 
@@ -166,7 +166,7 @@ def bws_handler(search_term: str) -> List:
                 percent=percent_alcohol,
                 std_drinks=std_drinks,
                 pack_qty=item_numb,
-                efficiency=efficiency,
+                score=score,
                 image=image_link,
                 promotion=subdrink["IsOnSpecial"],
                 old_price=subdrink["WasPrice"],

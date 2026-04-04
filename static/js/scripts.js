@@ -4,7 +4,7 @@ function applySearchFilters() {
   const priceMax = document.getElementById("priceMax").value;
   const urlParams = new URLSearchParams(window.location.search);
   const q = urlParams.get("q") || "";
-  const order = urlParams.get("order") || "score-desc";
+  const order = urlParams.get("order") || "score-asc";
   const store = document.getElementById("storeSelect").value;
   const scrapedAge = document.getElementById("scrapedAgeSelect").value;
 
@@ -67,7 +67,7 @@ $(document).ready(function (e) {
     "'http://" +
     split[2] +
     "/results=" +
-    "score-desc" +
+    "score-asc" +
     "/" +
     search_term +
     "';";
@@ -76,7 +76,7 @@ $(document).ready(function (e) {
     "'http://" +
     split[2] +
     "/results=" +
-    "score-asc" +
+    "score-desc" +
     "/" +
     search_term +
     "';";
@@ -103,12 +103,12 @@ $(document).ready(function (e) {
   document.getElementById("bestprice").setAttribute("onclick", bestprice);
   document.getElementById("volume").setAttribute("onclick", volume);
 
-  if (search_type == "score-desc") {
+  if (search_type == "score-asc") {
     document.getElementById("bestscore").className = "buttonSortActive";
     document.getElementById("worstscore").className = "buttonSort";
     document.getElementById("bestprice").className = "buttonSort";
     document.getElementById("volume").className = "buttonSort";
-  } else if (search_type == "score-asc") {
+  } else if (search_type == "score-desc") {
     document.getElementById("bestscore").className = "buttonSort";
     document.getElementById("worstscore").className = "buttonSortActive";
     document.getElementById("bestprice").className = "buttonSort";

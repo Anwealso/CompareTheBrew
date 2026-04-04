@@ -68,7 +68,12 @@
             <div class="sideways">
               <img src="/static/images/score.svg" alt="Score" />
             </div>
-            {{ '%0.0f'| format(result[10] * 100) }}
+            {% if result[11] is not none %}
+            ${{ '%0.2f'| format(result[11]) }}
+            {% else %}
+            n/a
+            {% endif %}
+            <span class="scoreLabel">$/Std</span>
           </div>
           <div class="price">${{ '%0.2f'| format(result[5]) }}</div>
         </div>

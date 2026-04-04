@@ -14,7 +14,7 @@ class Item:
         percent,
         std_drinks,
         pack_qty,
-        efficiency,
+        score,
         image,
         promotion,
         old_price,
@@ -29,13 +29,13 @@ class Item:
         self.percent = percent
         self.stdDrinks = std_drinks
         self.pack_qty = pack_qty
-        self.efficiency = efficiency
+        self.score = score
         self.image = image
         self.promotion = promotion
         self.old_price = old_price
 
     def __lt__(self, other):
-        return self.efficiency < other.efficiency
+        return (self.score or float("inf")) < (other.score or float("inf"))
 
     def __repr__(self):
         # Create a new string
@@ -50,7 +50,7 @@ class Item:
         reprString += str(self.pack_qty) + ","
         reprString += str(self.stdDrinks) + ","
         reprString += str(self.price) + ","
-        reprString += str(self.efficiency) + ","
+        reprString += str(self.score) + ","
         reprString += self.link + ","
         reprString += self.image
         return reprString

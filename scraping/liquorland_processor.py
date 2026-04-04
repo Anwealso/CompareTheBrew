@@ -356,7 +356,7 @@ class LiquorlandProcessor(RetailerProcessor):
                     percent=percent,
                     std_drinks=std_drinks,
                     pack_qty=pack_qty,
-                    efficiency=0.0,
+                    score=None,
                     image=image,
                     promotion=bool(promotion_text),
                     old_price=old_price,

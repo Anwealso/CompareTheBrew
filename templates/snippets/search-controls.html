@@ -25,7 +25,7 @@
   <input
     type="hidden"
     name="order"
-    value="{{ order if order else 'score-desc' }}"
+    value="{{ order if order else 'score-asc' }}"
   />
   <input type="hidden" name="price_min" value="{{ price_min if price_min else '' }}" />
   <input type="hidden" name="price_max" value="{{ price_max if price_max else '' }}" />
@@ -42,13 +42,13 @@
   <div id="buttons" class="optionItem">
     <b class="sortbytext">Sort by:</b>
     <a
-      href="/search?q={{ search_terms }}&order=score-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
-      class="buttonSort {% if order == 'score-desc' or not order %}buttonSortActive{% endif %}"
+      href="/search?q={{ search_terms }}&order=score-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
+      class="buttonSort {% if order == 'score-asc' or not order %}buttonSortActive{% endif %}"
       >Best Score</a
     >
     <a
-      href="/search?q={{ search_terms }}&order=score-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
-      class="buttonSort {% if order == 'score-asc' %}buttonSortActive{% endif %}"
+      href="/search?q={{ search_terms }}&order=score-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
+      class="buttonSort {% if order == 'score-desc' %}buttonSortActive{% endif %}"
       >Worst Score</a
     >
     <a

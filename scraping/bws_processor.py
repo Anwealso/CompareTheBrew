@@ -157,11 +157,11 @@ class BWSProcessor(RetailerProcessor):
                 except:
                     price_cents = 0.0
 
-                # Calculate efficiency (standard drinks per dollar)
-                efficiency = (
-                    ((std_drinks * item_num) / (price_cents))
-                    if price_cents > 0 and std_drinks > 0
-                    else 0.0
+                price_dollars = price_cents / 100.0
+                score = (
+                    (price_dollars / std_drinks)
+                    if price_dollars > 0 and std_drinks > 0
+                    else None
                 )
 
                 # Map BWS fields to the common Item class
@@ -181,7 +181,7 @@ class BWSProcessor(RetailerProcessor):
                     percent=percent_alcohol,
                     std_drinks=std_drinks,
                     pack_qty=item_num,
-                    efficiency=efficiency,
+                    score=score,
                     image=image_link,
                     promotion=subdrink.get("IsOnSpecial", False),
                     old_price_cents=subdrink.get("Wasprice_cents", 0),

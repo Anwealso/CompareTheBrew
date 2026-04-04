@@ -69,7 +69,8 @@ def displaySearchPage():
     """
     # Get the current top drink from the database
     conn = db.create_connection()  # connect to the database
-    topDrink = db.select_all_drinks_by_efficiency(conn)[0] # get the first result from all of the drinks sorted by efficiency desc
+    top_results = db.select_all_drinks_by_score(conn)
+    topDrink = top_results[0] if top_results else None
     return render_template('index.html', result=topDrink)
 
 @app.route('/', methods=['POST'])
@@ -82,11 +83,11 @@ def postSearchTerms():
     print("SEARCH TERMS ENTERED BY USER: " + searchTerms)
 
     # Send the user to the results page
-    return redirect(f"/search?q={searchTerms}&order=score-desc")
+    return redirect(f"/search?q={searchTerms}&order=score-asc")
 
 ORDER_MAP = {
-    "score-desc": "DESC_efficiency",
-    "score-asc": "ASC_efficiency",
+    "score-desc": "DESC_score",
+    "score-asc": "ASC_score",
     "price-desc": "DESC_price",
     "price-asc": "ASC_price",
     "size-desc": "DESC_ml",
@@ -102,14 +103,14 @@ def search_page():
 
     Args:
         q: search query (required)
-        order: sort order (default: score-desc)
+        order: sort order (default: score-asc)
         page: page number (default: 1)
         price_min: minimum price filter (optional)
         price_max: maximum price filter (optional)
         store: retailer filter (optional, default: all)
     """
     search_terms = request.args.get("q", "")
-    order_param = request.args.get("order", "score-desc")
+    order_param = request.args.get("order", "score-asc")
     try:
         page = int(request.args.get("page", 1))
     except ValueError:
@@ -128,7 +129,7 @@ def search_page():
         scraped_age = None
 
     per_page = 16
-    sort_key = ORDER_MAP.get(order_param, "DESC_efficiency")
+    sort_key = ORDER_MAP.get(order_param, "ASC_score")
 
     conn = db.create_connection()
     all_results = db.select_drink_by_smart_search(conn, search_terms, sort_key, price_min, price_max, store_filter, scraped_age)
@@ -242,7 +243,7 @@ def metrics(searchTerms):
 def display_top50_page():
     # Get results the new way - by querying the database
     conn = db.create_connection()  # connect to the database
-    tempResults = db.select_drink_by_smart_search(conn, "beer", 'DESC_efficiency')
+    tempResults = db.select_drink_by_smart_search(conn, "beer", 'ASC_score')
     tempResults = insert_ads_amongst_results(tempResults[:50])
 
     # gather metrics info
@@ -252,7 +253,7 @@ def display_top50_page():
 def display_top50wine_page():
     # Get results the new way - by querying the database
     conn = db.create_connection()  # connect to the database
-    tempResults = db.select_drink_by_smart_search(conn, "wine", 'DESC_efficiency')
+    tempResults = db.select_drink_by_smart_search(conn, "wine", 'ASC_score')
     tempResults = insert_ads_amongst_results(tempResults[:50])
 
     # gather metrics info
@@ -262,7 +263,7 @@ def display_top50wine_page():
 def display_top50spirits_page():
     # Get results the new way - by querying the database
     conn = db.create_connection()  # connect to the database
-    tempResults = db.select_drink_by_smart_search(conn, "spirits", 'DESC_efficiency')
+    tempResults = db.select_drink_by_smart_search(conn, "spirits", 'ASC_score')
     tempResults = insert_ads_amongst_results(tempResults[:50])
 
     # gather metrics info
@@ -273,7 +274,7 @@ def display_top50spirits_page():
 def search_post():
     """Handle search form submission."""
     search_terms = request.form.get("searchTerms", "")
-    order = request.form.get("order", "score-desc")
+    order = request.form.get("order", "score-asc")
     return redirect(f"/search?q={search_terms}&order={order}")
 
 
@@ -312,9 +313,9 @@ def api_handler():
     metrics(term)
 
     if order == "score_desc":
-        tempResults = db.select_drink_by_smart_search(conn, term, 'DESC_efficiency')
+        tempResults = db.select_drink_by_smart_search(conn, term, 'DESC_score')
     elif order == "score_asc":
-        tempResults = db.select_drink_by_smart_search(conn, term, 'ASC_efficiency')
+        tempResults = db.select_drink_by_smart_search(conn, term, 'ASC_score')
     elif order == "price_desc":
         tempResults = db.select_drink_by_smart_search(conn, term, 'DESC_price')
     elif order == "size_desc":
@@ -338,9 +339,9 @@ def api_handler():
         drink['volume'] = result[7]
         drink['percent'] = result[8]
         drink['drinks'] = result[9]
-        drink['efficiency'] = result[10]
-        drink['imglink'] = result[11]
-        drink['img'] = result[12]
+        drink['score'] = result[11]
+        drink['imglink'] = result[12]
+        drink['img'] = result[13]
         data[i] = drink
         i = i + 1
 

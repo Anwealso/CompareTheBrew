@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS "drinks" (
     "ml" REAL,
     "percent" REAL,
     "stdDrinks" REAL,
-    "efficiency" REAL,
+    "score" REAL,
     "image" TEXT,
     "shortimage" TEXT,
     "search_text" TEXT,
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS "drinks" (
 CREATE INDEX IF NOT EXISTS idx_drinks_search_text ON drinks(search_text);
 CREATE INDEX IF NOT EXISTS idx_drinks_store ON drinks(store);
 CREATE INDEX IF NOT EXISTS idx_drinks_type ON drinks(type);
-CREATE INDEX IF NOT EXISTS idx_drinks_efficiency ON drinks(efficiency);
+CREATE INDEX IF NOT EXISTS idx_drinks_score ON drinks(score);
 CREATE INDEX IF NOT EXISTS idx_drinks_price ON drinks(price);
 CREATE INDEX IF NOT EXISTS idx_drinks_ml ON drinks(ml);
 CREATE INDEX IF NOT EXISTS idx_drinks_store_link_pack_qty ON drinks(store, link, pack_qty);
