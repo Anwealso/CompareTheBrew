@@ -27,18 +27,23 @@ def _get_drink_pack_qty(drink) -> int:
     return max(1, qty)
 
 
-def calculate_score(price: float, std_drinks: float):
-    """Compute price per standard drink but leave as None when unavailable."""
-    if price is None or std_drinks is None:
+def calculate_score(price: float, std_drinks_per_unit: float, pack_qty: int = 1):
+    """Compute price per standard drink across the whole pack."""
+    if price is None or std_drinks_per_unit is None:
         return None
     try:
         price_val = float(price)
-        std_val = float(std_drinks)
+        std_val = float(std_drinks_per_unit)
+        qty_val = int(float(pack_qty))
     except (TypeError, ValueError):
         return None
 
-    if std_val > 0 and price_val > 0:
-        return price_val / std_val
+    if qty_val < 1:
+        qty_val = 1
+
+    total_std_drinks = std_val * qty_val
+    if total_std_drinks > 0 and price_val > 0:
+        return price_val / total_std_drinks
     return None
 
 
@@ -752,8 +757,8 @@ def update_drink(conn, drink, newPrice):
             price = float(newPrice) if newPrice else 0.0
         except (ValueError, TypeError):
             price = 0.0
-        new_score = calculate_score(price, std_drinks)
         pack_qty = _get_drink_pack_qty(drink)
+        new_score = calculate_score(price, std_drinks, pack_qty)
         cur.execute(sql, (
             newPrice, drink.link, drink.image, new_score, drink.store, drink.link, pack_qty))
         conn.commit()
@@ -894,10 +899,9 @@ def dbhandler(conn, list, mode, populate, item_callback=None, start_index=0):
                 ml = float(drink.ml) if drink.ml is not None else 0.0
                 percent = float(drink.percent) if drink.percent is not None else 0.0
                 std_drinks = float(drink.stdDrinks) if drink.stdDrinks is not None else 0.0
-                score = calculate_score(price, std_drinks)
-                search_text = build_search_text(drink.name, drink.brand, drink.type)
-                
                 pack_qty = _get_drink_pack_qty(drink)
+                score = calculate_score(price, std_drinks, pack_qty)
+                search_text = build_search_text(drink.name, drink.brand, drink.type)
                 zero_alc_flag = 1 if getattr(drink, "zero_alc", False) else 0
                 drink_data = (
                     drink.store, drink.brand, drink.name, drink.type, price, drink.link, pack_qty,
@@ -923,10 +927,9 @@ def dbhandler(conn, list, mode, populate, item_callback=None, start_index=0):
                         ml = float(drink.ml) if drink.ml is not None else 0.0
                         percent = float(drink.percent) if drink.percent is not None else 0.0
                         std_drinks = float(drink.stdDrinks) if drink.stdDrinks is not None else 0.0
-                        score = calculate_score(price, std_drinks)
-                        search_text = build_search_text(drink.name, drink.brand, drink.type)
-                        
                         pack_qty = _get_drink_pack_qty(drink)
+                        score = calculate_score(price, std_drinks, pack_qty)
+                        search_text = build_search_text(drink.name, drink.brand, drink.type)
                         zero_alc_flag = 1 if getattr(drink, "zero_alc", False) else 0
                         drink_data = (drink.store, drink.brand, drink.name, drink.type, price, drink.link, pack_qty,
                                     ml, percent, std_drinks, score,
@@ -955,7 +958,7 @@ def update_drink_details(conn, store, link, percent, std_drinks, pack_qty=1):
     """, (store, link, pack_qty))
     row = cur.fetchone()
     price = float(row[0]) if row and row[0] is not None else 0.0
-    score = calculate_score(price, std_drinks)
+    score = calculate_score(price, std_drinks, pack_qty)
     zero_alc_flag = 0
     try:
         if percent is not None and float(percent) <= 0.5:

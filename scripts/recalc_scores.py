@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Recalculate every drink score as price / stdDrinks when stdDrinks > 0.
+Recalculate every drink score as:
+price / (stdDrinks_per_unit * pack_qty)
 """
 import sqlite3
 from pathlib import Path
@@ -26,10 +27,11 @@ def recalc_scores(conn):
         """
         UPDATE drinks
         SET score = CASE
-            WHEN stdDrinks > 0 THEN price / stdDrinks
-            ELSE score
+            WHEN price > 0
+                 AND COALESCE(stdDrinks, 0) > 0
+            THEN price / (stdDrinks * MAX(COALESCE(pack_qty, 1), 1))
+            ELSE NULL
         END
-        WHERE stdDrinks > 0
         """
     )
     conn.commit()
@@ -43,7 +45,7 @@ def main():
     conn = sqlite3.connect(DB_PATH)
     try:
         updated = recalc_scores(conn)
-        stamp_schema_version(conn, 15)
+        stamp_schema_version(conn, 16)
         print(f"Recalculated {updated} scores.")
     finally:
         conn.close()

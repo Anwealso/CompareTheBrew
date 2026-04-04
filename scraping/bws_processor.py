@@ -1,7 +1,7 @@
 import json
 import re
 from typing import List, Optional, Tuple
-from entities.drink_item import Item
+from entities.drink_item import DrinkItem
 from scraping.processor import RetailerProcessor
 
 
@@ -215,12 +215,6 @@ class BWSProcessor(RetailerProcessor):
                 except (TypeError, ValueError):
                     old_price = 0.0
 
-                score = (
-                    (price_dollars / std_drinks)
-                    if price_dollars > 0 and std_drinks > 0
-                    else None
-                )
-
                 # Map BWS fields to the common Item class
                 item_name = subdrink.get("Name", "Unknown").strip()
 
@@ -228,7 +222,7 @@ class BWSProcessor(RetailerProcessor):
                     self.progress_callback(item_name)
 
                 zero_alc_flag = self.is_zero_alc(percent_alcohol)
-                item = Item(
+                item = DrinkItem(
                     store="bws",
                     brand=subdrink.get("BrandName", "Unknown"),
                     name=item_name,
@@ -239,7 +233,7 @@ class BWSProcessor(RetailerProcessor):
                     percent=percent_alcohol,
                     std_drinks=std_drinks,
                     pack_qty=item_num,
-                    score=score,
+                    score=None,
                     image=image_link,
                     promotion=subdrink.get("IsOnSpecial", False),
                     old_price=old_price,
