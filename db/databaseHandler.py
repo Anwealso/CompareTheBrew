@@ -656,15 +656,15 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
 
     elif category == 'percent':
         if order == 'ASC':
-            results.sort(key=lambda tup: tup[8], reverse=False)
+            results.sort(key=lambda tup: tup[9], reverse=False)
         elif order == 'DESC':
-            results.sort(key=lambda tup: tup[8], reverse=True)
+            results.sort(key=lambda tup: tup[9], reverse=True)
 
     elif category == 'ml':
         if order == 'ASC':
-            results.sort(key=lambda tup: tup[7], reverse=False)
+            results.sort(key=lambda tup: tup[8], reverse=False)
         elif order == 'DESC':
-            results.sort(key=lambda tup: tup[7], reverse=True)
+            results.sort(key=lambda tup: tup[8], reverse=True)
 
 
 
