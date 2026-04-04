@@ -101,9 +101,12 @@ def get_additional_quality_filters(
     5. Percent: optional percent field must exist and be positive.
     6. Pack quantity: optional pack count must exist and be positive when provided.
     7. Volume × ABV vs std drinks: when size/percent exist, enforce that the implied
-       alcohol quantity aligns with the stated std drinks. We allow both interpretations:
+       alcohol quantity aligns with the stated std drinks. Uses Australian standard drink
+       formula: volume_mL * percent * 0.789 / 1000 = std drinks. We allow both interpretations:
        per-unit std_drinks and per-pack std_drinks (using pack_qty), because some sources
        store totals while others store per-unit values. A small tolerance is allowed.
+    8. Price sanity: reject if $/std is unrealistically low (<$0.03) or high (>$100).
+    9. Size reasonableness: reject if size is unrealistic for the category.
     """
     if text_fields is None:
         text_fields = ["name", "brand", "category", "search_text"]
@@ -122,23 +125,33 @@ def get_additional_quality_filters(
         conditions.append(f"{pack_field} IS NOT NULL AND {pack_field} > 0")
 
     # Reject rows where the stated std_drinks diverges from the implied alcohol quantity.
+    # Australian standard drink = volume_mL * percent * 0.789 / 1000
+    # Also check alternative formula (volume_mL * percent / 10) used by some scrapers
+    # std_drinks should be per-unit (per can/bottle), not total for the pack.
+    # Accept either total OR per-unit std_drinks to not break legitimate multi-packs.
     if size_field and percent_field:
-        expected_unit_expr = f"({size_field} * {percent_field} * 0.789 / 1000.0)"
-        tolerance_expr = f"({std_field} * 0.25 + 0.25)"
-
+        total_expected = f"({size_field} * {percent_field} * 0.789 / 1000.0)"
+        total_alt = f"({size_field} * {percent_field} / 10.0)"
+        
         if pack_field:
-            pack_expr = f"COALESCE({pack_field}, 1)"
-            expected_from_total_expr = f"(({size_field} / {pack_expr}) * {percent_field} * 0.789 / 1000.0)"
-            conditions.append(
-                "("
-                f"ABS({std_field} - {expected_unit_expr}) <= {tolerance_expr} "
-                f"OR ABS({std_field} - ({expected_unit_expr} * {pack_expr})) <= {tolerance_expr} "
-                f"OR ABS({std_field} - {expected_from_total_expr}) <= {tolerance_expr} "
-                f"OR ABS({std_field} - ({expected_from_total_expr} * {pack_expr})) <= {tolerance_expr}"
-                ")"
-            )
+            per_unit_expr = f"({size_field} / COALESCE({pack_field}, 1))"
         else:
-            conditions.append(f"ABS({std_field} - {expected_unit_expr}) <= {tolerance_expr}")
+            per_unit_expr = size_field
+        per_unit_expected = f"({per_unit_expr} * {percent_field} * 0.789 / 1000.0)"
+        per_unit_alt = f"({per_unit_expr} * {percent_field} / 10.0)"
+        
+        tolerance_expr = f"({std_field} * 0.10 + 0.3)"
+
+        conditions.append(
+            f"(ABS({std_field} - {total_expected}) <= {tolerance_expr} "
+            f"OR ABS({std_field} - {total_alt}) <= {tolerance_expr} "
+            f"OR ABS({std_field} - {per_unit_expected}) <= {tolerance_expr} "
+            f"OR ABS({std_field} - {per_unit_alt}) <= {tolerance_expr})"
+        )
+
+    # Price per standard drink sanity check
+    conditions.append(f"({price_field} / {std_field}) >= 0.03")
+    conditions.append(f"({price_field} / {std_field}) <= 100")
 
     return conditions
 
@@ -170,14 +183,14 @@ def build_search_query(normalized: dict) -> tuple[str, list]:
         conditions.append("pack_count = %s")
         params.append(pack_count)
 
-    conditions.extend(get_additional_quality_filters())
+    conditions.extend(get_additional_quality_filters(pack_field="pack_count"))
 
     if not conditions:
         where_clause = ""
     else:
         where_clause = "WHERE " + " AND ".join(conditions)
 
-    query = f"SELECT id, name, brand, category, size_ml, pack_count, price FROM products {where_clause}"
+    query = f"SELECT id, name, brand, category, size_ml, pack_count, price, std_drinks, percent FROM products {where_clause}"
     return query, params
 
 

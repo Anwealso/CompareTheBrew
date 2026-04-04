@@ -52,8 +52,9 @@ def _extract_ml_from_name(name: str) -> float | None:
 
 def _name_volume_matches(row) -> bool:
     """
-    Filter out rows where the DB volume disagrees with a size in the name.
-    Accept either per-unit ml or per-pack ml (ml / pack_qty).
+    Filter out rows where the DB volume significantly disagrees with the name.
+    Reject if name indicates per-unit (e.g., "cans 375ml") but DB stores total volume
+    without indicating pack count in the name.
     """
     try:
         name = row[3]
@@ -78,14 +79,26 @@ def _name_volume_matches(row) -> bool:
     if pack_val < 1:
         pack_val = 1
 
+    per_unit = ml_val / pack_val if pack_val > 1 else ml_val
+
+    name_lower = name.lower() if name else ""
+    has_per_unit_term = any(t in name_lower for t in ("can", "bottle", "cans", "bottles"))
+    has_pack_term = any(t in name_lower for t in ("pack", "pk", "carton", "case", "ctn"))
+
+    if has_per_unit_term and pack_val > 1 and not has_pack_term:
+        tol_total = max(ml_val * 0.10, 50.0)
+        if abs(ml_val - name_ml) > tol_total:
+            if abs(per_unit - name_ml) < 10:
+                return False
+
     candidates = [ml_val]
-    if pack_val > 1:
-        candidates.append(ml_val / pack_val)
+    if pack_val < 1:
+        candidates.append(per_unit)
 
     for candidate in candidates:
         if candidate <= 0:
             continue
-        tolerance = max(100.0, candidate * 0.2, name_ml * 0.2)
+        tolerance = max(candidate * 0.15, 30.0)
         if abs(candidate - name_ml) <= tolerance:
             return True
 
