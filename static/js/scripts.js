@@ -8,7 +8,8 @@ function applySearchFilters({ zeroAlcOverride } = {}) {
   const order = urlParams.get("order") || "score-asc";
   const storeEl = document.getElementById("storeSelect");
   const store = storeEl ? storeEl.value : "all";
-  const scrapedAge = urlParams.get("scraped_age") || "";
+  const scrapedAgeEl = document.getElementById("scrapedAgeSelect");
+  const scrapedAge = scrapedAgeEl ? scrapedAgeEl.value : "";
   const currentZeroActive = urlParams.get("zero-alc") === "true";
   const zeroAlcActive =
     zeroAlcOverride === undefined ? currentZeroActive : zeroAlcOverride;

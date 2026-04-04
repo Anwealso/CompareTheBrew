@@ -601,7 +601,10 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
     
     scraped_age_filter = ""
     if scraped_age is not None and scraped_age != "":
-        scraped_age_filter = f" AND date_created >= datetime('now', '-{scraped_age} days')"
+        scraped_age_filter = (
+            " AND CAST(strftime('%s', date_created) AS INTEGER) "
+            f">= CAST(strftime('%s', 'now', '-{scraped_age} days') AS INTEGER)"
+        )
 
     cur.execute("PRAGMA table_info(drinks)")
     columns = [row[1] for row in cur.fetchall()]
