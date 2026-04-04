@@ -59,8 +59,9 @@ ARGUMENTS
        --category=CAT
               Filter discovery by category (beer, wine, spirits, premix).
 
-       --limit=N
-              Limit the number of tasks to process in this run.
+        --limit=N
+               Limit the number of tasks to process in this run.
+               Counts ALL task types (page tasks + drink detail tasks).
 
        --workers=N
               Number of worker threads to use (default: 1). Use >1 for parallelism.
@@ -393,7 +394,7 @@ Category options: beer, wine, spirits, premix
         '-l', '--limit',
         type=int,
         default=None,
-        help='Maximum number of tasks to process (default: unlimited)'
+        help='Maximum number of tasks to process (any type: page + detail tasks)'
     )
     
     parser.add_argument(

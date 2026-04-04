@@ -294,7 +294,8 @@ class ScrapingController:
         print(f"[temp_scraper_debug] worker {worker_id} start run_id={run_id}")  # TODO: Remove this temp_scraper_debug print info.
         while not self._stop_workers:
             with self._stats_lock:
-                if self._limit and self._page_tasks_completed >= self._limit:
+                total_completed = self._page_tasks_completed + self._detail_tasks_completed
+                if self._limit and total_completed >= self._limit:
                     break
             try:
                 result = self.run_next(retailer_name, run_id)
@@ -312,8 +313,9 @@ class ScrapingController:
                     self._detail_tasks_completed += 1
                 else:
                     self._page_tasks_completed += 1
-                    if self._limit and self._page_tasks_completed >= self._limit:
-                        self._stop_workers = True
+                total_completed = self._page_tasks_completed + self._detail_tasks_completed
+                if self._limit and total_completed >= self._limit:
+                    self._stop_workers = True
                 page_completed = self._page_tasks_completed
                 detail_completed = self._detail_tasks_completed
                 drinks_processed = self._drinks_processed
