@@ -64,8 +64,11 @@
   --color-white: #ffffff;
   --color-orange: #eb7734;
   
-  --search-width: 70%;
-  --results-width: 70%;
+  --search-width: 68%;
+  --results-width: 68%;
+
+  --result-card-height: 216px;
+  --result-card-width: 360px;
 
   --footer-height: 58px;
 }
@@ -147,8 +150,8 @@ input[type="search"]::-webkit-search-results-decoration {
 /* ---- Site Logo ---- */
 #siteLogo {
   position: fixed;
-  top: 50px;
-  right: 50px;
+  top: 25px;
+  left: 30px;
   font-size: 24px;
   font-weight: bold;
   color: var(--color-gold);
@@ -241,8 +244,8 @@ input[type="search"]::-webkit-search-results-decoration {
 
 #searchHeader {
   width: var(--search-width);
-  margin-top: 50px;
-  margin-bottom: 15px;
+  padding-top: 16px;
+  padding-bottom: 15px;
   display: block;
   justify-self: center;
   position: relative;
@@ -592,8 +595,8 @@ input[type="search"]::-webkit-search-results-decoration {
 
 /* ---- Result Card ---- */
 .resultCard {
-  height: 216px;
-  width: 360px;
+  height: var(--result-card-height);
+  width: var(--result-card-width);
   position: relative;
   display: flex;
   align-items: center;
@@ -838,17 +841,11 @@ input[type="search"]::-webkit-search-results-decoration {
   padding-bottom: 2.1%;
 }
 
-.light {
+.tagline {
   padding-top: 30px;
   font-size: 36px;
   color: var(--color-light);
   font-size: 14px;
-}
-
-.light_nospacing {
-  padding-top: 10px;
-  font-size: 36px;
-  color: var(--color-light);
 }
 
 .drink-of-the-day {
