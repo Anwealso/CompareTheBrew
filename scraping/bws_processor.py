@@ -95,7 +95,7 @@ class BWSProcessor(RetailerProcessor):
 
     def get_items(
         self, url: str, metadata: Optional[dict] = None
-    ) -> Tuple[List[Item], Optional[dict]]:
+    ) -> Tuple[List[DrinkItem], Optional[dict]]:
         """
         Parses BWS JSON data to extract drinks.
 

@@ -58,5 +58,3 @@ class DrinkItem:
 #     def __init__(self):
 #         self._lock = threading.Lock()
 #         self.collection = []
-
-Item = DrinkItem

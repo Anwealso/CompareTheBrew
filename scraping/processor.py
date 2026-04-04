@@ -1,7 +1,7 @@
 import json
 from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple
-from entities.drink_item import Item
+from entities.drink_item import DrinkItem
 from config import Config
 from scraping.fetcher import Fetcher, get_fetcher
     
@@ -56,7 +56,7 @@ class RetailerProcessor(ABC):
         return self.fetcher.fetch_url(url)
     
     @abstractmethod
-    def get_items(self, url: str, metadata: Optional[dict] = None) -> Tuple[List[Item], Optional[dict]]:
+    def get_items(self, url: str, metadata: Optional[dict] = None) -> Tuple[List[DrinkItem], Optional[dict]]:
         """
         Extracts items from the given URL.
         """
@@ -69,7 +69,7 @@ class RetailerProcessor(ABC):
         """
         pass
 
-    def build_detail_tasks(self, items: List[Item]) -> List[dict]:
+    def build_detail_tasks(self, items: List[DrinkItem]) -> List[dict]:
         """
         Optionally build detail-page tasks after a page is parsed.
         """

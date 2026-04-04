@@ -277,7 +277,7 @@ class LiquorlandProcessor(RetailerProcessor):
         print(f"[temp_scraper_debug] LiquorlandProcessor cache hit but data invalid for {url} (percent={percent}, std_drinks={std_drinks})")  # TODO: Remove this temp_scraper_debug print info.
         return None
 
-    def get_items(self, url: str, metadata: Optional[dict] = None) -> Tuple[List[Item], Optional[dict]]:
+    def get_items(self, url: str, metadata: Optional[dict] = None) -> Tuple[List[DrinkItem], Optional[dict]]:
         """
         Extract items from Liquorland using direct HTML extraction.
         For 'page' tasks: extracts items and returns drink_detail URLs for enqueuing.
@@ -370,7 +370,7 @@ class LiquorlandProcessor(RetailerProcessor):
 
         return result, None
 
-    def build_detail_tasks(self, items: List[Item]) -> List[dict]:
+    def build_detail_tasks(self, items: List[DrinkItem]) -> List[dict]:
         tasks = []
         for item in items:
             pack_qty = getattr(item, "pack_qty", 1) or 1

@@ -155,7 +155,7 @@ def bws_handler(search_term: str) -> List:
                 print("\t", "failed ->", std_drinks, item_numb, subdrink["Price"])
 
             # store as class
-            item = Item(
+            item = DrinkItem(
                 store="bws",
                 brand=subdrink["BrandName"],
                 name=subdrink["Name"].strip(),
