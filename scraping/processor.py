@@ -1,7 +1,7 @@
 import json
 from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple
-from scripts.classItem import Item
+from classItem import Item
 from config import Config
 from scraping.fetcher import Fetcher, get_fetcher
     

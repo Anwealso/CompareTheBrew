@@ -10,7 +10,6 @@ db/databaseHandler.py
 db/schema/__init__.py
 scripts/__init__.py
 scripts/classItem.py
-scripts/database_example.py
 scripts/init_db.py
 search/__init__.py
 search/intellisearch.py

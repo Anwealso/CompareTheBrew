@@ -8,7 +8,7 @@ import urllib.request
 import urllib.parse
 from bs4 import BeautifulSoup
 from typing import List, Optional, Tuple
-from scripts.classItem import Item
+from classItem import Item
 from scraping.processor import RetailerProcessor
 from config import Config
 from db.databaseHandler import create_connection, get_drink_by_store_link
