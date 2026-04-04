@@ -39,7 +39,7 @@ $ python3 tools/scraping-controller-cli.py --store=ll --category=wine --limit=3 
 Available flags:
 - `--store=STORE`: Which retailer to scrape (`bws`, `ll`, `fc`, or `all`)
 - `--category=CAT`: Filter discovery to `beer`, `wine`, `spirits`, or `premix`
-- `--limit=N`: Limit the number of tasks processed before the run stops
+- `--limit=N`: Limit the number of tasks processed before the run stops. Counts ALL task types (page tasks + drink detail sub-tasks).
 - `--workers=N`: Number of worker threads to consume the queue (default: 1)
 - `--discover`: Seed the queue with fresh tasks before processing
 - `--new`: Start a new run (implies discovery)
