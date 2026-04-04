@@ -3,11 +3,34 @@ import sqlite3
 import sys
 from pathlib import Path
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.reactive import reactive
 from textual.widgets import Header, Footer, Static, DataTable
+
+
+SYDNEY_ZONE = ZoneInfo("Australia/Sydney")
+
+
+def format_run_start_time(run_start: str) -> str:
+    if not run_start:
+        return ""
+    timestamp = run_start
+    try:
+        if timestamp.endswith("Z"):
+            timestamp = timestamp[:-1] + "+00:00"
+        parsed = datetime.fromisoformat(timestamp)
+    except ValueError:
+        try:
+            parsed = datetime.strptime(run_start, "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            return run_start
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=SYDNEY_ZONE)
+    parsed = parsed.astimezone(SYDNEY_ZONE)
+    return parsed.strftime("%Y-%m-%d %H:%M:%S %Z")
 
 
 def get_db_path():
@@ -228,7 +251,7 @@ class TaskQueueApp(App):
 
     def on_mount(self) -> None:
         table = self.query_one("#task-table", TaskQueueTable)
-        table.add_columns("Run ID", "Retailer", "Category", "Total", "Pending", "In Progress", "Completed", "Failed")
+        table.add_columns("Run ID", "Start (Sydney)", "Retailer", "Category", "Total", "Pending", "In Progress", "Completed", "Failed")
         table.focus()
         self.query_one("#footer-text", Static).update("[b]Enter[/b]: Select/View | [b]↑/↓[/b]: Navigate | [b]Backspace[/b]: Go Back | [b]Q[/b]: Quit")
         self.refresh_data()
@@ -362,14 +385,16 @@ class TaskQueueApp(App):
                 self.query_one("#stats-text", Static).update(stats_text)
                 
                 if not table.columns:
-                    table.add_columns("Run ID", "Retailer", "Category", "Total", "Pending", "In Progress", "Completed", "Failed")
+                    table.add_columns("Run ID", "Start (Sydney)", "Retailer", "Category", "Total", "Pending", "In Progress", "Completed", "Failed")
                 
                 for row in runs:
                     run_id, retailer, category, start_time, run_status, total, pending, in_progress, completed_count, failed = row
                     run_id_short = run_id[:10] + ".." if run_id and len(run_id) > 12 else (run_id or "")
                     category_short = (category or "")[:15]
+                    start_display = format_run_start_time(start_time)
                     table.add_row(
                         run_id_short,
+                        start_display,
                         retailer,
                         category_short,
                         str(total),
