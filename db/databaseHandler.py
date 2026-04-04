@@ -27,6 +27,71 @@ def _get_drink_pack_qty(drink) -> int:
     return max(1, qty)
 
 
+def _extract_ml_from_name(name: str) -> float | None:
+    """Return volume in ml parsed from the product name, if present."""
+    if not name:
+        return None
+    import re
+
+    ml_match = re.search(r"(\d+(?:\.\d+)?)\s*ml\b", name, flags=re.IGNORECASE)
+    if ml_match:
+        try:
+            return float(ml_match.group(1))
+        except (TypeError, ValueError):
+            return None
+
+    l_match = re.search(r"(\d+(?:\.\d+)?)\s*l\b", name, flags=re.IGNORECASE)
+    if l_match:
+        try:
+            return float(l_match.group(1)) * 1000.0
+        except (TypeError, ValueError):
+            return None
+
+    return None
+
+
+def _name_volume_matches(row) -> bool:
+    """
+    Filter out rows where the DB volume disagrees with a size in the name.
+    Accept either per-unit ml or per-pack ml (ml / pack_qty).
+    """
+    try:
+        name = row[3]
+        ml = row[8]
+        pack_qty = row[7]
+    except (TypeError, IndexError):
+        return True
+
+    name_ml = _extract_ml_from_name(name)
+    if name_ml is None:
+        return True
+
+    try:
+        ml_val = float(ml) if ml is not None else 0.0
+    except (TypeError, ValueError):
+        return True
+
+    try:
+        pack_val = int(float(pack_qty)) if pack_qty is not None else 1
+    except (TypeError, ValueError):
+        pack_val = 1
+    if pack_val < 1:
+        pack_val = 1
+
+    candidates = [ml_val]
+    if pack_val > 1:
+        candidates.append(ml_val / pack_val)
+
+    for candidate in candidates:
+        if candidate <= 0:
+            continue
+        tolerance = max(100.0, candidate * 0.2, name_ml * 0.2)
+        if abs(candidate - name_ml) <= tolerance:
+            return True
+
+    return False
+
+
 def calculate_score(price: float, std_drinks_per_unit: float, pack_qty: int = 1):
     """Compute price per standard drink across the whole pack."""
     if price is None or std_drinks_per_unit is None:
@@ -622,6 +687,8 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
         text_fields=["name", "brand", "type", "search_text"],
         std_field="stdDrinks",
         size_field="ml",
+        percent_field="percent",
+        pack_field="pack_qty",
     )
     quality_clause = ""
     if quality_filters:
@@ -654,6 +721,8 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
                 results.append(row)
 
     print("NUMBER OF RESULTS FOUND: " + str(len(results)))
+
+    results = [row for row in results if _name_volume_matches(row)]
 
     # Re-rank all matched rows using intellisearch relevance first, then the
     # selected "main" order as a secondary sort key.

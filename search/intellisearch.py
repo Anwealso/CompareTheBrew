@@ -88,6 +88,7 @@ def get_additional_quality_filters(
     std_field: str = "std_drinks",
     size_field: str | None = "size_ml",
     percent_field: str | None = "percent",
+    pack_field: str | None = None,
 ) -> list[str]:
     """
     Return SQL predicates to drop rows that look broken or inconsistent.
@@ -98,9 +99,11 @@ def get_additional_quality_filters(
     3. Standard drinks: `std_drinks` must exist and be positive.
     4. Size/volume: optional size field must exist and be positive.
     5. Percent: optional percent field must exist and be positive.
-    6. Volume × ABV vs std drinks: when both size and percent are available, enforce that
-       the physical alcohol quantity implied by size × ABV aligns with the stated std drinks
-       (within a small tolerance built around 0.25 std drinks + 25% of the reported std value).
+    6. Pack quantity: optional pack count must exist and be positive when provided.
+    7. Volume × ABV vs std drinks: when size/percent exist, enforce that the implied
+       alcohol quantity aligns with the stated std drinks. We allow both interpretations:
+       per-unit std_drinks and per-pack std_drinks (using pack_qty), because some sources
+       store totals while others store per-unit values. A small tolerance is allowed.
     """
     if text_fields is None:
         text_fields = ["name", "brand", "category", "search_text"]
@@ -115,12 +118,27 @@ def get_additional_quality_filters(
         conditions.append(f"{size_field} IS NOT NULL AND {size_field} > 0")
     if percent_field:
         conditions.append(f"{percent_field} IS NOT NULL AND {percent_field} > 0")
+    if pack_field:
+        conditions.append(f"{pack_field} IS NOT NULL AND {pack_field} > 0")
 
     # Reject rows where the stated std_drinks diverges from the implied alcohol quantity.
     if size_field and percent_field:
-        expected_expr = f"({size_field} * {percent_field} * 0.789 / 1000.0)"  # convert ml + % to grams of EtOH / 10
-        tolerance_expr = f"({std_field} * 0.25 + 0.25)"  # allow +/- max(25% of std_drinks, 0.25)
-        conditions.append(f"ABS({std_field} - {expected_expr}) <= {tolerance_expr}")
+        expected_unit_expr = f"({size_field} * {percent_field} * 0.789 / 1000.0)"
+        tolerance_expr = f"({std_field} * 0.25 + 0.25)"
+
+        if pack_field:
+            pack_expr = f"COALESCE({pack_field}, 1)"
+            expected_from_total_expr = f"(({size_field} / {pack_expr}) * {percent_field} * 0.789 / 1000.0)"
+            conditions.append(
+                "("
+                f"ABS({std_field} - {expected_unit_expr}) <= {tolerance_expr} "
+                f"OR ABS({std_field} - ({expected_unit_expr} * {pack_expr})) <= {tolerance_expr} "
+                f"OR ABS({std_field} - {expected_from_total_expr}) <= {tolerance_expr} "
+                f"OR ABS({std_field} - ({expected_from_total_expr} * {pack_expr})) <= {tolerance_expr}"
+                ")"
+            )
+        else:
+            conditions.append(f"ABS({std_field} - {expected_unit_expr}) <= {tolerance_expr}")
 
     return conditions
 
