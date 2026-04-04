@@ -1,4 +1,4 @@
-function applySearchFilters() {
+function applySearchFilters({ zeroAlcOverride } = {}) {
   const priceMinEl = document.getElementById("priceMin");
   const priceMaxEl = document.getElementById("priceMax");
   const priceMin = priceMinEl ? priceMinEl.value : "";
@@ -9,7 +9,9 @@ function applySearchFilters() {
   const storeEl = document.getElementById("storeSelect");
   const store = storeEl ? storeEl.value : "all";
   const scrapedAge = urlParams.get("scraped_age") || "";
-  const zeroAlcActive = urlParams.get("zero-alc") === "true";
+  const currentZeroActive = urlParams.get("zero-alc") === "true";
+  const zeroAlcActive =
+    zeroAlcOverride === undefined ? currentZeroActive : zeroAlcOverride;
 
   let url =
     "/search?q=" +
@@ -33,16 +35,6 @@ function applySearchFilters() {
   }
 
   window.location.href = url;
-}
-
-function updateQueryParameter(key, value, baseUrl = window.location.href) {
-  const url = new URL(baseUrl, window.location.origin);
-  if (value === null || value === undefined || value === "") {
-    url.searchParams.delete(key);
-  } else {
-    url.searchParams.set(key, value);
-  }
-  return url.toString();
 }
 
 $(document).ready(function () {
@@ -85,7 +77,8 @@ $(document).ready(function () {
     }
     const suffix = homeZeroCheckbox.checked ? "&zero-alc=true" : "";
     homeCategoryLinks.forEach((anchor) => {
-      const baseHref = anchor.dataset.baseHref || anchor.getAttribute("href") || "";
+      const baseHref =
+        anchor.dataset.baseHref || anchor.getAttribute("href") || "";
       anchor.href = baseHref + suffix;
     });
     if (homeZeroInput) {
@@ -98,12 +91,24 @@ $(document).ready(function () {
     homeZeroCheckbox.addEventListener("change", syncHomeZeroLinks);
   }
 
-  const zeroResultsCheckbox = document.getElementById("zeroAlcCheckbox");
-  if (zeroResultsCheckbox) {
-    zeroResultsCheckbox.addEventListener("change", function (event) {
-      const targetValue = event.target.checked ? "true" : null;
-      window.location.href = updateQueryParameter("zero-alc", targetValue);
-    });
+  function triggerZeroAlcFilter() {
+    const currentUrl = new URL(window.location.href);
+    const params = currentUrl.searchParams;
+    const isActive = params.get("zero-alc") === "true";
+    if (isActive) {
+      params.delete("zero-alc");
+    } else {
+      params.set("zero-alc", "true");
+    }
+    const queryString = params.toString();
+    window.location.href = queryString
+      ? `${currentUrl.pathname}?${queryString}`
+      : currentUrl.pathname;
+  }
+
+  const zeroAlcCheckbox = document.getElementById("zeroAlcFilter");
+  if (zeroAlcCheckbox) {
+    zeroAlcCheckbox.addEventListener("change", triggerZeroAlcFilter);
   }
 
   const priceMin = document.getElementById("priceMin");

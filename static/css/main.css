@@ -437,8 +437,7 @@ input[type="search"]::-webkit-search-results-decoration {
   margin-right: 4px;
 }
 
-.zero-alc-label,
-.zero-alc-toggle {
+.zero-alc-label {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -448,11 +447,27 @@ input[type="search"]::-webkit-search-results-decoration {
   cursor: pointer;
 }
 
-.zero-alc-label input,
-.zero-alc-toggle input {
+.zero-alc-label input {
   width: 18px;
   height: 18px;
   accent-color: var(--color-maroon);
+}
+
+.zero-alc-toggle {
+  padding: 10px 18px;
+  border-radius: 9px;
+  border: 2px solid var(--color-maroon);
+  background-color: var(--color-bg);
+  color: var(--color-maroon);
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.zero-alc-toggle.zero-alc-active {
+  background-color: var(--color-maroon);
+  color: var(--color-white);
 }
 
 .zero-alc-faux-button {
