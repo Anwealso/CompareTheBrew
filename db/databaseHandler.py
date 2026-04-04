@@ -1,7 +1,6 @@
 import sqlite3
 from sqlite3 import Error
 from pathlib import Path
-from entities.item import Item
 from search.intellisearch import build_search_text, get_additional_quality_filters, intellisearch
 import itertools
 import operator

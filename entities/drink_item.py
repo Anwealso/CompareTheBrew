@@ -1,7 +1,4 @@
-import threading
-
-class Item:
-    # todo expand for alcohol content
+class DrinkItem:
     def __init__(
         self,
         store,
@@ -55,7 +52,7 @@ class Item:
         reprString += self.image
         return reprString
 
-class ItemCollection:
-    def __init__(self):
-        self._lock = threading.Lock()
-        self.collection = []
+# class ItemCollection:
+#     def __init__(self):
+#         self._lock = threading.Lock()
+#         self.collection = []

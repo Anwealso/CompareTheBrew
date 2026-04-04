@@ -8,7 +8,7 @@ import urllib.request
 import urllib.parse
 from bs4 import BeautifulSoup
 from typing import List, Optional, Tuple
-from entities.item import Item
+from entities.drink_item import Item
 from scraping.processor import RetailerProcessor
 from config import Config
 from db.databaseHandler import create_connection, get_drink_by_store_link
@@ -345,7 +345,7 @@ class LiquorlandProcessor(RetailerProcessor):
                 percent = 0.0
                 std_drinks = 0.0
 
-                item = Item(
+                item = DrinkItem(
                     store=self.store_id,
                     brand=brand,
                     name=name,

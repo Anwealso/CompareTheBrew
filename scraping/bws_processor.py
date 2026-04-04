@@ -1,6 +1,6 @@
 import json
 from typing import List, Optional, Tuple
-from entities.item import Item
+from entities.drink_item import Item
 from scraping.processor import RetailerProcessor
 
 
@@ -170,7 +170,7 @@ class BWSProcessor(RetailerProcessor):
                 if self.progress_callback:
                     self.progress_callback(item_name)
 
-                item = Item(
+                item = DrinkItem(
                     store="bws",
                     brand=subdrink.get("BrandName", "Unknown"),
                     name=item_name,
