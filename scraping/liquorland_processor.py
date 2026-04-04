@@ -40,14 +40,10 @@ class LiquorlandProcessor(RetailerProcessor):
             return "Other"
 
         primary = segments[0].lower()
-
         if primary == "spirits" and len(segments) > 1 and segments[1].lower() in {"premixed", "premix"}:
-            return "Premixed Spirits"
-
-        if primary in {"wine", "beer", "spirits"}:
+            return "Premix"
+        else:
             return primary.capitalize()
-
-        return primary.capitalize()
 
     def _extract_pack_quantity(self, name: str) -> int:
         """

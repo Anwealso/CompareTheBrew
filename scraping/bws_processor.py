@@ -10,6 +10,26 @@ class BWSProcessor(RetailerProcessor):
     Processor for BWS (Beer Wine Spirits).
     """
 
+    def _infer_category_from_url(self, url: str) -> str:
+        """
+        Derive a product category label from the crawl URL.
+        """
+        if not url:
+            return "Other"
+
+        url_lower = url.lower()
+
+        if "subdepartment=all+beer" in url_lower or "department=beer" in url_lower:
+            return "Beer"
+        if "subdepartment=all+wine" in url_lower or "department=wine" in url_lower:
+            return "Wine"
+        if "subdepartment=premixed" in url_lower or "subdepartment=premixed+drinks" in url_lower:
+            return "Premix"
+        if "subdepartment=all+spirits" in url_lower or "department=spirits" in url_lower:
+            return "Spirits"
+
+        return "Other"
+
     @staticmethod
     def _extract_pack_qty(subdrink: dict) -> int:
         """
@@ -108,6 +128,8 @@ class BWSProcessor(RetailerProcessor):
         content = self.fetch_url(url)
         if not content:
             return result, None
+
+        category_type = self._infer_category_from_url(url)
 
         try:
             data = json.loads(content)
@@ -222,11 +244,12 @@ class BWSProcessor(RetailerProcessor):
                     self.progress_callback(item_name)
 
                 zero_alc_flag = self.is_zero_alc(percent_alcohol)
+                item_type = category_type if category_type != "Other" else style
                 item = DrinkItem(
                     store="bws",
                     brand=subdrink.get("BrandName", "Unknown"),
                     name=item_name,
-                    type=style,
+                    type=item_type,
                     price=price_dollars,
                     link=drink_link,
                     ml=size,
