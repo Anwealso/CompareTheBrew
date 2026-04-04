@@ -64,16 +64,13 @@
           format(result[10]) }} std. - {{ result[9] }}%
         </div>
         <div class="scorePriceContainer">
-          <div class="score">
-            <div class="sideways">
-              <img src="/static/images/score.svg" alt="Score" />
+          <div class="scoreContainer">
+            <div class="scoreLabel">
+              $/STD
             </div>
-            {% if result[11] is not none %}
-            ${{ '%0.2f'| format(result[11]) }}
-            {% else %}
-            n/a
-            {% endif %}
-            <span class="scoreLabel">$/Std</span>
+            <div class="scoreValue">
+              {{ '%0.2f'| format(result[11]) }}
+            </div>
           </div>
           <div class="price">${{ '%0.2f'| format(result[5]) }}</div>
         </div>

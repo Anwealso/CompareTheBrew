@@ -706,22 +706,35 @@ input[type="search"]::-webkit-search-results-decoration {
   color: var(--color-maroon);
 }
 
+.scoreMaroon {
+  color: var(--color-maroon);
+}
+
 .scorePriceContainer {
   display: flex;
   align-items: center;
   justify-content: flex-start;
 }
 
-.score {
+.scoreContainer {
   font-weight: bolder;
   font-size: 40px;
   color: var(--color-orange);
-  display: inline-flex;
-  align-items: center;
+  position: relative;
 }
 
-.scoreMaroon {
-  color: var(--color-maroon);
+.scoreLabel {
+  rotate: 90deg;
+  font-size: 12px;
+  font-family: 'louis_george_cafe', Arial, sans-serif;
+  font-weight: bold;
+  position: absolute;
+  width: 0.7em;
+  top: 0.6em;
+}
+
+.scoreValue {
+  margin-left: 12px;
 }
 
 .price {
@@ -796,17 +809,11 @@ input[type="search"]::-webkit-search-results-decoration {
   font-size: 16px;
 }
 
-.sideways {
-  display: inline-block;
-  height: 0.7em;
-  margin-right: 4px;
-}
-
-.sideways img {
+/* .sideways img {
   height: 100%;
   width: auto;
   display: block;
-}
+} */
 
 
 /* =============================================================================
