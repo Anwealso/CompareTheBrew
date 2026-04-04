@@ -181,7 +181,11 @@ class ScrapingController:
                 if metadata:
                     store = metadata.get("store", retailer_name)
                     link = metadata.get("link")
-                    pack_qty = metadata.get("pack_qty", 1)
+                    pack_qty_raw = metadata.get("pack_qty", 1)
+                    try:
+                        pack_qty = int(float(pack_qty_raw)) if pack_qty_raw is not None else 1
+                    except (TypeError, ValueError):
+                        pack_qty = 1
                     percent = details.get("percent", 0.0)
                     std_drinks = details.get("std_drinks", 0.0)
                     if link:

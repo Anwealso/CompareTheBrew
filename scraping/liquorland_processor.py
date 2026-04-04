@@ -56,6 +56,7 @@ class LiquorlandProcessor(RetailerProcessor):
         text = (name or "").lower()
         patterns = [
             r'pack of\s+(\d+)',
+            r'pack\s*(?:of\s*)?\(?\s*(\d+)\s*\)?',
             r'(\d+)\s*(?:pack|pk|packs|pkgs|carton|case|ctn|bottle|bottles|can|cans)\b',
             r'(\d+)\s*[x×]\s*\d+',
         ]
