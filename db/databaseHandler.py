@@ -1,7 +1,13 @@
 import sqlite3
 from sqlite3 import Error
 from pathlib import Path
-from search.intellisearch import build_search_text, get_additional_quality_filters, intellisearch
+from search.intellisearch import (
+    build_search_text,
+    get_additional_quality_filters,
+    intellisearch,
+    normalize_query,
+    calculate_score as calculate_relevance_score,
+)
 import itertools
 import operator
 import json
@@ -549,6 +555,7 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
     # now run intellisense search to get better result parity
     print("-------------------(NEW)-------------------")
     search_query = " ".join(terms)
+    normalized_query = normalize_query(search_query)
     intelliterms = intellisearch(search_query)
     # print(intelliterms)
 
@@ -640,30 +647,73 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
 
     print("NUMBER OF RESULTS FOUND: " + str(len(results)))
 
-    # organise results based on category and order - currently only sorted per term.
-    if category == 'score':
-        if order == 'ASC':
-            results.sort(key=lambda tup: (tup[11] is None, tup[11] if tup[11] is not None else 0.0))
-        elif order == 'DESC':
-            results.sort(key=lambda tup: (tup[11] is None, -tup[11] if tup[11] is not None else 0.0))
+    # Re-rank all matched rows using intellisearch relevance first, then the
+    # selected "main" order as a secondary sort key.
+    query_tokens = set(normalized_query.get("tokens", []))
+    ranked_results = []
+    for row in results:
+        # drinks schema: brand=2, name=3, type=4, price=5, pack_qty=7, ml=8, score=11, search_text=14
+        search_text = row[14] if len(row) > 14 and row[14] else ""
+        if not search_text:
+            search_text = " ".join(str(p).lower() for p in (row[3], row[2], row[4]) if p)
+        lowered_search = search_text.lower()
 
-    elif category == 'price':
-        if order == 'ASC':
-            results.sort(key=lambda tup: tup[5], reverse=False)
-        elif order == 'DESC':
-            results.sort(key=lambda tup: tup[5], reverse=True)
+        keyword_matches = (
+            sum(1 for token in query_tokens if token in lowered_search)
+            if query_tokens
+            else 0
+        )
 
-    elif category == 'percent':
-        if order == 'ASC':
-            results.sort(key=lambda tup: tup[9], reverse=False)
-        elif order == 'DESC':
-            results.sort(key=lambda tup: tup[9], reverse=True)
+        relevance_row = {
+            "name": row[3] or "",
+            "brand": row[2] or "",
+            "category": row[4] or "",
+            "search_text": lowered_search,
+            "size_ml": row[8],
+            "pack_count": row[7],
+            "price": row[5],
+        }
+        relevance_score = calculate_relevance_score(relevance_row, normalized_query)
 
-    elif category == 'ml':
-        if order == 'ASC':
-            results.sort(key=lambda tup: tup[8], reverse=False)
-        elif order == 'DESC':
-            results.sort(key=lambda tup: tup[8], reverse=True)
+        secondary_value = None
+        if category == "score":
+            secondary_value = row[11]
+        elif category == "price":
+            secondary_value = row[5]
+        elif category == "percent":
+            secondary_value = row[9]
+        elif category == "ml":
+            secondary_value = row[8]
+
+        ranked_results.append({
+            "row": row,
+            "keyword_matches": keyword_matches,
+            "secondary_value": secondary_value,
+            "relevance_score": relevance_score,
+        })
+
+    # Tertiary tie-breaker: richer intellisearch score.
+    ranked_results.sort(key=lambda item: item["relevance_score"], reverse=True)
+
+    # Secondary sort: selected UI order option.
+    if order == "ASC":
+        ranked_results.sort(
+            key=lambda item: (
+                item["secondary_value"] is None,
+                item["secondary_value"] if item["secondary_value"] is not None else 0.0,
+            )
+        )
+    elif order == "DESC":
+        ranked_results.sort(
+            key=lambda item: (
+                item["secondary_value"] is None,
+                -(item["secondary_value"] if item["secondary_value"] is not None else 0.0),
+            )
+        )
+
+    # Primary sort: always prioritize keyword overlap from the original query.
+    ranked_results.sort(key=lambda item: item["keyword_matches"], reverse=True)
+    results = [item["row"] for item in ranked_results]
 
 
 

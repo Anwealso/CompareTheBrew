@@ -118,6 +118,8 @@ def build_search_query(normalized: dict) -> tuple[str, list]:
             token_conditions.append("search_text ILIKE %s")
             params.append(f"%{token}%")
         conditions.append(f"({' OR '.join(token_conditions)})")
+        # expanded / synonyms results are OR'ed together so we fetch anything
+        # that might reasonably match the user's intent before ranking later.
 
     if size_l:
         size_ml = int(size_l * 1000)
@@ -157,22 +159,23 @@ def fuzz_score(query: str, target: str) -> float:
 def calculate_score(row: dict, normalized: dict) -> float:
     """Calculate relevance score for a result."""
     score = 0.0
-    tokens = normalized["expanded_tokens"]
+    query_tokens = normalized["tokens"]
     name = row.get("name", "").lower()
     brand = row.get("brand", "").lower()
     category = row.get("category", "").lower()
     search_text = row.get("search_text", "").lower()
     original_query = normalized["original"]
-    
-    if normalized["tokens"]:
-        for token in normalized["tokens"]:
-            if token in name:
-                score += 5
+    normalized_query = original_query.lower().strip()
+
+    if query_tokens:
+        for token in query_tokens:
             if token in brand:
-                score += 3
+                score += 5  # prefer hits where the query token is embedded in the brand name
+            if token in name:
+                score += 3  # next priority: token in product name
             if token in category:
-                score += 2
-    
+                score += 2  # minor boost if it appears in the category label
+
     if normalized["size_l"]:
         size_ml = row.get("size_ml", 0)
         target_ml = int(normalized["size_l"] * 1000)
@@ -184,26 +187,48 @@ def calculate_score(row: dict, normalized: dict) -> float:
                 score += 3
             elif size_diff <= target_ml * 0.1:
                 score += 2
-    
+
     if normalized["pack_count"]:
         if row.get("pack_count") == normalized["pack_count"]:
             score += 3
-    
-    token_count = sum(1 for t in tokens if t in search_text)
-    score += token_count * 0.5
-    
+
+    unique_query_tokens = set(query_tokens)
+    keyword_matches = 0
+    if unique_query_tokens:
+        keyword_matches = sum(1 for t in unique_query_tokens if t in search_text)
+        score += keyword_matches * 2  # reward each matching keyword
+        if keyword_matches == len(unique_query_tokens):
+            score += 2  # bonus for covering the entire query perfectly
+
+    if normalized_query and normalized_query in search_text:
+        score += 3  # strong boost for exact phrase match
+
     if RAPIDFUZZ_AVAILABLE:
         score += fuzz_score(original_query, name) * 3
         score += fuzz_score(original_query, search_text) * 1.5
-    
+
     return score
 
 
 def rank_results(rows: list[dict], normalized: dict) -> list[tuple]:
-    """Rank results by calculated score."""
-    scored = [(row, calculate_score(row, normalized)) for row in rows]
-    scored.sort(key=lambda x: x[1], reverse=True)
-    return scored
+    """Rank results by keyword overlap first, then by calculated score."""
+    query_tokens = normalized["tokens"]
+    unique_tokens = set(query_tokens)
+    scored = []
+    for row in rows:
+        score = calculate_score(row, normalized)
+        search_text = row.get("search_text", "").lower()
+        keyword_matches = (
+            sum(1 for token in unique_tokens if token in search_text)
+            if unique_tokens
+            else 0
+        )
+        # track both total keyword overlap and the underlying score so we can
+        # sort by overlap first and fall back to the richer score second
+        scored.append((row, keyword_matches, score))
+
+    scored.sort(key=lambda entry: (entry[1], entry[2]), reverse=True)
+    return [(row, score) for row, _, score in scored]
 
 
 def get_expanded_terms(query: str) -> list[str]:
