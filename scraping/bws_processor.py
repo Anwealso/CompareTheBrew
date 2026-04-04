@@ -1,6 +1,6 @@
 import json
 from typing import List, Optional, Tuple
-from classItem import Item
+from entities.item import Item
 from scraping.processor import RetailerProcessor
 
 
