@@ -220,12 +220,16 @@ class ScrapingController:
                 )
                 self._drink_counter += processed_items
 
-                detail_tasks = processor.build_detail_tasks(items)
-                for detail in detail_tasks:
-                    url_detail = detail.get("url")
-                    metadata_detail = detail.get("metadata")
-                    if url_detail:
-                        add_scrape_task(conn, retailer_name, url_detail, metadata_detail, run_id, task_type='drink_detail')
+                # TODO: Reconsider this store-specific logic for building detail tasks. 
+                #   Ideally, the processor should return any necessary detail tasks as part of get_items()
+                #   or a separate method, rather than having controller logic that depends on retailer_name.
+                if retailer_name == "ll":
+                    detail_tasks = processor.build_detail_tasks(items)
+                    for detail in detail_tasks:
+                        url_detail = detail.get("url")
+                        metadata_detail = detail.get("metadata")
+                        if url_detail:
+                            add_scrape_task(conn, retailer_name, url_detail, metadata_detail, run_id, task_type='drink_detail')
 
                 if next_metadata:
                     next_url = next_metadata.get("next_url", url)
