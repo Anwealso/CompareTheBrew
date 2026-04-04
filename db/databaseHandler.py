@@ -591,14 +591,13 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
     if scraped_age is not None and scraped_age != "":
         scraped_age_filter = f" AND date_created >= datetime('now', '-{scraped_age} days')"
 
+    cur.execute("PRAGMA table_info(drinks)")
+    columns = [row[1] for row in cur.fetchall()]
     zero_alc_filter = ""
     if zero_alc:
-        cur.execute("PRAGMA table_info(drinks)")
-        columns = [row[1] for row in cur.fetchall()]
-        if "zero_alc" in columns:
-            zero_alc_filter = " AND zero_alc = 1"
-        else:
-            zero_alc_filter = " AND percent = 0"
+        zero_alc_filter = " AND zero_alc = 1"
+    else:
+        zero_alc_filter = " AND (zero_alc = 0 OR zero_alc IS NULL)"
 
     # Deduplication subquery - keeps only the most recent row for each unique drink
     # Main attributes: name, brand, type, ml, percent, store (excluding promotional text, location, etc.)
