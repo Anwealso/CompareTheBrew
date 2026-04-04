@@ -46,10 +46,8 @@
     {% set normalized_search = search_terms | default('') | lower | trim %}
     {% set current_order = order if order else 'score-asc' %}
     <a
-      href="#"
-      class="buttonSort buttonSortDisabled"
-      aria-disabled="true"
-      title="Premix search coming soon"
+      href="/search?q=premix&order={{ current_order }}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}{{ zero_alc_query }}"
+      class="buttonSort {% if normalized_search == 'premix' %}buttonSortActive{% endif %}"
     >
       Premix
     </a>
