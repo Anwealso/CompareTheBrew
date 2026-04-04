@@ -56,14 +56,14 @@ def init_db(db_path=None, schema_path=None):
         cursor = conn.cursor()
         cursor.execute(
             "INSERT INTO schema_version (version, applied_at) VALUES (?, ?)",
-            (12, datetime.now().isoformat())
+            (13, datetime.now().isoformat())
         )
         conn.commit()
         
         print("Created all tables and indexes")
         print("-" * 40)
         print("Database initialized successfully!")
-        print(f"Schema version: 1.2")
+        print(f"Schema version: 1.3")
         
     except Exception as e:
         print(f"Error: {e}")

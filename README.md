@@ -167,6 +167,10 @@ The SQL files in `db/schema/tables/` are the authoritative source. Edit them to 
 python3 scripts/init_db.py
 ```
 
+The `drinks` table now records a `pack_qty` value for each row so different packaging formats (single, 6-pack, cartons, etc.) that share the same URL remain distinct. Indexes and dedup logic also key on `(store, link, pack_qty)` to avoid dropping valid variants.
+
+Duplicate cleanup via `scripts/dedup_drinks_by_link.py` respects `pack_qty` by grouping on `(store, link, pack_qty)` before keeping the most recent/best row.
+
 ### Viewing Schema
 - Authoritative SQL: See `db/schema/tables/`
 

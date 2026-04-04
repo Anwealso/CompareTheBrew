@@ -49,6 +49,27 @@ class LiquorlandProcessor(RetailerProcessor):
 
         return primary.capitalize()
 
+    def _extract_pack_quantity(self, name: str) -> int:
+        """
+        Parse pack quantity heuristics from the product name.
+        """
+        text = (name or "").lower()
+        patterns = [
+            r'pack of\s+(\d+)',
+            r'(\d+)\s*(?:pack|pk|packs|pkgs|carton|case|ctn|bottle|bottles|can|cans)\b',
+            r'(\d+)\s*[x×]\s*\d+',
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, text)
+            if match:
+                try:
+                    qty = int(match.group(1))
+                    if qty >= 1:
+                        return qty
+                except (TypeError, ValueError):
+                    continue
+        return 1
+
     def fetch_url(self, url: str) -> Optional[str]:
         """
         Override fetch_url with multi-strategy approach for Liquorland.
@@ -76,39 +97,39 @@ class LiquorlandProcessor(RetailerProcessor):
         customer_id = getattr(Config, 'BRIGHTDATA_CUSTOMER_ID', None)
         zone = getattr(Config, 'BRIGHTDATA_ZONE', None)
         password = getattr(Config, 'BRIGHTDATA_PASSWORD', None)
-        
+
         if not all([customer_id, zone, password]):
             return self.fetch_url(url)
-        
+
         auth = f"brd-customer-{customer_id}-zone-{zone}:{password}"
         ws_endpoint = f"wss://{auth}@brd.superproxy.io:9222"
-        
+
         async def _fetch():
             try:
                 from playwright.async_api import async_playwright
             except ImportError:
                 print("Playwright not installed")
                 return None
-            
+
             try:
                 async with async_playwright() as pw:
                     browser = await pw.chromium.connect_over_cdp(ws_endpoint)
                     page = await browser.new_page()
-                    
+
                     await page.goto(url, timeout=120000)
-                    
+
                     button_max = page.locator(f'button[aria-label="Click to show {LIQOURLAND_MAX_RESULTS_PER_PAGE} results per page"]')
                     if await button_max.count() > 0:
                         await button_max.click()
                         await page.wait_for_load_state("networkidle", timeout=30000)
-                    
+
                     content = await page.content()
                     await browser.close()
                     return content
             except Exception as e:
                 print(f"Playwright error for {url}: {e}")
                 return None
-        
+
         return asyncio.run(_fetch())
 
     def _build_sb_url(self, url: str, params: dict, headers: Optional[dict] = None) -> str:
@@ -125,7 +146,7 @@ class LiquorlandProcessor(RetailerProcessor):
         if not self.api_key:
             print("No API key configured")
             return None
-        
+
         params = {
             "api_key": self.api_key,
             "url": url,
@@ -136,13 +157,13 @@ class LiquorlandProcessor(RetailerProcessor):
             "wait": wait,
             "wait_for": wait_for
         }
-        
+
         headers = custom_headers or {}
-        
+
         import ssl
         import urllib.request
         import urllib.parse
-        
+
         encoded_url = urllib.parse.quote(url)
         sb_url = f"https://app.scrapingbee.com/api/v1/?api_key={self.api_key}&url={encoded_url}"
         sb_url += "&render_js=true"
@@ -151,7 +172,7 @@ class LiquorlandProcessor(RetailerProcessor):
         sb_url += f"&wait={wait}"
         sb_url += f"&wait_for={urllib.parse.quote(wait_for)}"
         sb_url += "&country_code=au"
-        
+
         try:
             context = ssl._create_unverified_context()
             req = urllib.request.Request(sb_url, headers=headers)
@@ -169,7 +190,7 @@ class LiquorlandProcessor(RetailerProcessor):
         if not content:
             return [{"url": url, "metadata": {"page": 1}}]
         soup = BeautifulSoup(content, "html.parser")
-        
+
         result_count_elem = soup.find("div", class_="resultCount")
         if result_count_elem:
             result_text = result_count_elem.get_text(strip=True)
@@ -190,7 +211,7 @@ class LiquorlandProcessor(RetailerProcessor):
             "percent": 0.0,
             "std_drinks": 0.0,
         }
-        
+
         if not url:
             return details
 
@@ -204,7 +225,7 @@ class LiquorlandProcessor(RetailerProcessor):
             return details
 
         soup = BeautifulSoup(content, "html.parser")
-        
+
         props_list = soup.find("ul", class_="product-properties")
         if props_list:
             items = props_list.find_all("li")
@@ -213,10 +234,10 @@ class LiquorlandProcessor(RetailerProcessor):
                 val_elem = item.find("span", class_="val")
                 if not key_elem or not val_elem:
                     continue
-                
+
                 key = key_elem.get_text(strip=True)
                 val = val_elem.get_text(strip=True)
-                
+
                 if key == "Standard Drinks":
                     try:
                         details["std_drinks"] = float(val)
@@ -229,17 +250,18 @@ class LiquorlandProcessor(RetailerProcessor):
                             details["percent"] = float(match.group(1))
                         except ValueError:
                             pass
-        
+
         return details
 
-    def _get_cached_details(self, url: str) -> Optional[dict]:
+    def _get_cached_details(self, url: str, pack_qty: Optional[int] = None) -> Optional[dict]:
         if not url:
             return None
         conn = create_connection()
         if not conn:
             return None
         try:
-            row = get_drink_by_store_link(conn, self.store_id, url)
+            resolved_pack_qty = pack_qty if pack_qty is not None else 1
+            row = get_drink_by_store_link(conn, self.store_id, url, resolved_pack_qty)
         finally:
             conn.close()
 
@@ -247,8 +269,8 @@ class LiquorlandProcessor(RetailerProcessor):
             print(f"[temp_scraper_debug] LiquorlandProcessor cache miss (no row) for {url}")  # TODO: Remove this temp_scraper_debug print info.
             return None
 
-        percent = float(row[8]) if row[8] is not None else 0.0
-        std_drinks = float(row[9]) if row[9] is not None else 0.0
+        percent = float(row[9]) if row[9] is not None else 0.0
+        std_drinks = float(row[10]) if row[10] is not None else 0.0
         if percent > 0 and std_drinks > 0:
             print(f"[temp_scraper_debug] LiquorlandProcessor cache hit with healthy data for {url}")  # TODO: Remove this temp_scraper_debug print info.
             return {"percent": percent, "std_drinks": std_drinks}
@@ -274,13 +296,13 @@ class LiquorlandProcessor(RetailerProcessor):
         for tile in product_tiles:
             try:
                 product_id = tile.get("data-product-id", "")
-                
+
                 brand_elem = tile.find("div", class_="product-brand")
                 brand = brand_elem.get_text(strip=True) if brand_elem else ""
-                
+
                 name_elem = tile.find("div", class_="product-name")
                 name = name_elem.get_text(strip=True) if name_elem else ""
-                
+
                 price = 0.0
                 current_price_elem = tile.find("span", class_="PriceTagV3")
                 if current_price_elem:
@@ -293,7 +315,7 @@ class LiquorlandProcessor(RetailerProcessor):
                             price = float(f"{dollars}.{cents}")
                         except:
                             pass
-                
+
                 old_price = 0.0
                 promotion_text = ""
                 promotion_elem = tile.find("div", class_="x-for-y")
@@ -301,14 +323,14 @@ class LiquorlandProcessor(RetailerProcessor):
                     promo_link = promotion_elem.find("a")
                     if promo_link:
                         promotion_text = promo_link.get_text(strip=True)
-                
+
                 thumbnail = tile.find("a", class_="thumbnail")
                 link = ""
                 if thumbnail:
                     link = thumbnail.get("href", "")
                     if link and not link.startswith("http"):
                         link = f"https://www.liquorland.com.au{link}"
-                
+
                 image = ""
                 if thumbnail:
                     img_elem = thumbnail.find("img")
@@ -316,8 +338,9 @@ class LiquorlandProcessor(RetailerProcessor):
                         image = img_elem.get("src", "")
                         if image and not image.startswith("http"):
                             image = f"https://www.liquorland.com.au{image}"
-                
+
                 vol = self.parse_volume(name)
+                pack_qty = self._extract_pack_quantity(name)
 
                 percent = 0.0
                 std_drinks = 0.0
@@ -332,11 +355,11 @@ class LiquorlandProcessor(RetailerProcessor):
                     ml=vol,
                     percent=percent,
                     std_drinks=std_drinks,
-                    numb_items=1,
+                    pack_qty=pack_qty,
                     efficiency=0.0,
                     image=image,
                     promotion=bool(promotion_text),
-                    old_price=old_price
+                    old_price=old_price,
                 )
                 result.append(item)
             except Exception as e:
@@ -347,14 +370,16 @@ class LiquorlandProcessor(RetailerProcessor):
     def build_detail_tasks(self, items: List[Item]) -> List[dict]:
         tasks = []
         for item in items:
-            if item.link and not self._get_cached_details(item.link):
+            pack_qty = getattr(item, "pack_qty", 1) or 1
+            if item.link and not self._get_cached_details(item.link, pack_qty):
                 tasks.append({
                     "url": item.link,
                     "metadata": {
                         "store": item.store,
                         "brand": item.brand,
                         "name": item.name,
-                        "link": item.link
+                        "link": item.link,
+                        "pack_qty": pack_qty
                     }
                 })
         print(f"[temp_scraper_debug] LiquorlandProcessor.build_detail_tasks created {len(tasks)} tasks")  # TODO: Remove this temp_scraper_debug print info.

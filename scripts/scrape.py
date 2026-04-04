@@ -32,15 +32,15 @@ bundles -> INTEGER (drink) -> Products -> INTEGER (subdrink) -> [[details requir
 """
 def bws_handler(search_term: str) -> List:
     result = list()
-    
+
     # get website for search term
     url = website_searcher("bws", search_term)
-    
+
     # download drinks data
     data = None
     with urlopen(url) as api_json:
         data = json.loads(api_json.read().decode())
-    
+
     # get specific json sections
     data = data['Bundles']
     for drink in data:
@@ -56,7 +56,7 @@ def bws_handler(search_term: str) -> List:
             link = "None"
             style = "None"
             size = "None"
-            
+
             for i in subdrink["AdditionalDetails"]:
                 if i["Name"] == "parentstockcode":
                     parentcode = i["Value"] # important for URL
@@ -67,14 +67,14 @@ def bws_handler(search_term: str) -> List:
                 elif i["Name"] == "image1":
                     image_numb = i["Value"]
                 elif i["Name"] == "standarddrinks":
-                        std_drinks = i["Value"]
-                        std_drinks = std_drinks.replace('Approx.', '')
-                        std_drinks = std_drinks.replace('Approx', '')
-                        std_drinks = std_drinks.split(" ")[0]
-                        try:
-                            std_drinks = float(std_drinks.strip())
-                        except:
-                            std_drinks = -1
+                    std_drinks = i["Value"]
+                    std_drinks = std_drinks.replace('Approx.', '')
+                    std_drinks = std_drinks.replace('Approx', '')
+                    std_drinks = std_drinks.split(" ")[0]
+                    try:
+                        std_drinks = float(std_drinks.strip())
+                    except:
+                        std_drinks = -1
                 elif i["Name"] == "bwsproducturl":
                     link = i["Value"]
                 elif i["Name"] == "standardcategory":
@@ -96,10 +96,10 @@ def bws_handler(search_term: str) -> List:
                         size = float(size)
                     except:
                         size = "-2"
-                    
+
             drink_link = f"https://bws.com.au/product/{parentcode}/{link}"
             image_link = f"https://edgmedia.bws.com.au/bws/media/products/{image_numb}"
-            
+
             if std_drinks == -1:
                 # search through json to find proper std drinks
                 for partners in drink["Products"]:
@@ -115,13 +115,13 @@ def bws_handler(search_term: str) -> List:
                                 std_drinks = -2
                             break
                 std_drinks = -2
-            
+
             if percent_alcohol == "None":
                 for partners in drink["Products"]:
                     for subsection in partners["AdditionalDetails"]:
                         if subsection["Name"] == "alcohol%":
                             percent_alcohol = subsection["Value"]
-                            
+
             if size == "None":
                 for partners in drink["Products"]:
                     for subsection in partners["AdditionalDetails"]:
@@ -135,38 +135,48 @@ def bws_handler(search_term: str) -> List:
                                 size = size.split("mL")[0]
                             elif "L" in size:
                                 size = str(float(size.split("L")[0]) * 1000)
-                                
+
             if style == "None":
                 for partners in drink["Products"]:
                     for subsection in partners["AdditionalDetails"]:
                         if subsection["Name"] == "standardcategory":
                             style = subsection["Value"]
-                
-            
+
             try:
                 if std_drinks == -1:
                     raise Exception # break to failed
-                
+
                 if item_numb != 1 and std_drinks != -2 and std_drinks != -1:
                     std_drinks = item_numb * std_drinks # account for multiple items in a pack
-                
+
                 price = float(subdrink["Price"]) if subdrink["Price"] else 0.0
                 efficiency = (std_drinks / price) if price > 0 and std_drinks > 0 else 0.0
             except:
                 print("\t", "failed ->", std_drinks, item_numb, subdrink["Price"])
-        
 
             # store as class
-            item = Item(store="bws", brand=subdrink["BrandName"], name=subdrink["Name"].strip(), 
-                        type=style, price=subdrink["Price"], link=drink_link, ml=size, percent=percent_alcohol,
-                        std_drinks=std_drinks, numb_items=item_numb, efficiency=efficiency, image=image_link,
-                        promotion=subdrink['IsOnSpecial'], old_price=subdrink["WasPrice"])
-            
+            item = Item(
+                store="bws",
+                brand=subdrink["BrandName"],
+                name=subdrink["Name"].strip(),
+                type=style,
+                price=subdrink["Price"],
+                link=drink_link,
+                ml=size,
+                percent=percent_alcohol,
+                std_drinks=std_drinks,
+                pack_qty=item_numb,
+                efficiency=efficiency,
+                image=image_link,
+                promotion=subdrink["IsOnSpecial"],
+                old_price=subdrink["WasPrice"],
+            )
+
             result.append(item)
-            
+
     return result        
-    
-        
+
+
 def website_searcher(store: str, category: str) -> str:
     url = ""
     with open("websites.json") as fp:
@@ -175,7 +185,7 @@ def website_searcher(store: str, category: str) -> str:
     return url
 
 
-# MARK: main function 
+# MARK: main function
 def main():
     # get arguments from the command line
     parser = argparse.ArgumentParser(description='scrape drinks from websites')

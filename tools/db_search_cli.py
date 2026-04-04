@@ -37,12 +37,12 @@ def main():
 
         for i, row in enumerate(results[:args.limit]):
             # Row mapping based on table schema in create_connection:
-            # 0:ID, 1:store, 2:brand, 3:name, 4:type, 5:price, 6:link, 7:ml, 8:percent, 9:stdDrinks, 10:efficiency, 11:image, 12:shortimage
+            # 0:ID, 1:store, 2:brand, 3:name, 4:type, 5:price, 6:link, 7:pack_qty, 8:ml, 9:percent, 10:stdDrinks, 11:efficiency, 12:image, 13:shortimage
             store = str(row[1])
             brand = str(row[2])
             name = str(row[3])
             price = f"${row[5]:.2f}"
-            efficiency = f"{row[10]:.4f}"
+            efficiency = f"{row[11]:.4f}"
             
             # Truncate long strings for display
             brand = (brand[:17] + '...') if len(brand) > 20 else brand

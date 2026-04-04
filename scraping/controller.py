@@ -181,10 +181,11 @@ class ScrapingController:
                 if metadata:
                     store = metadata.get("store", retailer_name)
                     link = metadata.get("link")
+                    pack_qty = metadata.get("pack_qty", 1)
                     percent = details.get("percent", 0.0)
                     std_drinks = details.get("std_drinks", 0.0)
                     if link:
-                        update_drink_details(conn, store, link, percent, std_drinks)
+                        update_drink_details(conn, store, link, percent, std_drinks, pack_qty)
                 update_task_status(conn, task_id, 'completed')
                 with self._stats_lock:
                     self._drinks_processed += 1

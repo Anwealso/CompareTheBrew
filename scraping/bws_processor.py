@@ -180,7 +180,7 @@ class BWSProcessor(RetailerProcessor):
                     ml=size,
                     percent=percent_alcohol,
                     std_drinks=std_drinks,
-                    numb_items=item_num,
+                    pack_qty=item_num,
                     efficiency=efficiency,
                     image=image_link,
                     promotion=subdrink.get("IsOnSpecial", False),
