@@ -87,8 +87,21 @@ def get_additional_quality_filters(
     price_field: str = "price",
     std_field: str = "std_drinks",
     size_field: str | None = "size_ml",
+    percent_field: str | None = "percent",
 ) -> list[str]:
-    """Return SQL predicates that skip broken/empty product rows."""
+    """
+    Return SQL predicates to drop rows that look broken or inconsistent.
+
+    Filters applied:
+    1. Text completeness: every configured text field must be non-null and not empty.
+    2. Price validity: price must exist and be positive.
+    3. Standard drinks: `std_drinks` must exist and be positive.
+    4. Size/volume: optional size field must exist and be positive.
+    5. Percent: optional percent field must exist and be positive.
+    6. Volume × ABV vs std drinks: when both size and percent are available, enforce that
+       the physical alcohol quantity implied by size × ABV aligns with the stated std drinks
+       (within a small tolerance built around 0.25 std drinks + 25% of the reported std value).
+    """
     if text_fields is None:
         text_fields = ["name", "brand", "category", "search_text"]
 
@@ -100,6 +113,14 @@ def get_additional_quality_filters(
     conditions.append(f"{std_field} IS NOT NULL AND {std_field} > 0")
     if size_field:
         conditions.append(f"{size_field} IS NOT NULL AND {size_field} > 0")
+    if percent_field:
+        conditions.append(f"{percent_field} IS NOT NULL AND {percent_field} > 0")
+
+    # Reject rows where the stated std_drinks diverges from the implied alcohol quantity.
+    if size_field and percent_field:
+        expected_expr = f"({size_field} * {percent_field} * 0.789 / 1000.0)"  # convert ml + % to grams of EtOH / 10
+        tolerance_expr = f"({std_field} * 0.25 + 0.25)"  # allow +/- max(25% of std_drinks, 0.25)
+        conditions.append(f"ABS({std_field} - {expected_expr}) <= {tolerance_expr}")
 
     return conditions
 
