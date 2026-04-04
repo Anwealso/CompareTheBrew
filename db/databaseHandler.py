@@ -731,40 +731,40 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
 
 def update_drink(conn, drink, newPrice):
     """
-    update priority, begin_date, and end date of a task
-    :param conn:
-    :param drink:
-    :return: project id
+    Update the drink row with the latest scraped values.
     """
     sql = ''' UPDATE drinks
-              SET price = ?, link = ?, image = ?, score = ?, date_created = datetime('now')
+              SET price = ?, link = ?, image = ?, percent = ?, stdDrinks = ?, score = ?, zero_alc = ?, date_created = datetime('now')
               WHERE store = ?
               AND link = ?
               AND pack_qty = ? '''
 
-    result = get_drinks_stddrinks(conn, drink)
-    
-    # Explicit checks for False (not found) vs 0.0 (found but std_drinks is 0)
-    if result is False:
-        # Drink not found in database
-        print("failed to update drink... here are the details")
-        try:
-            print(drink)
-        except:
-            print("couldnt print drink!")
-    else:
-        # Drink found - result is the std_drinks value (can be 0.0)
-        std_drinks = float(result) if result is not None else 0.0
-        cur = conn.cursor()
-        try:
-            price = float(newPrice) if newPrice else 0.0
-        except (ValueError, TypeError):
-            price = 0.0
-        pack_qty = _get_drink_pack_qty(drink)
-        new_score = calculate_score(price, std_drinks, pack_qty)
-        cur.execute(sql, (
-            newPrice, drink.link, drink.image, new_score, drink.store, drink.link, pack_qty))
-        conn.commit()
+    cur = conn.cursor()
+    try:
+        price = float(newPrice) if newPrice else 0.0
+    except (ValueError, TypeError):
+        price = 0.0
+
+    pack_qty = _get_drink_pack_qty(drink)
+    try:
+        std_drinks = float(drink.stdDrinks) if drink.stdDrinks is not None else 0.0
+    except (ValueError, TypeError):
+        std_drinks = 0.0
+    try:
+        percent = float(drink.percent) if drink.percent is not None else 0.0
+    except (ValueError, TypeError):
+        percent = 0.0
+
+    zero_alc_flag = 0
+    if percent <= 0.5:
+        zero_alc_flag = 1
+
+    new_score = calculate_score(price, std_drinks, pack_qty)
+
+    cur.execute(sql, (
+        newPrice, drink.link, drink.image, percent, std_drinks, new_score, zero_alc_flag,
+        drink.store, drink.link, pack_qty))
+    conn.commit()
 
 
 def is_drink_in_table(conn, drink):
@@ -789,29 +789,6 @@ def is_drink_in_table(conn, drink):
     else:
         return False
 
-
-def get_drinks_stddrinks(conn, drink):
-    """
-    get the standard drinks of a drink
-    :param conn:
-    :param drink:
-    :return: standard drinks value or False if not found
-    """
-    sql = ''' SELECT * FROM drinks
-              WHERE store = ?
-              AND link = ?
-              AND pack_qty = ?
-              ORDER BY ID DESC
-              LIMIT 1
-              '''
-    cur = conn.cursor()
-    pack_qty = _get_drink_pack_qty(drink)
-    cur.execute(sql, (drink.store, drink.link, pack_qty))
-
-    rows = cur.fetchall()
-    if rows:
-        return rows[0][9]
-    return False
 
 
 def get_drink_by_store_link(conn, store, link, pack_qty=1):
