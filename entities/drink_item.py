@@ -15,6 +15,7 @@ class DrinkItem:
         image,
         promotion,
         old_price,
+        zero_alc=False,
     ):
         self.store = store
         self.brand = brand
@@ -30,6 +31,7 @@ class DrinkItem:
         self.image = image
         self.promotion = promotion
         self.old_price = old_price
+        self.zero_alc = bool(zero_alc)
 
     def __lt__(self, other):
         return (self.score or float("inf")) < (other.score or float("inf"))
@@ -56,3 +58,5 @@ class DrinkItem:
 #     def __init__(self):
 #         self._lock = threading.Lock()
 #         self.collection = []
+
+Item = DrinkItem

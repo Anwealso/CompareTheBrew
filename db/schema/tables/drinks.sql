@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS "drinks" (
     "shortimage" TEXT,
     "search_text" TEXT,
     "location" TEXT,
-    "date_created" TEXT DEFAULT CURRENT_TIMESTAMP
+    "date_created" TEXT DEFAULT CURRENT_TIMESTAMP,
+    "zero_alc" INTEGER DEFAULT 0
 );
 
 -- Indexes for drinks table

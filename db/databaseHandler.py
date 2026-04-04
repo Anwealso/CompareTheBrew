@@ -90,8 +90,8 @@ def create_entry(conn, drink_data):
     from datetime import datetime
     now = datetime.now().isoformat()
 
-    sql = ''' INSERT INTO drinks(store,brand,name,type,price,link,pack_qty,ml,percent,stdDrinks,score,image,search_text,date_created)
-              VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?) '''
+    sql = ''' INSERT INTO drinks(store,brand,name,type,price,link,pack_qty,ml,percent,stdDrinks,score,image,search_text,zero_alc,date_created)
+              VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) '''
     cur = conn.cursor()
     cur.execute(sql, drink_data + (now,))
     return cur.lastrowid
@@ -516,7 +516,7 @@ def select_image_links(conn):
     return rows
 
 
-def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="", store="", scraped_age=None):
+def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="", store="", scraped_age=None, zero_alc=False):
     """Select all drinks that contain any of the search keywords given in their name, brand or type attributes
     
     Args:
@@ -527,6 +527,7 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
         price_max: maximum price filter (optional)
         store: retailer filter - 'all' or specific store like 'bws', 'liquorland' (optional)
         scraped_age: max age in days to filter by date_created (optional)
+        zero_alc: when True, only include zero-alcohol drinks (drinks.percent == 0 or zero_alc column)
     Returns:
         A list of rows from the drinks table matching the search terms
     """
@@ -590,6 +591,15 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
     if scraped_age is not None and scraped_age != "":
         scraped_age_filter = f" AND date_created >= datetime('now', '-{scraped_age} days')"
 
+    zero_alc_filter = ""
+    if zero_alc:
+        cur.execute("PRAGMA table_info(drinks)")
+        columns = [row[1] for row in cur.fetchall()]
+        if "zero_alc" in columns:
+            zero_alc_filter = " AND zero_alc = 1"
+        else:
+            zero_alc_filter = " AND percent = 0"
+
     # Deduplication subquery - keeps only the most recent row for each unique drink
     # Main attributes: name, brand, type, ml, percent, store (excluding promotional text, location, etc.)
     # Using MAX(id) as proxy for most recent (auto-increment aligns with date_created)
@@ -616,7 +626,7 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
                 SELECT MAX(id) FROM drinks
                 WHERE search_text LIKE '%{term}%'{quality_clause}
                 GROUP BY name, brand, type, ml, percent, store, pack_qty
-            ){quality_clause}{price_filter}{scraped_age_filter}{store_filter} ORDER BY {order_clause}
+            ){quality_clause}{price_filter}{scraped_age_filter}{store_filter}{zero_alc_filter} ORDER BY {order_clause}
         """
         cur.execute(dedupe_sql)
 
@@ -839,9 +849,10 @@ def dbhandler(conn, list, mode, populate, item_callback=None, start_index=0):
                 search_text = build_search_text(drink.name, drink.brand, drink.type)
                 
                 pack_qty = _get_drink_pack_qty(drink)
+                zero_alc_flag = 1 if getattr(drink, "zero_alc", False) else 0
                 drink_data = (
                     drink.store, drink.brand, drink.name, drink.type, price, drink.link, pack_qty,
-                    ml, percent, std_drinks, score, drink.image, search_text)
+                    ml, percent, std_drinks, score, drink.image, search_text, zero_alc_flag)
                 create_entry(conn, drink_data)
                 inserted = True
             except Exception as e:
@@ -867,9 +878,10 @@ def dbhandler(conn, list, mode, populate, item_callback=None, start_index=0):
                         search_text = build_search_text(drink.name, drink.brand, drink.type)
                         
                         pack_qty = _get_drink_pack_qty(drink)
+                        zero_alc_flag = 1 if getattr(drink, "zero_alc", False) else 0
                         drink_data = (drink.store, drink.brand, drink.name, drink.type, price, drink.link, pack_qty,
                                     ml, percent, std_drinks, score,
-                                    drink.image, search_text)
+                                    drink.image, search_text, zero_alc_flag)
                         create_entry(conn, drink_data)
                         inserted = True
                     except Exception as e:
@@ -895,11 +907,17 @@ def update_drink_details(conn, store, link, percent, std_drinks, pack_qty=1):
     row = cur.fetchone()
     price = float(row[0]) if row and row[0] is not None else 0.0
     score = calculate_score(price, std_drinks)
+    zero_alc_flag = 0
+    try:
+        if percent is not None and float(percent) <= 0.5:
+            zero_alc_flag = 1
+    except (ValueError, TypeError):
+        zero_alc_flag = 0
     cur.execute("""
         UPDATE drinks
-        SET percent = ?, stdDrinks = ?, score = ?
+        SET percent = ?, stdDrinks = ?, score = ?, zero_alc = ?
         WHERE store = ? AND link = ? AND pack_qty = ?
-    """, (percent, std_drinks, score, store, link, pack_qty))
+    """, (percent, std_drinks, score, zero_alc_flag, store, link, pack_qty))
     conn.commit()
 
 

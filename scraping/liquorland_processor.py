@@ -345,6 +345,8 @@ class LiquorlandProcessor(RetailerProcessor):
                 percent = 0.0
                 std_drinks = 0.0
 
+                zero_alc_flag = self.is_zero_alc(percent)
+
                 item = DrinkItem(
                     store=self.store_id,
                     brand=brand,
@@ -360,6 +362,7 @@ class LiquorlandProcessor(RetailerProcessor):
                     image=image,
                     promotion=bool(promotion_text),
                     old_price=old_price,
+                    zero_alc=zero_alc_flag,
                 )
                 result.append(item)
             except Exception as e:

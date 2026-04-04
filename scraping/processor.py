@@ -42,6 +42,13 @@ class RetailerProcessor(ABC):
             except: pass
         return 0.0
 
+    def is_zero_alc(self, percent: any) -> bool:
+        """Return True when the percent is defined and <= 0.5."""
+        try:
+            return float(percent or 0.0) <= 0.5
+        except (ValueError, TypeError):
+            return False
+
     def fetch_url(self, url: str) -> Optional[str]:
         """
         Fetches the content of a URL.

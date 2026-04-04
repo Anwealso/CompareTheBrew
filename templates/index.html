@@ -102,33 +102,33 @@
           </a>
           <a
             href="/search?q=beer&order=score-asc"
+            data-base-href="/search?q=beer&order=score-asc"
             class="buttonSort"
           >
             Beer
           </a>
           <a
             href="/search?q=wine&order=score-asc"
+            data-base-href="/search?q=wine&order=score-asc"
             class="buttonSort"
           >
             Wine
           </a>
           <a
             href="/search?q=spirits&order=score-asc"
+            data-base-href="/search?q=spirits&order=score-asc"
             class="buttonSort"
           >
             Spirits
           </a>
-          <a
-            href="#"
-            class="buttonSort buttonSortDisabled"
-            aria-disabled="true"
-            title="Zero-alcohol search coming soon"
-          >
+          <label class="zero-alc-label" for="zeroAlcHomeCheckbox">
+            <input type="checkbox" id="zeroAlcHomeCheckbox" />
             Zero-alcohol
-          </a>
+          </label>
         </div>
 
         <form id="homepageSearch" class="query" method="POST">
+          <input type="hidden" name="zero-alc" id="homeZeroAlcInput" value="" />
           <i
             id="searchButton"
             class="material-icons"

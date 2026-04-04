@@ -22,6 +22,9 @@
     placeholder="Search..."
     value="{{ search_terms if search_terms else '' }}"
   />
+  {% if zero_alc_filter %}
+  <input type="hidden" name="zero-alc" value="true" />
+  {% endif %}
   <input
     type="hidden"
     name="order"
@@ -51,51 +54,59 @@
       Premix
     </a>
     <a
-      href="/search?q=beer&order={{ current_order }}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
+      href="/search?q=beer&order={{ current_order }}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}{{ zero_alc_query }}"
       class="buttonSort {% if normalized_search == 'beer' %}buttonSortActive{% endif %}"
     >
       Beer
     </a>
     <a
-      href="/search?q=wine&order={{ current_order }}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
+      href="/search?q=wine&order={{ current_order }}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}{{ zero_alc_query }}"
       class="buttonSort {% if normalized_search == 'wine' %}buttonSortActive{% endif %}"
     >
       Wine
     </a>
     <a
-      href="/search?q=spirits&order={{ current_order }}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
+      href="/search?q=spirits&order={{ current_order }}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}{{ zero_alc_query }}"
       class="buttonSort {% if normalized_search == 'spirits' %}buttonSortActive{% endif %}"
     >
       Spirits
     </a>
-    <a
-      href="#"
-      class="buttonSort buttonSortDisabled"
-      aria-disabled="true"
-      title="Zero-alcohol search coming soon"
-    >
-      Zero-alcohol
-    </a>
+    <div class="zero-alc-faux-button">
+      <label class="zero-alc-label zero-alc-toggle" for="zeroAlcCheckbox">
+        <input
+          type="checkbox"
+          id="zeroAlcCheckbox"
+          {% if zero_alc_filter %}checked{% endif %}
+        />
+        Zero-alcohol only
+      </label>
+    </div>
   </div>
   <div id="orderButtons" class="optionItem">
     <b class="sortbytext">Sort by:</b>
+    {% if not zero_alc_filter %}
     <a
-      href="/search?q={{ search_terms }}&order=score-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
+      id="bestscore"
+      href="/search?q={{ search_terms }}&order=score-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}{{ zero_alc_query }}"
       class="buttonSort {% if order == 'score-asc' or not order %}buttonSortActive{% endif %}"
       >Best Score</a
     >
     <a
-      href="/search?q={{ search_terms }}&order=score-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
+      id="worstscore"
+      href="/search?q={{ search_terms }}&order=score-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}{{ zero_alc_query }}"
       class="buttonSort {% if order == 'score-desc' %}buttonSortActive{% endif %}"
       >Worst Score</a
     >
+    {% endif %}
     <a
-      href="/search?q={{ search_terms }}&order=price-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
+      id="bestprice"
+      href="/search?q={{ search_terms }}&order=price-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}{{ zero_alc_query }}"
       class="buttonSort {% if order == 'price-asc' %}buttonSortActive{% endif %}"
       >Best Price</a
     >
     <a
-      href="/search?q={{ search_terms }}&order=size-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
+      id="volume"
+      href="/search?q={{ search_terms }}&order=size-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}{{ zero_alc_query }}"
       class="buttonSort {% if order == 'size-desc' %}buttonSortActive{% endif %}"
       >Greatest Quantity</a
     >

@@ -437,6 +437,30 @@ input[type="search"]::-webkit-search-results-decoration {
   margin-right: 4px;
 }
 
+.zero-alc-label,
+.zero-alc-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: bold;
+  font-size: 16px;
+  color: var(--color-gold);
+  cursor: pointer;
+}
+
+.zero-alc-label input,
+.zero-alc-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-maroon);
+}
+
+.zero-alc-faux-button {
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+}
+
 /* Size variants used on results/top50 pages */
 /* .bigSearch {
   font-size: 44px;
@@ -733,6 +757,10 @@ input[type="search"]::-webkit-search-results-decoration {
   font-size: 40px;
   color: var(--color-orange);
   position: relative;
+}
+
+.zero-alc-mode .scoreContainer {
+  visibility: hidden;
 }
 
 .scoreLabel {

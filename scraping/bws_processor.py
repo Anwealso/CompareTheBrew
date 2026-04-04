@@ -170,6 +170,7 @@ class BWSProcessor(RetailerProcessor):
                 if self.progress_callback:
                     self.progress_callback(item_name)
 
+                zero_alc_flag = self.is_zero_alc(percent_alcohol)
                 item = DrinkItem(
                     store="bws",
                     brand=subdrink.get("BrandName", "Unknown"),
@@ -185,6 +186,7 @@ class BWSProcessor(RetailerProcessor):
                     image=image_link,
                     promotion=subdrink.get("IsOnSpecial", False),
                     old_price_cents=subdrink.get("Wasprice_cents", 0),
+                    zero_alc=zero_alc_flag,
                 )
                 result.append(item)
 

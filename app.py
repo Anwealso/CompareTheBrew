@@ -62,6 +62,18 @@ def inject_today():
 def inject_feature_flags():
     return {'flag_show_staleness': app.config.get('FLAG_SHOW_STALENESS', True)}
 
+
+def parse_zero_alc_flag(value):
+    """
+    Normalize a request value to a boolean indicating whether the zero-alcohol
+    filter is active.
+    """
+    if value is None:
+        return False
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() in ("true", "1", "yes", "on")
+
 @app.route("/")
 def displaySearchPage():
     """
@@ -81,9 +93,13 @@ def postSearchTerms():
     # Get the search terms inputted by the user
     searchTerms = request.form['searchTerms']
     print("SEARCH TERMS ENTERED BY USER: " + searchTerms)
+    zero_alc_flag = parse_zero_alc_flag(request.form.get("zero-alc"))
 
     # Send the user to the results page
-    return redirect(f"/search?q={searchTerms}&order=score-asc")
+    url = f"/search?q={searchTerms}&order=score-asc"
+    if zero_alc_flag:
+        url += "&zero-alc=true"
+    return redirect(url)
 
 ORDER_MAP = {
     "score-desc": "DESC_score",
@@ -120,6 +136,7 @@ def search_page():
     price_max = request.args.get("price_max", "")
     store_filter = request.args.get("store", "all")
     scraped_age = request.args.get("scraped_age", "")
+    zero_alc_filter = parse_zero_alc_flag(request.args.get("zero-alc", ""))
     if scraped_age is not None and scraped_age != "":
         try:
             scraped_age = int(scraped_age)
@@ -132,7 +149,9 @@ def search_page():
     sort_key = ORDER_MAP.get(order_param, "ASC_score")
 
     conn = db.create_connection()
-    all_results = db.select_drink_by_smart_search(conn, search_terms, sort_key, price_min, price_max, store_filter, scraped_age)
+    all_results = db.select_drink_by_smart_search(
+        conn, search_terms, sort_key, price_min, price_max, store_filter, scraped_age, zero_alc_filter
+    )
     
     # Insert ads into the full list before paginating, or just into the page?
     # Usually better to insert ads into the full list so they stay in consistent positions,
@@ -164,7 +183,9 @@ def search_page():
         price_min=price_min,
         price_max=price_max,
         store_filter=store_filter,
-        scraped_age=scraped_age
+        scraped_age=scraped_age,
+        zero_alc_filter=zero_alc_filter,
+        zero_alc_query="&zero-alc=true" if zero_alc_filter else ""
     )
 
 
@@ -275,7 +296,11 @@ def search_post():
     """Handle search form submission."""
     search_terms = request.form.get("searchTerms", "")
     order = request.form.get("order", "score-asc")
-    return redirect(f"/search?q={search_terms}&order={order}")
+    zero_alc_flag = parse_zero_alc_flag(request.form.get("zero-alc"))
+    url = f"/search?q={search_terms}&order={order}"
+    if zero_alc_flag:
+        url += "&zero-alc=true"
+    return redirect(url)
 
 
 # Route for About Us page
