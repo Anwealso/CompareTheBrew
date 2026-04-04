@@ -15,6 +15,8 @@
     {% if result[1] %}
     <div class="retailer-badge">{{ result[1] }}</div>
     {% endif %}
+    <!-- TODO DEBUG_PACK_QTY: temporary pill showing pack_qty for debugging; remove later. -->
+    <div class="pack-qty-badge">qty:{{ result[7] if result[7] is not none else '?' }}</div>
     {% if flag_show_staleness %}
       {% set staleness = result[16]|staleness %}
       <div class="scraped-badge {% if staleness.class %}{{ staleness.class }}{% else %}freshness-unknown{% endif %}">
