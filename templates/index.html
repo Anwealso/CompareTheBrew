@@ -93,25 +93,39 @@
 
         <div id="homepageCategoryButtons" class="optionItem">
           <a
-            href="/search?q={{ search_terms }}&order=score-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
-            class="buttonSort {% if order == 'score-asc' or not order %}buttonSortActive{% endif %}"
-            >Best Score</a
+            href="#"
+            class="buttonSort buttonSortDisabled"
+            aria-disabled="true"
+            title="Premix search coming soon"
           >
+            Premix
+          </a>
           <a
-            href="/search?q={{ search_terms }}&order=score-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
-            class="buttonSort {% if order == 'score-desc' %}buttonSortActive{% endif %}"
-            >Worst Score</a
+            href="/search?q=beer&order=score-asc"
+            class="buttonSort"
           >
+            Beer
+          </a>
           <a
-            href="/search?q={{ search_terms }}&order=price-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
-            class="buttonSort {% if order == 'price-asc' %}buttonSortActive{% endif %}"
-            >Best Price</a
+            href="/search?q=wine&order=score-asc"
+            class="buttonSort"
           >
+            Wine
+          </a>
           <a
-            href="/search?q={{ search_terms }}&order=size-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
-            class="buttonSort {% if order == 'size-desc' %}buttonSortActive{% endif %}"
-            >Greatest Quantity</a
+            href="/search?q=spirits&order=score-asc"
+            class="buttonSort"
           >
+            Spirits
+          </a>
+          <a
+            href="#"
+            class="buttonSort buttonSortDisabled"
+            aria-disabled="true"
+            title="Zero-alcohol search coming soon"
+          >
+            Zero-alcohol
+          </a>
         </div>
 
         <form id="homepageSearch" class="query" method="POST">

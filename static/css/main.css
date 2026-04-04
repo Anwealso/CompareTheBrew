@@ -346,6 +346,14 @@ input[type="search"]::-webkit-search-results-decoration {
   color: white;
 }
 
+.buttonSortDisabled {
+  background-color: var(--color-bg);
+  color: var(--color-light);
+  opacity: 0.7;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 #priceRange {
   /* margin-top: 11px; */
   font-size: 16px;
