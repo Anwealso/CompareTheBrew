@@ -91,12 +91,30 @@
       <div id="main">
         <div id="question">What drink are you looking for?</div>
 
-        <!-- <form method="POST">
-            <input name="text">
-            <input type="submit">
-        </form> -->
+        <div id="homepageCategoryButtons" class="optionItem">
+          <a
+            href="/search?q={{ search_terms }}&order=score-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
+            class="buttonSort {% if order == 'score-asc' or not order %}buttonSortActive{% endif %}"
+            >Best Score</a
+          >
+          <a
+            href="/search?q={{ search_terms }}&order=score-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
+            class="buttonSort {% if order == 'score-desc' %}buttonSortActive{% endif %}"
+            >Worst Score</a
+          >
+          <a
+            href="/search?q={{ search_terms }}&order=price-asc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
+            class="buttonSort {% if order == 'price-asc' %}buttonSortActive{% endif %}"
+            >Best Price</a
+          >
+          <a
+            href="/search?q={{ search_terms }}&order=size-desc{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if store_filter %}&store={{ store_filter }}{% endif %}{% if scraped_age is not none and scraped_age != '' %}&scraped_age={{ scraped_age }}{% endif %}"
+            class="buttonSort {% if order == 'size-desc' %}buttonSortActive{% endif %}"
+            >Greatest Quantity</a
+          >
+        </div>
 
-        <form id="query" method="POST">
+        <form id="homepageSearch" class="query" method="POST">
           <i
             id="searchButton"
             class="material-icons"
