@@ -33,6 +33,7 @@ Pygments==2.19.2
 PySocks==1.7.1
 psycopg2-binary==2.9.9
 python-dotenv==1.2.2
+gunicorn==21.2.0
 RapidFuzz==3.14.3
 requests==2.32.5
 rich==14.3.3
