@@ -4,8 +4,6 @@ Database backend module that handles connection to either SQLite (local) or Post
 
 import os
 import sqlite3
-import psycopg2
-import psycopg2.extras
 from pathlib import Path
 from config import Config
 
@@ -24,6 +22,7 @@ def _create_sqlite_connection():
 
 def _create_postgres_connection():
     """Create a PostgreSQL connection to Supabase."""
+    import psycopg2
     conn_string = Config.SUPABASE_DB_URL
     if not conn_string:
         raise ValueError("SUPABASE_DB_URL environment variable is not set")
