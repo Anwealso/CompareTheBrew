@@ -431,6 +431,17 @@ def track_click():
     return jsonify({"success": False}), 400
 
 
+@app.route("/health")
+def health_check():
+    """Health check endpoint for Render and load balancers."""
+    try:
+        conn = db.create_connection()
+        conn.close()
+        return jsonify({"status": "healthy", "database": "connected"}), 200
+    except Exception as e:
+        return jsonify({"status": "unhealthy", "database": "error", "error": str(e)}), 503
+
+
 if __name__ == '__main__':
     setup_server_logging()
     logging.info("Starting web server...")
