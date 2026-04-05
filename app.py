@@ -442,6 +442,46 @@ def health_check():
         return jsonify({"status": "unhealthy", "database": "error", "error": str(e)}), 503
 
 
+@app.route("/admin/metrics")
+def admin_metrics():
+    """Simple admin dashboard to view metrics."""
+    from observability import AbstractMetric
+    conn = db.create_connection()
+    cur = conn.cursor()
+    
+    metrics_data = []
+    for metric in AbstractMetric.get_metrics():
+        metric_name = metric["metric_name"]
+        has_multiple_keys = metric["has_multiple_keys"]
+        
+        if has_multiple_keys:
+            cur.execute(
+                "SELECT key, value FROM metrics WHERE metric_name = ? ORDER BY value DESC",
+                (metric_name,)
+            )
+            rows = cur.fetchall()
+            values = [{"key": str(r[0]) if r[0] else "(default)", "value": r[1]} for r in rows]
+            total = sum(r[1] for r in rows)
+        else:
+            cur.execute(
+                "SELECT value FROM metrics WHERE metric_name = ? AND key IS NULL",
+                (metric_name,)
+            )
+            row = cur.fetchone()
+            values = []
+            total = row[0] if row and row[0] else 0
+        
+        metrics_data.append({
+            "name": metric_name,
+            "has_multiple_keys": has_multiple_keys,
+            "total": total,
+            "values": values[:20]
+        })
+    
+    conn.close()
+    return render_template("admin/metrics.html", metrics=metrics_data)
+
+
 if __name__ == '__main__':
     setup_server_logging()
     logging.info("Starting web server...")
