@@ -170,7 +170,7 @@ def search_page():
     if page_results:
         page_results = insert_ads_amongst_results(page_results)
 
-    metrics(search_terms)
+    log_request(search_terms)
 
     return render_template(
         "results.html",
@@ -212,7 +212,7 @@ def insert_ads_amongst_results(tempResults):
     return tempResults
 
 
-def metrics(searchTerms):
+def log_request(searchTerms):
     try:
         TOQ = datetime.now().strftime('%H:%M:%S %Y-%m-%d')
         print(TOQ)
@@ -246,7 +246,7 @@ def metrics(searchTerms):
         print(lat)
         print(long)
 
-        metconn = db.create_metrics_connection()
+        metconn = db.create_request_logs_connection()
         metric = (
             str(IP), str(query), str(TOQ), str(country), str(region), str(city), float(lat), float(long), str(hostname),
             str(org))
@@ -267,8 +267,8 @@ def display_top50_page():
     tempResults = db.select_drink_by_smart_search(conn, "beer", 'ASC_score')
     tempResults = insert_ads_amongst_results(tempResults[:50])
 
-    # gather metrics info
-    metrics(["beer"])
+    # log request info
+    log_request(["beer"])
     return render_template('top50.html', results=tempResults)
 @app.route("/top50/wine")
 def display_top50wine_page():
@@ -277,8 +277,8 @@ def display_top50wine_page():
     tempResults = db.select_drink_by_smart_search(conn, "wine", 'ASC_score')
     tempResults = insert_ads_amongst_results(tempResults[:50])
 
-    # gather metrics info
-    metrics(["wine"])
+    # log request info
+    log_request(["wine"])
     return render_template('top50.html', results=tempResults)
 @app.route("/top50/spirits")
 def display_top50spirits_page():
@@ -287,8 +287,8 @@ def display_top50spirits_page():
     tempResults = db.select_drink_by_smart_search(conn, "spirits", 'ASC_score')
     tempResults = insert_ads_amongst_results(tempResults[:50])
 
-    # gather metrics info
-    metrics(["spirits"])
+    # log request info
+    log_request(["spirits"])
     return render_template('top50.html', results=tempResults)
 # Handle search form submission from results page
 @app.route("/search", methods=["POST"])
@@ -334,8 +334,8 @@ def api_handler():
     # Get results the new way - by querying the database
     conn = db.create_connection()  # connect to the database
     tempResults = []
-    # gather metrics info
-    metrics(term)
+    # log request info
+    log_request([term])
 
     if order == "score_desc":
         tempResults = db.select_drink_by_smart_search(conn, term, 'DESC_score')

@@ -13,7 +13,7 @@ import operator
 import json
 from datetime import datetime
 import time
-
+from logging import Metric, ListMetric
 
 def _get_drink_pack_qty(drink) -> int:
     """Return the pack_qty attribute of the drink, defaulting to 1."""
@@ -156,12 +156,12 @@ def create_connection():
     return conn
 
 
-def create_metrics_connection():
+def create_request_logs_connection():
     conn = None
     try:
         conn = sqlite3.connect(str(Path(__file__).parent / "database.db"))
         ensure_tables(conn)
-        print("connected to metrics")
+        print("connected to request logs")
     except Error as e:
         print(e)
 
@@ -957,49 +957,3 @@ def delete_all(conn):
     cur = conn.cursor()
     cur.execute(sql)
     conn.commit()
-
-
-# ------------------ metrics section ------------------
-
-def create_metric_entry(conn, task):
-    """
-    Create a new task
-    :param conn:
-    :param task:
-    :return:
-    """
-    sql = """ INSERT INTO metrics(IP,query,datetime,country,region,city,lat,long,hostname,org)
-              VALUES(?,?,?,?,?,?,?,?,?,?) """
-    cur = conn.cursor()
-    cur.execute(sql, task)
-    conn.commit()
-    ID = cur.lastrowid
-    conn.close()
-    return ID
-
-
-def total_search(conn):
-    sql = 'SELECT * FROM metrics'
-    cur = conn.cursor()
-    cur.execute(sql)
-    rows = cur.fetchall()
-    return len(rows)
-
-
-def get_metric_most_common_keywords():
-    # Get the frequency of all searched keywords (by descending frequency)
-    # TODO: Implement
-
-def get_metric_search_count():
-    # Get the frequency of all searched keywords (by descending frequency)
-    # TODO: Implement
-
-def most_searched(conn):
-    sql = 'SELECT * FROM metrics'
-    cur = conn.cursor()
-    cur.execute(sql)
-    rows = cur.fetchall()
-    results = list()
-    for row in rows:
-        results.append(row[2])
-    return most_common(results)

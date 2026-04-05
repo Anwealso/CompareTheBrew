@@ -12,6 +12,6 @@ venv/
 .env
 db/archive/
 *.db
-logs/
+logging/logs/
 *.log
 temp/

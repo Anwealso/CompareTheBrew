@@ -1,6 +1,6 @@
--- Metrics table
+-- Request logs table
 -- Tracks user search queries and location data
-CREATE TABLE IF NOT EXISTS "metrics" (
+CREATE TABLE IF NOT EXISTS "request_logs" (
     "ID" INTEGER PRIMARY KEY AUTOINCREMENT,
     "IP" TEXT,
     "query" TEXT,

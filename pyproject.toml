@@ -17,7 +17,7 @@ dependencies = [
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["db*", "scripts*", "search*"]
-exclude = ["logs*", "static*", "templates*", "scraping*"]
+exclude = ["logging/logs*", "static*", "templates*", "scraping*"]
 
 [tool.black]
 line-length = 79
