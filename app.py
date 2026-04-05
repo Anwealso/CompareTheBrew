@@ -152,7 +152,7 @@ def search_page():
         conn, search_terms, sort_key, price_min, price_max, store_filter, scraped_age, zero_alc_filter
     )
 
-    _record_search_metrics(search_terms, order_param, price_min, price_max, store_filter, scraped_age, zero_alc_filter)
+    record_search_metrics(search_terms, order_param, price_min, price_max, store_filter, scraped_age, zero_alc_filter)
     
     # Insert ads into the full list before paginating, or just into the page?
     # Usually better to insert ads into the full list so they stay in consistent positions,
@@ -213,7 +213,7 @@ def insert_ads_amongst_results(tempResults):
     return tempResults
 
 
-def _record_search_metrics(search_terms, order_param, price_min, price_max, store_filter, scraped_age, zero_alc_filter):
+def record_search_metrics(search_terms, order_param, price_min, price_max, store_filter, scraped_age, zero_alc_filter):
     try:
         total_searches = Metric("total_searches")
         total_searches.increment()
