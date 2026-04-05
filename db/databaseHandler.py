@@ -944,16 +944,3 @@ def delete_task(conn, name, brand, store, type):
     cur = conn.cursor()
     cur.execute(sql, (name, brand, store, type))
     conn.commit()
-
-
-def delete_all(conn):
-    """
-        Delete a task by task id
-        :param conn:  Connection to the SQLite database
-        :param id: id of the task
-        :return:
-        """
-    sql = 'DELETE FROM drinks'
-    cur = conn.cursor()
-    cur.execute(sql)
-    conn.commit()

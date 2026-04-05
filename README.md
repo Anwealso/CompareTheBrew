@@ -182,6 +182,46 @@ Duplicate cleanup via `scripts/dedup_drinks_by_link.py` respects `pack_qty` by g
 - SQLite3
 - Black (for code formatting)
 
+## Metrics System
+The project includes a metrics logging system for tracking application events.
+
+### Database Schema
+The `metrics` table stores counters with optional key-based tracking:
+- `metric_name`: TEXT NOT NULL
+- `key`: TEXT (NULL for single metrics, string for keyed metrics)
+- `value`: INTEGER DEFAULT 0
+
+### Classes
+
+**AbstractMetric** - Base class with static registry of all metrics:
+```python
+from logging import AbstractMetric
+AbstractMetric.get_metrics()  # Returns list of registered metrics
+```
+
+**Metric** - For single-value metrics (e.g., click counts):
+```python
+from logging import Metric
+clicks = Metric("num_clicks")
+clicks.increment()   # +1 to default row
+clicks.decrement()  # -1 from default row
+clicks.get_value()  # returns current value
+```
+
+**ListMetric** - For multi-key metrics (e.g., search term frequency):
+```python
+from logging import ListMetric
+search_terms = ListMetric("search_keyword_frequency")
+search_terms.increment("beer")      # +1 for key "beer"
+search_terms.decrement("beer")     # -1 for key "beer"
+search_terms.get_value("beer")    # get value for specific key
+search_terms.get_all_keys()       # returns dict of all keys/values
+```
+
+Currently registered:
+- `num_clicks` (single)
+- `search_keyword_frequency` (multi-key)
+
 ## Code Formatting
 This project uses [Black](https://github.com/psf/black) for Python code formatting.
 
