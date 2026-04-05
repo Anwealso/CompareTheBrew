@@ -275,6 +275,7 @@ def run_scraping_jobs(args, controller):
     
     total_completed = 0
     total_discovered = 0
+    total_drinks_finalized = 0
     current_run_id = None
     
     for store in stores:
@@ -351,12 +352,17 @@ def run_scraping_jobs(args, controller):
         event_queue = controller.start_run(store, limit=limit, run_id=current_run_id, num_workers=num_workers)
         summary = monitor_run_progress(event_queue, store, limit)
         if summary:
-            total_completed += summary.get("pages", 0)
-            console.print(f"\n[bold green]Completed {summary.get('pages', 0)} page tasks "
-                          f"(detail updates: {summary.get('details', 0)}) for {store}[/bold green]")
+            pages_completed = summary.get("pages", 0)
+            details_completed = summary.get("details", 0)
+            drinks_finalized = summary.get("drinks", 0)
+            total_completed += pages_completed + details_completed
+            total_drinks_finalized += drinks_finalized
+            console.print(f"\n[bold green]Completed {pages_completed} page tasks "
+                          f"and {details_completed} drink-detail tasks "
+                          f"({drinks_finalized} drinks finalized) for {store}[/bold green]")
         conn.close()
     
-    return total_completed, total_discovered
+    return total_completed, total_discovered, total_drinks_finalized
 
 
 def main():
@@ -520,8 +526,9 @@ Category options: beer, wine, spirits, premix
     interrupted = False
     reset_count = 0
     completed = discovered = 0
+    drinks_finalized = 0
     try:
-        completed, discovered = run_scraping_jobs(args, controller)
+        completed, discovered, drinks_finalized = run_scraping_jobs(args, controller)
     except KeyboardInterrupt:
         interrupted = True
         console.print("\n[bold yellow]Scraping interrupted by user. Resetting claimed tasks...[/bold yellow]")
@@ -536,7 +543,8 @@ Category options: beer, wine, spirits, premix
     print(f"\n{'='*60}")
     print(f"Scraping run complete!")
     print(f"Tasks discovered: {discovered}")
-    print(f"Tasks completed: {completed}")
+    print(f"Tasks completed: {completed} (page tasks + drink-detail tasks)")
+    print(f"Drinks finalized: {drinks_finalized}")
     print(f"{'='*60}")
 
 
