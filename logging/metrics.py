@@ -35,7 +35,6 @@ from pathlib import Path
 
 class AbstractMetric:
     METRICS = [
-        {"metric_name": "num_clicks", "has_multiple_keys": False},
         {"metric_name": "search_keyword_frequency", "has_multiple_keys": True},
     ]
 

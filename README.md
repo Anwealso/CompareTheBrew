@@ -219,7 +219,6 @@ search_terms.get_all_keys()       # returns dict of all keys/values
 ```
 
 Currently registered:
-- `num_clicks` (single)
 - `search_keyword_frequency` (multi-key)
 
 ## Code Formatting
