@@ -1,19 +1,25 @@
 from config import Config
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import current_app
 from flask import Flask
 from flask import jsonify
 from flask import redirect
 from flask import render_template
 from flask import request
-from observability import Metric, ListMetric
+from observability import Metric, ListMetric, setup_server_logging
 from urllib.request import urlopen
 import argparse
 import db.databaseHandler as db
 import ipinfo
 import json
+import logging
+import os
 import random
 import re
+from pathlib import Path
+
+LOG_DIR = Path(__file__).parent / "logging" / "logs" / "web_server_logs"
+
 
 # Create a new flask application
 app = Flask(__name__)
@@ -428,6 +434,8 @@ def track_click():
 
 
 if __name__ == '__main__':
+    setup_server_logging()
+    logging.info("Starting web server...")
     parser = argparse.ArgumentParser()
     parser.add_argument('--port', type=int, default=80, help='Port to run the server on')
     args = parser.parse_args()
