@@ -14,6 +14,8 @@ class Config(object):
     BRIGHTDATA_ZONE = os.environ.get('BRIGHTDATA_ZONE')
     BRIGHTDATA_PASSWORD = os.environ.get('BRIGHTDATA_PASSWORD')
     FLAG_SHOW_STALENESS = True
+    USE_LOCAL_DB = os.environ.get('USE_LOCAL_DB', '').lower() == 'true'
+    SUPABASE_DB_URL = os.environ.get('SUPABASE_DB_URL', '')
 
 class ProductionConfig(Config):
     DEBUG = False

@@ -14,6 +14,7 @@ import json
 from datetime import datetime
 import time
 from observability import Metric, ListMetric
+from . import databaseBackend
 
 def _get_drink_pack_qty(drink) -> int:
     """Return the pack_qty attribute of the drink, defaulting to 1."""
@@ -134,7 +135,7 @@ def get_schema_dir():
 def ensure_tables(conn):
     """Create tables from schema files if they don't exist."""
     schema_dir = get_schema_dir()
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     
     for schema_file in sorted(schema_dir.glob("*.sql")):
         if schema_file.stem == "schema_version":
@@ -146,26 +147,11 @@ def ensure_tables(conn):
 
 
 def create_connection():
-    conn = None
-    try:
-        conn = sqlite3.connect(str(Path(__file__).parent / "database.db"))
-        ensure_tables(conn)
-    except Error as e:
-        print(e)
-
-    return conn
+    return databaseBackend.create_connection()
 
 
 def create_request_logs_connection():
-    conn = None
-    try:
-        conn = sqlite3.connect(str(Path(__file__).parent / "database.db"))
-        ensure_tables(conn)
-        print("connected to request logs")
-    except Error as e:
-        print(e)
-
-    return conn
+    return databaseBackend.create_connection()
 
 
 def create_entry(conn, drink_data):
@@ -180,7 +166,7 @@ def create_entry(conn, drink_data):
 
     sql = ''' INSERT INTO drinks(store,brand,name,type,price,link,pack_qty,ml,percent,stdDrinks,score,image,search_text,zero_alc,date_created)
               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) '''
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     cur.execute(sql, drink_data + (now,))
     return cur.lastrowid
 
@@ -197,7 +183,7 @@ def upsert_source(conn, url, retailer, last_scraped):
     sql = ''' INSERT INTO sources(url, retailer, last_scraped)
               VALUES(?,?,?)
               ON CONFLICT(url) DO UPDATE SET last_scraped=excluded.last_scraped '''
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     cur.execute(sql, (url, retailer, last_scraped))
     conn.commit()
     return cur.lastrowid
@@ -210,7 +196,7 @@ def get_sources_by_retailer(conn, retailer):
     :param retailer:
     :return:
     """
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     cur.execute("SELECT * FROM sources WHERE retailer=?", (retailer,))
     return cur.fetchall()
 
@@ -223,7 +209,7 @@ def create_run(conn, run_id, retailer=None, category=None):
     now = datetime.now().isoformat()
     sql = ''' INSERT INTO runs(uuid, start_time, status, retailer, category)
               VALUES(?, ?, 'in_progress', ?, ?) '''
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     cur.execute(sql, (run_id, now, retailer, category))
     conn.commit()
     return cur.lastrowid
@@ -237,7 +223,7 @@ def update_run_completed(conn, run_id, tasks_completed):
     now = datetime.now().isoformat()
     sql = ''' UPDATE runs SET end_time = ?, status = 'completed', tasks_completed = ?
               WHERE uuid = ? '''
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     cur.execute(sql, (now, tasks_completed, run_id))
     conn.commit()
 
@@ -251,7 +237,7 @@ def add_scrape_task(conn, retailer, url, metadata=None, run_id=None, task_type='
     now = datetime.now().isoformat()
     sql = ''' INSERT INTO scrape_tasks(retailer, url, status, task_type, metadata, run_id, created_at, updated_at)
               VALUES(?,?,?,?,?,?,?,?) '''
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     cur.execute(sql, (retailer, url, 'pending', task_type, json.dumps(metadata) if metadata else None, run_id, now, now))
     conn.commit()
     return cur.lastrowid
@@ -312,7 +298,7 @@ def _claim_next_pending_task(conn, conditions, params, order_clause):
     """
     Atomically claim the next pending task that matches the provided conditions.
     """
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     now = datetime.now().isoformat()
     base_conditions = ["status = 'pending'"] + conditions
     where_clause = " AND ".join(base_conditions)
@@ -365,7 +351,7 @@ def update_task_status(conn, task_id, status, metadata=None):
     from datetime import datetime
     now = datetime.now().isoformat()
     
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     if status == 'pending':
         # Move to back of the queue by setting updated_at to NOW.
         if metadata:
@@ -389,7 +375,7 @@ def increment_task_attempts(conn, task_id):
     Increment the attempts count for a task
     """
     sql = ''' UPDATE scrape_tasks SET attempts = attempts + 1 WHERE ID = ? '''
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     cur.execute(sql, (task_id,))
     conn.commit()
 
@@ -398,7 +384,7 @@ def get_pending_tasks_count(conn, retailer=None):
     """
     Get count of pending tasks
     """
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     if retailer:
         cur.execute("SELECT COUNT(*) FROM scrape_tasks WHERE retailer=? AND status='pending'", (retailer,))
     else:
@@ -410,7 +396,7 @@ def get_pending_tasks_count_by_run(conn, run_id, retailer=None):
     """
     Get count of pending tasks scoped to a specific run.
     """
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     if retailer:
         cur.execute("""
             SELECT COUNT(*) FROM scrape_tasks
@@ -429,7 +415,7 @@ def reset_in_progress_tasks(conn, run_id=None, retailer=None):
     """
     Reset tasks marked as in_progress back to pending so they can be resumed.
     """
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     now = datetime.now().isoformat()
     conditions = ["status = 'in_progress'"]
     params = []
@@ -456,7 +442,7 @@ def select_all_drinks(conn):
     :param conn: the Connection object
     :return:
     """
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     cur.execute("SELECT * FROM drinks")
 
     rows = cur.fetchall()
@@ -468,7 +454,7 @@ def select_all_drinks_by_score(conn):
     """
     Query all drinks ordered by score (price per standard drink), lowest first.
     """
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     cur.execute(
         """
         SELECT * FROM drinks
@@ -483,7 +469,7 @@ def select_all_drinks_by_worst_score(conn):
     """
     Query drinks ordered by score descending (worst price per standard drink).
     """
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     cur.execute(
         """
         SELECT * FROM drinks
@@ -501,7 +487,7 @@ def select_all_drinks_by_cost_asc(conn):
     :return:
     """
     # Create a new cursor
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     # Ececute a new query at the cursor
     cur.execute("SELECT * FROM drinks ORDER BY price ASC")
     # Fetch all of the rows that matched the query
@@ -517,7 +503,7 @@ def select_all_drinks_by_cost_desc(conn):
     :return:
     """
     # Create a new cursor
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     # Ececute a new query at the cursor
     cur.execute("SELECT * FROM drinks ORDER BY price DESC")
     # Fetch all of the rows that matched the query
@@ -533,7 +519,7 @@ def select_all_drinks_between_cost(conn, value1, value2):
     :return:
     """
     # Create a new cursor
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
 
     # Ececute a new query at the cursor
     cur.execute(
@@ -555,7 +541,7 @@ def select_drink_by_score_and_type(conn, type):
     :return:
     """
     # Create a new cursor
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     # Execute a new query at the cursor
     cur.execute(
         "SELECT * FROM drinks WHERE type LIKE '%{}%' "
@@ -574,7 +560,7 @@ def select_image_links(conn):
     :return:
     """
     # Create a new cursor
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     # Execute a new query at the cursor
     cur.execute("SELECT image FROM drinks")
     # Fetch all of the rows that matched the query
@@ -600,7 +586,7 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
     """
     # conn.create_function('regexp', 2, functionRegex)
     # Create a new cursor
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     # Define a new list for which to store our final list of results
     results = list()
 
@@ -785,7 +771,7 @@ def update_drink(conn, drink, newPrice):
               AND link = ?
               AND pack_qty = ? '''
 
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     try:
         price = float(newPrice) if newPrice else 0.0
     except (ValueError, TypeError):
@@ -825,7 +811,7 @@ def is_drink_in_table(conn, drink):
               AND link = ?
               AND pack_qty = ?
               '''
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     pack_qty = _get_drink_pack_qty(drink)
     cur.execute(sql, (drink.store, drink.link, pack_qty))
 
@@ -838,7 +824,7 @@ def is_drink_in_table(conn, drink):
 
 def get_drink_by_store_link(conn, store, link, pack_qty=1):
     """Fetch the latest drink row for a given store/link pair."""
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     cur.execute("""
         SELECT * FROM drinks
         WHERE store = ? AND link = ? AND pack_qty = ?
@@ -910,7 +896,7 @@ def update_drink_details(conn, store, link, percent, std_drinks, pack_qty=1):
     """
     Update percent, stdDrinks, and derived score for a drink by link.
     """
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     cur.execute("""
         SELECT price FROM drinks
         WHERE store = ? AND link = ? AND pack_qty = ?
@@ -941,6 +927,6 @@ def delete_task(conn, name, brand, store, type):
     :return:
     """
     sql = 'DELETE FROM tasks WHERE name=? AND brand=? AND store=? AND type=?'
-    cur = conn.cursor()
+    cur = databaseBackend.get_cursor(conn)
     cur.execute(sql, (name, brand, store, type))
     conn.commit()
