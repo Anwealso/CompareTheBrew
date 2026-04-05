@@ -150,7 +150,6 @@ def create_connection():
     try:
         conn = sqlite3.connect(str(Path(__file__).parent / "database.db"))
         ensure_tables(conn)
-        print("connected to database")
     except Error as e:
         print(e)
 
@@ -451,27 +450,6 @@ def reset_in_progress_tasks(conn, run_id=None, retailer=None):
     return cur.rowcount
 
 
-def create_metric_entry(conn, task):
-    """
-    Create a new task
-    :param conn:
-    :param task:
-    :return:
-    """
-    print(1)
-    sql = ''' INSERT INTO metrics(IP,query,datetime,country,region,city,lat,long,hostname,org)
-              VALUES(?,?,?,?,?,?,?,?,?,?) '''
-    print(2)
-    cur = conn.cursor()
-    print(3)
-    cur.execute(sql, task)
-    print(4)
-    conn.commit()
-    ID = cur.lastrowid
-    conn.close()
-    return ID
-
-
 def select_all_drinks(conn):
     """
     Query all rows in the tasks table
@@ -628,22 +606,15 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
 
     # Split the search keyboards by the spaces in between words
     inputs = terms.split(" ")
-    print("SEARCH TERMS: " + str(inputs))
-    # return termsList
     terms = list()
     for term in inputs:
         terms.append(term.lower())
-    print("-------------------<OLD>-------------------")
-    print(terms)
-    # now run intellisense search to get better result parity
-    print("-------------------(NEW)-------------------")
+    # run intellisense search to get better result parity
     search_query = " ".join(terms)
     normalized_query = normalize_query(search_query)
     intelliterms = intellisearch(search_query)
-    # print(intelliterms)
 
     # get the category to search by:
-    print(thing)
     parts = thing.split("_")
     category = parts[1]
     order = parts[0]
@@ -723,18 +694,11 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
             ){quality_clause}{price_filter}{scraped_age_filter}{store_filter}{zero_alc_filter} ORDER BY {order_clause}
         """
         cur.execute(dedupe_sql)
-
         rows = cur.fetchall()
-        print("FOR " + term)
-
-        print("NUMBER OF ROWS FOUND: " + str(len(rows)))
         # For each row in rows, if the row is not already in the results list add it
         for row in rows:
             if row not in results:
                 results.append(row)
-
-    print("NUMBER OF RESULTS FOUND: " + str(len(results)))
-
     results = [row for row in results if _name_volume_matches(row)]
 
     # Re-rank all matched rows using intellisearch relevance first, then the
@@ -872,7 +836,6 @@ def is_drink_in_table(conn, drink):
         return False
 
 
-
 def get_drink_by_store_link(conn, store, link, pack_qty=1):
     """Fetch the latest drink row for a given store/link pair."""
     cur = conn.cursor()
@@ -883,71 +846,6 @@ def get_drink_by_store_link(conn, store, link, pack_qty=1):
         LIMIT 1
     """, (store, link, pack_qty))
     return cur.fetchone()
-
-
-def save_short_link(conn, image):
-    """
-    get the standard drinks of a drink
-    :param conn:
-    :param drink:
-    :return: project id
-    """
-    sql = ''' UPDATE drinks
-              SET shortimage = ?
-              WHERE image = ? '''
-    cur = conn.cursor()
-
-    if image != None:
-        url = str(image)
-        oldurl = url
-        url = url.replace("/", "~")
-        url = url.replace("?", "+")
-        url = url.replace(":", ",")
-        print(url)
-        url = url.split('~')[-1]
-        shortimage = url.split("'")[0]
-        print(shortimage)
-        print(oldurl)
-        cur.execute(sql, (shortimage, oldurl))
-        conn.commit()
-        print('done')
-
-
-def fix_missing_beer_images(conn):
-    """
-    get the standard drinks of a drink
-    :param conn:
-    :param drink:
-    :return: project id
-    """
-    drinks = select_all_drinks(conn)
-    emptyImageDrinks = list()
-
-    for drink in drinks:
-        print(drink[11])
-        if drink[11] is None:
-            emptyImageDrinks.append(drink)
-
-    print(len(emptyImageDrinks))
-
-    for empty in emptyImageDrinks:
-        for drink in drinks:
-            old_empty = empty[3].split("-")[0]
-            old_drink = drink[3].split("-")[0]
-            if old_empty == old_drink:
-                if empty[0] != drink[0]:
-                    if empty[2] == drink[2]:
-                        if empty[11] is None:
-                            if drink[11] is not None:
-                                print("--------------------------------")
-                                print(drink)
-                                print(empty)
-                                sql = ''' UPDATE drinks
-                                          SET shortimage = ?, image = ?
-                                          WHERE name = ? '''
-                                cur = conn.cursor()
-                                cur.execute(sql, (drink[12], drink[11], empty[3]))
-                                conn.commit()
 
 
 def dbhandler(conn, list, mode, populate, item_callback=None, start_index=0):
@@ -1063,6 +961,23 @@ def delete_all(conn):
 
 # ------------------ metrics section ------------------
 
+def create_metric_entry(conn, task):
+    """
+    Create a new task
+    :param conn:
+    :param task:
+    :return:
+    """
+    sql = """ INSERT INTO metrics(IP,query,datetime,country,region,city,lat,long,hostname,org)
+              VALUES(?,?,?,?,?,?,?,?,?,?) """
+    cur = conn.cursor()
+    cur.execute(sql, task)
+    conn.commit()
+    ID = cur.lastrowid
+    conn.close()
+    return ID
+
+
 def total_search(conn):
     sql = 'SELECT * FROM metrics'
     cur = conn.cursor()
@@ -1071,26 +986,13 @@ def total_search(conn):
     return len(rows)
 
 
-def most_common(L):
-    # get an iterable of (item, iterable) pairs
-    SL = sorted((x, i) for i, x in enumerate(L))
-    # print 'SL:', SL
-    groups = itertools.groupby(SL, key=operator.itemgetter(0))
+def get_metric_most_common_keywords():
+    # Get the frequency of all searched keywords (by descending frequency)
+    # TODO: Implement
 
-    # auxiliary function to get "quality" for an item
-    def _auxfun(g):
-        item, iterable = g
-        count = 0
-        min_index = len(L)
-        for _, where in iterable:
-            count += 1
-            min_index = min(min_index, where)
-        # print 'item %r, count %r, minind %r' % (item, count, min_index)
-        return count, -min_index
-
-    # pick the highest-count/earliest item
-    return max(groups, key=_auxfun)[0]
-
+def get_metric_search_count():
+    # Get the frequency of all searched keywords (by descending frequency)
+    # TODO: Implement
 
 def most_searched(conn):
     sql = 'SELECT * FROM metrics'
