@@ -13,7 +13,7 @@ import operator
 import json
 from datetime import datetime
 import time
-from logging import Metric, ListMetric
+from observability import Metric, ListMetric
 
 def _get_drink_pack_qty(drink) -> int:
     """Return the pack_qty attribute of the drink, defaulting to 1."""

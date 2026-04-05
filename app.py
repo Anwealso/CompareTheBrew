@@ -6,7 +6,7 @@ from flask import jsonify
 from flask import redirect
 from flask import render_template
 from flask import request
-from logging import Metric, ListMetric
+from observability import Metric, ListMetric
 from urllib.request import urlopen
 import argparse
 import db.databaseHandler as db

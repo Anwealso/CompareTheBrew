@@ -9,7 +9,7 @@ Database Schema:
     value: INTEGER DEFAULT 0
 
 Usage:
-    from logging import Metric, ListMetric
+    from observability import Metric, ListMetric
 
     # Single-value metric (e.g., num_clicks)
     clicks = Metric("num_clicks")

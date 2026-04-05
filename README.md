@@ -195,14 +195,14 @@ The `metrics` table stores counters with optional key-based tracking:
 
 **AbstractMetric** - Base class with static registry of all metrics:
 ```python
-from logging import AbstractMetric
+from observability import AbstractMetric
 AbstractMetric.get_metrics()  # Returns list of registered metrics
 ```
 
 **Metric** - For single-value metrics (e.g., click counts):
 ```python
-from logging import Metric
-clicks = Metric("num_clicks")
+from observability import Metric
+clicks = Metric("total_searches")
 clicks.increment()   # +1 to default row
 clicks.decrement()  # -1 from default row
 clicks.get_value()  # returns current value
@@ -210,7 +210,7 @@ clicks.get_value()  # returns current value
 
 **ListMetric** - For multi-key metrics (e.g., search term frequency):
 ```python
-from logging import ListMetric
+from observability import ListMetric
 search_terms = ListMetric("search_keyword_frequency")
 search_terms.increment("beer")      # +1 for key "beer"
 search_terms.decrement("beer")     # -1 for key "beer"
