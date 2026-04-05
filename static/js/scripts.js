@@ -125,4 +125,18 @@ $(document).ready(function () {
       if (e.key === "Enter") applySearchFilters();
     });
   }
+
+  // Track clicks on result cards before redirecting to external retailer
+  document.querySelectorAll(".resultCard").forEach(function (card) {
+    card.addEventListener("click", function (e) {
+      const url = card.getAttribute("href");
+      if (url && !url.startsWith("/") && !url.startsWith("#")) {
+        fetch("/api/track-click", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: url }),
+        }).catch(function () {});
+      }
+    });
+  });
 });

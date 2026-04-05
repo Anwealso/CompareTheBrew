@@ -38,6 +38,7 @@ class AbstractMetric:
         {"metric_name": "total_searches", "has_multiple_keys": False},
         {"metric_name": "search_keyword_frequency", "has_multiple_keys": True},
         {"metric_name": "search_feature_usage", "has_multiple_keys": True},
+        {"metric_name": "retailer_clicks", "has_multiple_keys": True},
     ]
 
     @classmethod

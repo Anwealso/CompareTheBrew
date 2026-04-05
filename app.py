@@ -407,6 +407,26 @@ def api_handler():
 
 
 # Run the flask application (won't run when the site is being hosted on a server)
+@app.route("/api/track-click", methods=["POST"])
+def track_click():
+    from urllib.parse import urlparse
+    data = request.get_json()
+    url = data.get("url", "")
+    if url:
+        parsed = urlparse(url)
+        hostname = parsed.netloc.split(":")[0]
+        if hostname.startswith("www."):
+            hostname = hostname[4:]
+        if hostname:
+            try:
+                clicks = ListMetric("retailer_clicks")
+                clicks.increment(hostname)
+                return jsonify({"success": True, "retailer": hostname}), 200
+            except Exception as e:
+                pass
+    return jsonify({"success": False}), 400
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--port', type=int, default=80, help='Port to run the server on')
