@@ -431,7 +431,7 @@ def track_click():
     return jsonify({"success": False}), 400
 
 
-@app.route("/health")
+@app.route("/healthz")
 def health_check():
     """Health check endpoint for Render and load balancers."""
     try:
