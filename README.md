@@ -218,9 +218,6 @@ search_terms.get_value("beer")    # get value for specific key
 search_terms.get_all_keys()       # returns dict of all keys/values
 ```
 
-Currently registered:
-- `search_keyword_frequency` (multi-key)
-
 ## Code Formatting
 This project uses [Black](https://github.com/psf/black) for Python code formatting.
 

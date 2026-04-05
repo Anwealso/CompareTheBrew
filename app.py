@@ -1,20 +1,19 @@
+from config import Config
+from datetime import datetime
+from flask import current_app
 from flask import Flask
+from flask import jsonify
+from flask import redirect
 from flask import render_template
 from flask import request
-from flask import redirect
-from flask import current_app
-from flask import jsonify
-from datetime import datetime
-import re
-import json
-import argparse
+from logging import Metric, ListMetric
 from urllib.request import urlopen
-import ipinfo
-import random
-from config import Config
-
-# from scrape2 import search
+import argparse
 import db.databaseHandler as db
+import ipinfo
+import json
+import random
+import re
 
 # Create a new flask application
 app = Flask(__name__)
@@ -152,6 +151,8 @@ def search_page():
     all_results = db.select_drink_by_smart_search(
         conn, search_terms, sort_key, price_min, price_max, store_filter, scraped_age, zero_alc_filter
     )
+
+    _record_search_metrics(search_terms, order_param, price_min, price_max, store_filter, scraped_age, zero_alc_filter)
     
     # Insert ads into the full list before paginating, or just into the page?
     # Usually better to insert ads into the full list so they stay in consistent positions,
@@ -206,10 +207,40 @@ def insert_ads_amongst_results(tempResults):
     drinks_per_ad = 5  # how many legitimate drinks cards (-1) we will have until we show the next drink card  i.e. 3 = 1 ad per 3 drinks
     while next_ad_index < len(tempResults):  # While we have not yet finished putting ads all through the list
         tempResults.insert(next_ad_index, ['GOOGLE_AD'])  # Add an advertisement item to the list
-        num_ads = num_ads + 1  # increment the number of ads we have added to the page
+        num_ads = num_ads + 1  # increment the number of ads we have added to the list
         next_ad_index = (num_ads * drinks_per_ad) + random.randint(1,
                                                                    drinks_per_ad)  # calculate the position in which we will put the next drink card
     return tempResults
+
+
+def _record_search_metrics(search_terms, order_param, price_min, price_max, store_filter, scraped_age, zero_alc_filter):
+    try:
+        total_searches = Metric("total_searches")
+        total_searches.increment()
+
+        search_terms = search_terms.strip() if search_terms else ""
+        if search_terms:
+            keywords = search_terms.lower().split()
+            keyword_metric = ListMetric("search_keyword_frequency")
+            for keyword in keywords:
+                if keyword:
+                    keyword_metric.increment(keyword)
+
+        feature_metric = ListMetric("search_feature_usage")
+        feature_metric.increment(f"ordering:{order_param}")
+
+        if price_min:
+            feature_metric.increment(f"price_min:{price_min}")
+        if price_max:
+            feature_metric.increment(f"price_max:{price_max}")
+        if store_filter and store_filter != "all":
+            feature_metric.increment(f"store:{store_filter}")
+        if scraped_age:
+            feature_metric.increment(f"scraped_age:{scraped_age}")
+        if zero_alc_filter:
+            feature_metric.increment("zero_alc:true")
+    except Exception as e:
+        pass
 
 
 def log_request(searchTerms):
