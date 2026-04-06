@@ -2,7 +2,6 @@
 Database backend module that handles connection to either SQLite (local) or PostgreSQL (Supabase).
 """
 
-import os
 import sqlite3
 from pathlib import Path
 from config import Config
@@ -30,16 +29,17 @@ def _create_postgres_connection():
     if not conn_string:
         raise ValueError("SUPABASE_DB_URL environment variable is not set")
 
-    # Force IPv4 — Supabase hostnames sometimes resolve to IPv6 first,
-    # which may be unreachable on local networks.
+    # Try connecting directly (IPv6 if the hostname resolves to it), then
+    # fall back to an explicit IPv4 address if that fails.
     try:
-        hostname = urlparse(conn_string).hostname
-        ipv4 = socket.getaddrinfo(hostname, None, socket.AF_INET)[0][4][0]
-        conn = psycopg.connect(conn_string, hostaddr=ipv4)
-    except (socket.gaierror, IndexError):
-        conn = psycopg.connect(conn_string)
-
-    return conn
+        return psycopg.connect(conn_string)
+    except Exception:
+        try:
+            hostname = urlparse(conn_string).hostname
+            ipv4 = socket.getaddrinfo(hostname, None, socket.AF_INET)[0][4][0]
+            return psycopg.connect(conn_string, hostaddr=ipv4)
+        except (socket.gaierror, IndexError):
+            raise
 
 
 def create_connection():
