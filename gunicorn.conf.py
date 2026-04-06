@@ -1,8 +1,10 @@
 # Gunicorn configuration for production
 import multiprocessing
 
-# Bind to 0.0.0.0:8000 (Render expects this)
-bind = "0.0.0.0:8000"
+# Bind to the port Render assigns via PORT env var (defaults to 8000)
+import os
+port = os.environ.get("PORT", "8000")
+bind = f"0.0.0.0:{port}"
 
 # Workers based on CPU count
 workers = multiprocessing.cpu_count() * 2 + 1
