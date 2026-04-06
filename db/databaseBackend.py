@@ -22,11 +22,11 @@ def _create_sqlite_connection():
 
 def _create_postgres_connection():
     """Create a PostgreSQL connection to Supabase."""
-    import psycopg2
+    import psycopg
     conn_string = Config.SUPABASE_DB_URL
     if not conn_string:
         raise ValueError("SUPABASE_DB_URL environment variable is not set")
-    conn = psycopg2.connect(conn_string)
+    conn = psycopg.connect(conn_string)
     return conn
 
 

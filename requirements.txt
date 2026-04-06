@@ -30,7 +30,7 @@ platformdirs==4.9.4
 propcache==0.4.1
 Pygments==2.19.2
 PySocks==1.7.1
-psycopg[binary]==3.2.3
+psycopg[binary]==3.2.13
 python-dotenv==1.2.2
 gunicorn==21.2.0
 RapidFuzz==3.14.3
