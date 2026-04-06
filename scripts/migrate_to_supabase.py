@@ -167,15 +167,13 @@ def migrate_table(sqlite_cur, pg_cur, table_name, columns):
     
     # Get placeholders for values
     placeholders = ",".join(["%s"] * len(columns.split(",")))
-    
-    # Insert into PostgreSQL
-    for row in rows:
-        values = list(row)
-        try:
-            pg_cur.execute(f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})", values)
-        except Exception as e:
-            print(f"  Error inserting row: {e}")
-            continue
+
+    # Bulk insert into PostgreSQL
+    values = [list(row) for row in rows]
+    pg_cur.executemany(
+        f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})",
+        values
+    )
     
     count = len(rows)
     print(f"  Migrated {count} rows from {table_name}")
@@ -224,10 +222,6 @@ def main():
     # Sources table
     columns = "url,retailer,last_scraped"
     total += migrate_table(sqlite_cur, pg_cur, "sources", columns)
-    
-    # Schema version table
-    columns = "version_no,updated"
-    total += migrate_table(sqlite_cur, pg_cur, "schema_version", columns)
     
     # Scrape tasks table
     columns = "retailer,url,status,task_type,metadata,run_id,created_at,updated_at,attempts"
