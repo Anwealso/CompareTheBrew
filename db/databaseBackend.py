@@ -33,13 +33,13 @@ def _create_postgres_connection():
     # fall back to an explicit IPv4 address if that fails.
     try:
         return psycopg.connect(conn_string)
-    except Exception:
+    except Exception as original_exc:
         try:
             hostname = urlparse(conn_string).hostname
             ipv4 = socket.getaddrinfo(hostname, None, socket.AF_INET)[0][4][0]
             return psycopg.connect(conn_string, hostaddr=ipv4)
         except (socket.gaierror, IndexError):
-            raise
+            raise original_exc
 
 
 def create_connection():
