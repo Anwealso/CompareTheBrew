@@ -138,8 +138,6 @@ def ensure_tables(conn):
     cur = databaseBackend.get_cursor(conn)
     
     for schema_file in sorted(schema_dir.glob("*.sql")):
-        if schema_file.stem == "schema_version":
-            continue
         sql = schema_file.read_text()
         cur.executescript(sql)
     

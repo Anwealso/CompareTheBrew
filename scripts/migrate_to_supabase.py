@@ -95,14 +95,6 @@ def create_tables_pg(cur):
         )
     """)
     
-    # Schema version table
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS schema_version (
-            version_no INTEGER,
-            updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
     # Scrape tasks table
     cur.execute("""
         CREATE TABLE IF NOT EXISTS scrape_tasks (

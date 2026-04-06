@@ -5,20 +5,8 @@ price / (stdDrinks_per_unit * pack_qty)
 """
 import sqlite3
 from pathlib import Path
-from datetime import datetime
 
 DB_PATH = Path(__file__).parent.parent / "db" / "database.db"
-
-
-def stamp_schema_version(conn, version: int):
-    cur = conn.cursor()
-    cur.execute("SELECT 1 FROM schema_version WHERE version = ?", (version,))
-    if not cur.fetchone():
-        cur.execute(
-            "INSERT INTO schema_version (version, applied_at) VALUES (?, ?)",
-            (version, datetime.now().isoformat()),
-        )
-        conn.commit()
 
 
 def recalc_scores(conn):
@@ -45,7 +33,6 @@ def main():
     conn = sqlite3.connect(DB_PATH)
     try:
         updated = recalc_scores(conn)
-        stamp_schema_version(conn, 16)
         print(f"Recalculated {updated} scores.")
     finally:
         conn.close()

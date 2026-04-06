@@ -4,7 +4,6 @@ Ensure every drink row has the zero_alc flag and it reflects whether the ABV is 
 """
 import sqlite3
 from pathlib import Path
-from datetime import datetime
 
 DB_PATH = Path(__file__).parent.parent / "db" / "database.db"
 
@@ -35,17 +34,6 @@ def backfill_zero_alc(conn):
     conn.commit()
 
 
-def stamp_schema_version(conn, version: int):
-    cur = conn.cursor()
-    cur.execute("SELECT 1 FROM schema_version WHERE version = ?", (version,))
-    if not cur.fetchone():
-        cur.execute(
-            "INSERT INTO schema_version (version, applied_at) VALUES (?, ?)",
-            (version, datetime.now().isoformat()),
-        )
-        conn.commit()
-
-
 def main():
     if not DB_PATH.exists():
         raise SystemExit(f"Database file not found at {DB_PATH}")
@@ -54,7 +42,6 @@ def main():
     try:
         ensure_zero_alc_column(conn)
         backfill_zero_alc(conn)
-        stamp_schema_version(conn, 14)
         print("zero_alc migration applied successfully.")
     finally:
         conn.close()

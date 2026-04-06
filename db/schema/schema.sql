@@ -6,7 +6,6 @@
 .read tables/drinks.sql
 .read tables/metrics.sql
 .read tables/sources.sql
-.read tables/schema_version.sql
 .read tables/scrape_tasks.sql
 .read tables/runs.sql
 .read tables/request_logs.sql
