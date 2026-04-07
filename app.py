@@ -371,6 +371,15 @@ def page_not_found404(e):
 def page_not_found500(e):
     return render_template('/500.html'), 500
 
+# Routes for testing error pages
+# @app.route("/500", methods=["GET", "POST"])
+# def route_page_not_found500(e):
+#     return render_template('/500.html')
+
+# @app.route("/404", methods=["GET", "POST"])
+# def route_page_not_found404(e):
+#     return render_template('/404.html')
+
 @app.route('/api', methods=['GET', 'POST'])
 def api_handler():
     term = request.args.get('term')
