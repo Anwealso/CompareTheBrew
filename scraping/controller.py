@@ -557,6 +557,12 @@ CompareTheBrew                      2024           SCRAPING CONTROLLER(1)"""
         sys.exit(0)
     
     args = parser.parse_args()
+
+    from config import Config
+    if not Config.USE_LOCAL_DB:
+        print("Error: scraping is disabled when USE_LOCAL_DB is false. Set USE_LOCAL_DB=true to scrape locally.")
+        sys.exit(1)
+
     controller = ScrapingController()
 
     run_id = None
