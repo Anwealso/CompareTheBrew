@@ -16,6 +16,7 @@ class Config(object):
     FLAG_SHOW_STALENESS = True
     USE_LOCAL_DB = os.environ.get('USE_LOCAL_DB', '').lower() == 'true'
     SUPABASE_DB_URL = os.environ.get('SUPABASE_DB_URL', '')
+    ADMIN_SUPABASE_DB_URL = os.environ.get("ADMIN_SUPABASE_DB_URL", "")
 
 class ProductionConfig(Config):
     DEBUG = False

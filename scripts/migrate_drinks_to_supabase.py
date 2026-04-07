@@ -6,7 +6,7 @@ Usage:
     python scripts/migrate_drinks_to_supabase.py
 
 Requirements:
-    - SUPABASE_DB_URL set in .env
+    - ADMIN_SUPABASE_DB_URL set in .env
 """
 
 import sys
@@ -27,9 +27,9 @@ def get_sqlite_connection():
 
 def get_postgres_connection():
     import psycopg
-    conn_string = Config.SUPABASE_DB_URL
+    conn_string = Config.ADMIN_SUPABASE_DB_URL
     if not conn_string:
-        raise ValueError("SUPABASE_DB_URL environment variable is not set")
+        raise ValueError("ADMIN_SUPABASE_DB_URL environment variable is not set")
     return psycopg.connect(conn_string)
 
 
@@ -68,8 +68,8 @@ def main():
     print("Drinks-only SQLite → Supabase Migration")
     print("=" * 60)
 
-    if not Config.SUPABASE_DB_URL:
-        print("\nERROR: SUPABASE_DB_URL not set in .env")
+    if not Config.ADMIN_SUPABASE_DB_URL:
+        print("\nERROR: ADMIN_SUPABASE_DB_URL not set in .env")
         sys.exit(1)
 
     print("\nConnecting to SQLite...")
