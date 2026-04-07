@@ -262,7 +262,7 @@ def log_request(searchTerms):
             IP = request.environ['REMOTE_ADDR']
         else:
             IP = request.environ['HTTP_X_FORWARDED_FOR']  # if behind a proxy
-        
+
         # Cloudflare stuff - not yet implemented
         # # CF-Connecting-IP is set by Cloudflare and contains the real visitor
         # # IP. Fall back to X-Forwarded-For (other proxies) then REMOTE_ADDR.
@@ -273,7 +273,7 @@ def log_request(searchTerms):
         #     .strip()
         #     or request.environ.get("REMOTE_ADDR", "")
         # )
-        
+
         print(IP)
         details = handler.getDetails(IP)
         print(details.all)
@@ -302,41 +302,7 @@ def log_request(searchTerms):
     except Exception as e:
         print(e)
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-#            top50page
-#
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-@app.route("/top50/beer")
-def display_top50_page():
-    # Get results the new way - by querying the database
-    conn = db.create_connection()  # connect to the database
-    tempResults = db.select_drink_by_smart_search(conn, "beer", 'ASC_score')
-    tempResults = insert_ads_amongst_results(tempResults[:50])
 
-    # log request info
-    log_request(["beer"])
-    return render_template('top50.html', results=tempResults)
-@app.route("/top50/wine")
-def display_top50wine_page():
-    # Get results the new way - by querying the database
-    conn = db.create_connection()  # connect to the database
-    tempResults = db.select_drink_by_smart_search(conn, "wine", 'ASC_score')
-    tempResults = insert_ads_amongst_results(tempResults[:50])
-
-    # log request info
-    log_request(["wine"])
-    return render_template('top50.html', results=tempResults)
-@app.route("/top50/spirits")
-def display_top50spirits_page():
-    # Get results the new way - by querying the database
-    conn = db.create_connection()  # connect to the database
-    tempResults = db.select_drink_by_smart_search(conn, "spirits", 'ASC_score')
-    tempResults = insert_ads_amongst_results(tempResults[:50])
-
-    # log request info
-    log_request(["spirits"])
-    return render_template('top50.html', results=tempResults)
 # Handle search form submission from results page
 @app.route("/search", methods=["POST"])
 def search_post():
@@ -349,16 +315,46 @@ def search_post():
         url += "&zero-alc=true"
     return redirect(url)
 
+# @app.route("/top50/beer")
+# def display_top50_page():
+#     # Get results the new way - by querying the database
+#     conn = db.create_connection()  # connect to the database
+#     tempResults = db.select_drink_by_smart_search(conn, "beer", 'ASC_score')
+#     tempResults = insert_ads_amongst_results(tempResults[:50])
+
+#     # log request info
+#     log_request(["beer"])
+#     return render_template('top50.html', results=tempResults)
+# @app.route("/top50/wine")
+# def display_top50wine_page():
+#     # Get results the new way - by querying the database
+#     conn = db.create_connection()  # connect to the database
+#     tempResults = db.select_drink_by_smart_search(conn, "wine", 'ASC_score')
+#     tempResults = insert_ads_amongst_results(tempResults[:50])
+
+#     # log request info
+#     log_request(["wine"])
+#     return render_template('top50.html', results=tempResults)
+# @app.route("/top50/spirits")
+# def display_top50spirits_page():
+#     # Get results the new way - by querying the database
+#     conn = db.create_connection()  # connect to the database
+#     tempResults = db.select_drink_by_smart_search(conn, "spirits", 'ASC_score')
+#     tempResults = insert_ads_amongst_results(tempResults[:50])
+
+#     # log request info
+#     log_request(["spirits"])
+#     return render_template('top50.html', results=tempResults)
 
 # Route for About Us page
 # @app.route('/about', methods=['GET', 'POST'])
 # def viewabout():
-#     return render_template('about.html')  # render a template
+#     return render_template('about.html')
 
-# Route for About Us page
-@app.route('/faq', methods=['GET', 'POST'])
-def viewFAQ():
-    return render_template('FAQ.html')
+# # Route for FAQ page
+# @app.route('/faq', methods=['GET', 'POST'])
+# def viewFAQ():
+#     return render_template('FAQ.html')
 
 # Ajunner Error Handling
 # 404
