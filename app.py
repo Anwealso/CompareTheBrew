@@ -303,18 +303,6 @@ def log_request(searchTerms):
         print(e)
 
 
-# Handle search form submission from results page
-@app.route("/search", methods=["POST"])
-def search_post():
-    """Handle search form submission."""
-    search_terms = request.form.get("searchTerms", "")
-    order = request.form.get("order", "score-asc")
-    zero_alc_flag = parse_zero_alc_flag(request.form.get("zero-alc"))
-    url = f"/search?q={search_terms}&order={order}"
-    if zero_alc_flag:
-        url += "&zero-alc=true"
-    return redirect(url)
-
 # @app.route("/top50/beer")
 # def display_top50_page():
 #     # Get results the new way - by querying the database
