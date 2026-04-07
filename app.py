@@ -262,6 +262,18 @@ def log_request(searchTerms):
             IP = request.environ['REMOTE_ADDR']
         else:
             IP = request.environ['HTTP_X_FORWARDED_FOR']  # if behind a proxy
+        
+        # Cloudflare stuff - not yet implemented
+        # # CF-Connecting-IP is set by Cloudflare and contains the real visitor
+        # # IP. Fall back to X-Forwarded-For (other proxies) then REMOTE_ADDR.
+        # IP = (
+        #     request.headers.get("CF-Connecting-IP")
+        #     or request.environ.get("HTTP_X_FORWARDED_FOR", "")
+        #     .split(",")[0]
+        #     .strip()
+        #     or request.environ.get("REMOTE_ADDR", "")
+        # )
+        
         print(IP)
         details = handler.getDetails(IP)
         print(details.all)
