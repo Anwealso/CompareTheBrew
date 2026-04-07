@@ -339,6 +339,7 @@ input[type="search"]::-webkit-search-results-decoration {
   border-radius: 9px;
   cursor: pointer;
   text-decoration: none;
+  user-select: none;
 }
 
 .buttonSortActive {
