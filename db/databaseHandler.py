@@ -634,15 +634,22 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
     
     scraped_age_filter = ""
     if scraped_age is not None and scraped_age != "":
-        if databaseBackend.is_sqlite():
-            scraped_age_filter = (
-                " AND CAST(strftime('%s', date_created) AS INTEGER) "
-                f">= CAST(strftime('%s', 'now', '-{scraped_age} days') AS INTEGER)"
-            )
+        if scraped_age == 0:
+            # "Today" means since midnight, not since this exact moment
+            if databaseBackend.is_sqlite():
+                scraped_age_filter = " AND date_created >= date('now')"
+            else:
+                scraped_age_filter = " AND date_created >= CURRENT_DATE"
         else:
-            scraped_age_filter = (
-                f" AND date_created >= NOW() - INTERVAL '{scraped_age} days'"
-            )
+            if databaseBackend.is_sqlite():
+                scraped_age_filter = (
+                    " AND CAST(strftime('%s', date_created) AS INTEGER) "
+                    f">= CAST(strftime('%s', 'now', '-{scraped_age} days') AS INTEGER)"
+                )
+            else:
+                scraped_age_filter = (
+                    f" AND date_created >= NOW() - INTERVAL '{scraped_age} days'"
+                )
 
     zero_alc_filter = ""
     if zero_alc:
