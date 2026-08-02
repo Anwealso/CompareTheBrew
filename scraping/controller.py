@@ -176,6 +176,11 @@ class ScrapingController:
             if task_type == 'drink_detail':
                 print(f"[temp_scraper_debug] processing drink_detail task for url={url}")  # TODO: Remove this temp_scraper_debug print info.
                 details = processor.process_drink_detail(url, metadata)
+                if details is None:
+                    # Fetch or parse failed. Raise so the retry/fail handling
+                    # below runs instead of persisting placeholder zeros, which
+                    # would wipe the score and mislabel the drink as zero_alc.
+                    raise RuntimeError(f"Could not read drink details from {url}")
                 print(f"Got details: percent={details.get('percent')}, std_drinks={details.get('std_drinks')}")
                 if metadata:
                     store = metadata.get("store", retailer_name)

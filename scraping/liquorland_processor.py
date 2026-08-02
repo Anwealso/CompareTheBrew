@@ -158,18 +158,18 @@ class LiquorlandProcessor(RetailerProcessor):
 
         return [{"url": url, "metadata": {"page": 1}}]
 
-    def get_details_from_item_page(self, url: str) -> dict:
+    def get_details_from_item_page(self, url: str) -> Optional[dict]:
         """
         Visit the product page to extract additional details not present in the search page card.
-        Returns a dict with percent, std_drinks, and any other additional details.
-        """
-        details = {
-            "percent": 0.0,
-            "std_drinks": 0.0,
-        }
+        Returns a dict with percent and std_drinks on success, or None when the
+        page could not be fetched or the alcohol content could not be parsed.
 
+        Returning None rather than zeros matters: 0.0% is a legitimate value for
+        a zero-alcohol product, so a zeros dict would be indistinguishable from
+        a failed fetch and would get written over real data as zero_alc=1.
+        """
         if not url:
-            return details
+            return None
 
         cached = self._get_cached_details(url)
         if cached:
@@ -178,36 +178,50 @@ class LiquorlandProcessor(RetailerProcessor):
 
         content = self.fetch_url(url)
         if not content:
-            return details
+            print(f"[temp_scraper_debug] LiquorlandProcessor fetch failed for {url}")  # TODO: Remove this temp_scraper_debug print info.
+            return None
 
         soup = BeautifulSoup(content, "html.parser")
 
         props_list = soup.find("ul", class_="product-properties")
-        if props_list:
-            items = props_list.find_all("li")
-            for item in items:
-                key_elem = item.find("span", class_="key")
-                val_elem = item.find("span", class_="val")
-                if not key_elem or not val_elem:
-                    continue
+        if not props_list:
+            print(f"[temp_scraper_debug] LiquorlandProcessor no product-properties for {url}")  # TODO: Remove this temp_scraper_debug print info.
+            return None
 
-                key = key_elem.get_text(strip=True)
-                val = val_elem.get_text(strip=True)
+        percent = None
+        std_drinks = 0.0
 
-                if key == "Standard Drinks":
+        items = props_list.find_all("li")
+        for item in items:
+            key_elem = item.find("span", class_="key")
+            val_elem = item.find("span", class_="val")
+            if not key_elem or not val_elem:
+                continue
+
+            key = key_elem.get_text(strip=True)
+            val = val_elem.get_text(strip=True)
+
+            if key == "Standard Drinks":
+                try:
+                    std_drinks = float(val)
+                except ValueError:
+                    pass
+            elif key == "Alcohol Content":
+                match = re.search(r'([\d.]+)%?', val)
+                if match:
                     try:
-                        details["std_drinks"] = float(val)
+                        percent = float(match.group(1))
                     except ValueError:
                         pass
-                elif key == "Alcohol Content":
-                    match = re.search(r'([\d.]+)%?', val)
-                    if match:
-                        try:
-                            details["percent"] = float(match.group(1))
-                        except ValueError:
-                            pass
 
-        return details
+        # percent drives the zero_alc flag, so refuse to guess at it. Without a
+        # parsed alcohol content we cannot tell a real 0% drink from a page we
+        # failed to read.
+        if percent is None:
+            print(f"[temp_scraper_debug] LiquorlandProcessor no alcohol content parsed for {url}")  # TODO: Remove this temp_scraper_debug print info.
+            return None
+
+        return {"percent": percent, "std_drinks": std_drinks}
 
     def _get_cached_details(self, url: str, pack_qty: Optional[int] = None) -> Optional[dict]:
         if not url:
@@ -225,12 +239,19 @@ class LiquorlandProcessor(RetailerProcessor):
             print(f"[temp_scraper_debug] LiquorlandProcessor cache miss (no row) for {url}")  # TODO: Remove this temp_scraper_debug print info.
             return None
 
+        # drinks columns: 9=percent, 10=stdDrinks, 17=zero_alc
         percent = float(row[9]) if row[9] is not None else 0.0
         std_drinks = float(row[10]) if row[10] is not None else 0.0
-        if percent > 0 and std_drinks > 0:
+        zero_alc = bool(row[17]) if len(row) > 17 and row[17] is not None else False
+
+        # A detail pass has definitely run if we have real numbers, OR if the row
+        # is flagged zero_alc — only update_drink_details sets that flag, and it
+        # only sets it from a parsed percent. Rows inserted by the page pass have
+        # percent=0, std_drinks=0 and zero_alc=0, so they still get a task.
+        if (percent > 0 and std_drinks > 0) or zero_alc:
             print(f"[temp_scraper_debug] LiquorlandProcessor cache hit with healthy data for {url}")  # TODO: Remove this temp_scraper_debug print info.
             return {"percent": percent, "std_drinks": std_drinks}
-        print(f"[temp_scraper_debug] LiquorlandProcessor cache hit but data invalid for {url} (percent={percent}, std_drinks={std_drinks})")  # TODO: Remove this temp_scraper_debug print info.
+        print(f"[temp_scraper_debug] LiquorlandProcessor cache hit but details not yet scraped for {url} (percent={percent}, std_drinks={std_drinks})")  # TODO: Remove this temp_scraper_debug print info.
         return None
 
     def get_items(self, url: str, metadata: Optional[dict] = None) -> Tuple[List[DrinkItem], Optional[dict]]:
@@ -297,10 +318,14 @@ class LiquorlandProcessor(RetailerProcessor):
                 vol = self.parse_volume(name)
                 pack_qty = self._extract_pack_quantity(name)
 
+                # Not available on the listing tile; the drink_detail pass fills
+                # these in. Deliberately NOT run through is_zero_alc() here: it
+                # would return True for this placeholder 0.0 and flag every
+                # Liquorland product as zero-alcohol until its detail task lands.
                 percent = 0.0
                 std_drinks = 0.0
 
-                zero_alc_flag = self.is_zero_alc(percent)
+                zero_alc_flag = False
 
                 item = DrinkItem(
                     store=self.store_id,
@@ -343,10 +368,12 @@ class LiquorlandProcessor(RetailerProcessor):
         print(f"[temp_scraper_debug] LiquorlandProcessor.build_detail_tasks created {len(tasks)} tasks")  # TODO: Remove this temp_scraper_debug print info.
         return tasks
 
-    def process_drink_detail(self, url: str, metadata: Optional[dict] = None) -> dict:
+    def process_drink_detail(self, url: str, metadata: Optional[dict] = None) -> Optional[dict]:
         """
         Process a drink detail page task.
-        Fetches the detail page and returns the additional details.
+        Fetches the detail page and returns the additional details, or None if
+        the page could not be fetched or parsed so the caller can retry rather
+        than persist placeholder zeros.
         """
         print(f"[temp_scraper_debug] enter LiquorlandProcessor.process_drink_detail(url={url}, metadata={metadata})")  # TODO: Remove this temp_scraper_debug print info.
         details = self.get_details_from_item_page(url)
