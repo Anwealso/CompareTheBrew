@@ -1,6 +1,59 @@
-# Scraping Test Suite — Design (DRAFT)
+# Scraping Test Suite — Design & Methodology
 
-Status: draft for discussion, not yet implemented.
+Status: **implemented**. This document is both the design rationale and the
+reference for how the suite works. See "As-built summary" for the quick
+version; the tier sections below explain the *why*.
+
+## As-built summary
+
+The suite lives in `tests/scraping/` and runs on **real** retailer data
+captured once via ScrapingBee and checked in as fixtures. `pytest` runs the
+offline tiers with no network and no credits; live tests are opt-in.
+
+```
+tests/scraping/
+  conftest.py              # pytest fixtures: temp_db, fake_fetchers
+  _support.py              # importable helpers: FakeProcessor, load_fixture, default_resolver
+  golden_urls.json         # the small fixed URL set (capture + live tests)
+  refresh_fixtures.py      # recapture fixtures via ScrapingBee (manual)
+  fixtures/
+    bws_beer_page1.json          # real BWS Browse API response
+    liquorland_beer_page1.html   # real Liquorland listing page
+    liquorland_product_detail.html
+  test_processor_helpers.py    # Tier 1: clean_numeric/parse_volume/is_zero_alc/calculate_score
+  test_bws_processor.py        # Tier 1: BWS get_items/discover_tasks on fixture
+  test_liquorland_processor.py # Tier 1: LL get_items/detail/build_detail_tasks on fixture
+  test_task_queue.py           # offline: claim/retry/reset + concurrent claim race
+  test_controller.py           # offline: discover/run_next with FakeProcessor
+  test_pipeline.py             # Tier 3: real pipeline on fake fetchers (task counts + interim drinks state)
+  test_live_smoke.py           # Tier 2: @pytest.mark.live fetch+parse + chained locators
+```
+
+Run it:
+
+```bash
+source venv/bin/activate
+pytest                          # 57 offline tests, no network / no credits
+pytest -m live                  # 3 live tests via ScrapingBee (spends credits)
+python tests/scraping/refresh_fixtures.py       # recapture all fixtures
+python tests/scraping/refresh_fixtures.py ll    # recapture just Liquorland
+```
+
+Current counts: **57 offline tests + 3 opt-in live tests.** The `live`
+marker is excluded by default via `pyproject.toml` `addopts = "-m 'not
+live'"`, so plain `pytest` never spends a credit.
+
+**Bugs surfaced by building this suite:**
+- *Fixed* — `ScrapingController.run_next()` read claimed `scrape_tasks` rows
+  with stale positional indices (from before the `task_type` column was
+  added), so `json.loads()` ran on the task_type string and raised on every
+  task — the pipeline could not process anything. Indices corrected to
+  schema order. Tier 3 now guards this.
+- *Open* — `BWSProcessor.discover_tasks` reads `TotalProductCount`, but the
+  real API returns `TotalRecordCount`, so it always falls back to a single
+  page and under-paginates any category with ≥1000 products. Pinned by a
+  test (`test_bws_processor.py`) documenting current behavior; not yet
+  fixed because the fix increases per-run ScrapingBee spend.
 
 ## Goals
 
@@ -80,9 +133,12 @@ tests/scraping/fixtures/
   liquorland_product_detail.html
 ```
 
-A small helper script (`tests/scraping/refresh_fixtures.py`, only ever
-run manually) re-fetches these from the golden URL list and overwrites
-the files — that's the one place actual scraping happens outside Tier 2.
+The checked-in fixtures are **real** responses captured once via ScrapingBee
+(BWS 31 items, LL listing 60 items, LL detail parsed to `percent=3.5,
+std_drinks=1.0`). `tests/scraping/refresh_fixtures.py` (run manually)
+re-fetches them from the golden URL list through the project's own fetchers
+— which route via ScrapingBee, never a direct retailer hit — and overwrites
+the files. That is the one place actual scraping happens outside Tier 2.
 
 ### Tier 2 — live fetch + parse (real network, opt-in, `pytest -m live`)
 
@@ -151,11 +207,15 @@ one generated page URL to confirm it parses.)
 ```
 tests/scraping/golden_urls.json
 {
-  "bws":  {"listing": ["<one real beer listing API URL, pageSize small>"]},
-  "ll":   {"listing": ["<one real beer listing URL>"],
-           "detail":  ["<one real product detail URL>"]}
+  "bws": {"listing": "<real beer listing API URL, small pageSize>"},
+  "ll":  {"listing": "<real beer listing URL>",
+          "detail_fallback": "<real product detail URL>"}
 }
 ```
+
+(The LL detail URL used at capture time is derived from the freshly-fetched
+listing's first item; `detail_fallback` is only used if that derivation
+fails.)
 
 Target for a full `pytest -m live` run, following the chained-locator
 pattern below:
@@ -222,18 +282,31 @@ carries `%`/std drinks in the listing JSON) and creates **zero**
 exactly the controller's retailer-specific branch (`controller.py:234`),
 so it's worth pinning both sides.
 
-**Fake fetcher wiring (the fiddly part).** There are two fetch points and
-they don't share one seam:
+**Fake fetcher wiring (the fiddly part).** There are multiple fetch points
+and they don't share one seam, so the `fake_fetchers` fixture in
+`conftest.py` patches all of them at once:
 - BWS + the generic path go through `Fetcher._implementation` (a class
-  attribute on the singleton in `scraping/fetcher.py`) — swap it for a
-  `FakeFetcherImpl(url → fixture)` in a fixture, reset in teardown.
-- `LiquorlandProcessor.fetch_url` **bypasses** `Fetcher` entirely (builds
-  its own ScrapingBee `urllib` call), and its detail path
-  (`get_details_from_item_page`) fetches separately. So for LL the fake
-  has to be injected at the processor level — either monkeypatch
-  `LiquorlandProcessor.fetch_url` to a `url → fixture` lookup, or (cleaner,
-  small refactor) route its fetch through `self.fetcher` like the base
-  class so one fake covers everything. Flagging as open question 4.
+  attribute on the singleton in `scraping/fetcher.py`) — swapped for a
+  `FakeImpl(url → fixture)`.
+- `LiquorlandProcessor` **bypasses** `Fetcher` entirely: its listing path
+  uses `fetch_url_max_rpp` and its detail path (`get_details_from_item_page`)
+  uses `fetch_url`, both building their own ScrapingBee `urllib` calls. So
+  the fixture also monkeypatches `LiquorlandProcessor.fetch_url` and
+  `.fetch_url_max_rpp` to the same `url → fixture` resolver.
+
+We chose to monkeypatch in the test layer rather than refactor
+`LiquorlandProcessor` to route through `self.fetcher` — the production fetch
+code is deliberately left untouched (it's the sensitive, anti-ban path), and
+the monkeypatch is contained entirely in `conftest.py`. A future refactor
+that unifies the fetch seam would let the tests drop the LL-specific patches,
+but it isn't required.
+
+A `url → fixture` resolver (`default_resolver` in `_support.py`) maps any
+BWS URL to the BWS fixture, a Liquorland URL with a numeric product-id
+suffix (e.g. `_2605953`) to the detail fixture, and any other Liquorland URL
+to the listing fixture. Every LL detail task therefore resolves to the same
+captured detail page — fine, because Tier 3 asserts *that* rows get
+populated, not their specific values.
 
 A deterministic full-pipeline test is also the natural place to catch
 concurrency regressions with *real* work: run the same seeded queue with
@@ -268,21 +341,24 @@ Cases worth covering:
 
 ### DB isolation
 
-`db/databaseBackend.py:_get_db_path()` is currently hardcoded to
-`db/database.db` — no override. Tests as designed would either pollute
-your dev DB or need monkeypatching every run. Proposing a one-line change
-so tests can point at a throwaway file cleanly:
+`db/databaseBackend.py:_get_db_path()` now honours a `SQLITE_DB_PATH`
+environment override (falling back to `db/database.db`):
 
 ```python
 def _get_db_path():
-    return Path(os.environ.get("SQLITE_DB_PATH", Path(__file__).parent / "database.db"))
+    override = os.environ.get("SQLITE_DB_PATH")
+    if override:
+        return Path(override)
+    return Path(__file__).parent / "database.db"
 ```
 
-Then a `conftest.py` fixture sets `SQLITE_DB_PATH` to a `tmp_path` file
-and calls the existing `db.databaseHandler.ensure_tables(conn)` (which
-already builds the schema from `db/schema/tables/*.sql`) against it, then
-yields a connection. No need to shell out to `scripts/init_db.py`. Open
-question for you below.
+The `temp_db` fixture in `conftest.py` sets `SQLITE_DB_PATH` to a
+per-test `tmp_path` file, forces `Config.USE_LOCAL_DB = True`, and calls
+the existing `db.databaseHandler.ensure_tables(conn)` (which builds the
+schema from `db/schema/tables/*.sql`) — no `scripts/init_db.py` shell-out.
+Because the override is read from the environment on every
+`create_connection()`, the connections the controller opens *internally*
+during a pipeline test hit the same throwaway DB automatically.
 
 ## New-site processor workflow (aim #3)
 
@@ -313,52 +389,25 @@ fixture: there's no `FirstChoiceProcessor` and no `fc` entry in
 `controller.processors` / `sitemaps.json`, so `--store=fc` currently
 `KeyError`s. The workflow above is exactly how you'd stand it up.
 
-## Proposed file layout
+## File layout
 
-```
-tests/
-  scraping/
-    conftest.py                 # db fixture, live-marker skip, fake processor/fetcher helpers
-    golden_urls.json
-    fixtures/
-      bws_beer_page1.json
-      liquorland_beer_page1.html
-      liquorland_product_detail.html
-    refresh_fixtures.py          # manual: re-fetch fixtures from golden_urls.json
-    test_bws_processor.py        # Tier 1, replays fixture
-    test_liquorland_processor.py # Tier 1, replays fixture
-    test_processor_helpers.py    # clean_numeric/parse_volume/is_zero_alc/calculate_score
-    test_live_smoke.py           # Tier 2, @pytest.mark.live
-    test_task_queue.py           # add/claim/update/retry/reset, offline
-    test_controller.py           # discover/run_next with fake processor, offline
-    test_pipeline.py             # Tier 3, real pipeline + fake fetcher: task counts + interim drinks state
-```
+See "As-built summary" at the top. `requirements.txt` gained only `pytest`
+— no mocking library is needed: Tier 1/3 fixtures are plain files and the
+orchestration tests use the hand-written `FakeProcessor` rather than
+`unittest.mock`.
 
-`requirements.txt` additions: `pytest`, nothing else needed (no mocking
-library required — Tier 1 fixtures are plain files, controller tests use
-a hand-written fake processor rather than `unittest.mock` patching).
+## Decisions made (were open questions during design)
 
-## Open questions for you
-
-1. **DB path override** — okay to make the one-line `_get_db_path()`
-   change above so tests get a clean throwaway SQLite file? Alternative
-   is monkeypatching `databaseBackend._get_db_path` per-test, which works
-   but is uglier and easy to forget in a new test file.
-2. **Golden URLs** — I don't want to guess live retailer URLs (they go
-   stale). Can you grab one real BWS listing URL, one Liquorland listing
-   URL, and one Liquorland product detail URL for `golden_urls.json`? Or
-   I can derive them from `scraping/sitemaps.json` + a real product link
-   from your DB if you'd rather I just pick.
-3. **Fixture freshness** — fixtures go stale silently once checked in
-   (BWS/LL redesign their page, Tier 1 keeps passing against the old
-   snapshot). Fine to leave that as "re-run `refresh_fixtures.py`
-   manually every so often," or do you want Tier 1 to warn/fail if the
-   fixture's mtime is older than e.g. 90 days? (Note: Tier 2 live smoke
-   is the real backstop against staleness — it fails when the site
-   changes, which is your cue to refresh fixtures.)
-4. **Liquorland fetch seam** — do you want a small refactor so
-   `LiquorlandProcessor.fetch_url` routes through `self.fetcher` (the base
-   `Fetcher`) like the other processors, so one fake fetcher covers every
-   fetch point cleanly? Or leave it as-is and have Tier 3 monkeypatch
-   `LiquorlandProcessor.fetch_url` directly? The refactor is a bit more
-   upfront work but makes future processors testable by default.
+1. **DB path override** — done. `_get_db_path()` honours `SQLITE_DB_PATH`;
+   the `temp_db` fixture uses it (see "DB isolation").
+2. **Golden URLs** — picked and captured: a BWS beer listing (small
+   pageSize), the Liquorland beer listing, and an LL detail URL derived at
+   capture time. Stored in `tests/scraping/golden_urls.json`.
+3. **Fixture freshness** — left to a manual `refresh_fixtures.py` re-run.
+   Tier 2 (`pytest -m live`) is the real staleness backstop: it fails when a
+   retailer changes their layout, which is the cue to recapture. No
+   mtime-based warning was added.
+4. **Liquorland fetch seam** — kept the production code as-is; the
+   `fake_fetchers` fixture monkeypatches `LiquorlandProcessor.fetch_url` /
+   `.fetch_url_max_rpp` in the test layer (see "Fake fetcher wiring"). The
+   sensitive anti-ban fetch path is left untouched.

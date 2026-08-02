@@ -38,6 +38,18 @@ python3 tools/task_queue_cli.py --show-stats
 python3 tools/db_search_cli.py whiskey 2l
 ```
 
+### Testing
+```bash
+pytest                        # offline scraping suite (no network, no credits)
+pytest -m live                # opt-in live tests via ScrapingBee (spends credits)
+python tests/scraping/refresh_fixtures.py       # recapture all fixtures via ScrapingBee
+python tests/scraping/refresh_fixtures.py ll    # recapture just Liquorland
+```
+The scraping test suite lives in `tests/scraping/`; full design and
+methodology are in `docs/TESTING_DESIGN.md`. Live tests are excluded by
+default (`pyproject.toml` `addopts = "-m 'not live'"`) so plain `pytest`
+never touches the network or spends credits.
+
 ### Formatting
 ```bash
 bash scripts/lint.sh   # Black, line-length 79
@@ -52,6 +64,9 @@ bash scripts/lint.sh   # Black, line-length 79
 
 ### Scraping pipeline
 The scraping system uses an **in-database task queue** (`scrape_tasks` table) — no external message broker. The controller (`scraping/controller.py`) orchestrates workers that atomically claim tasks, fetch URLs via `scraping/fetcher.py` (which wraps ScrapingBee), and parse results with retailer-specific processors (`bws_processor.py`, `liquorland_processor.py`). Each processor extends the abstract `RetailerProcessor` in `processor.py`.
+
+### Scraping test methodology
+The suite (`tests/scraping/`, see `docs/TESTING_DESIGN.md`) splits on the one boundary with external unpredictability — **fetch + parse**. Only that seam needs live testing (Tier 2, `@pytest.mark.live`); everything inside (queue, controller orchestration, DB writes/dedup) is deterministic and tested offline against real responses captured once as fixtures. Tier 1 tests processor parsing on those fixtures; Tier 3 drives the *real* controller + queue + DB against fixture-replay fetchers (`fake_fetchers` in `conftest.py`) to assert exact task counts and the interim vs fully-populated `drinks` state across BWS's one-phase and Liquorland's two-phase scrapes. `refresh_fixtures.py` recaptures fixtures via ScrapingBee. DB isolation is via the `SQLITE_DB_PATH` override + the `temp_db` fixture.
 
 ### Search
 `search/intellisearch.py` handles fuzzy matching (RapidFuzz), synonym expansion (`search/search_synonyms.json`), and size/pack parsing. The `search_text` column in `drinks` is the indexed target for all searches.
