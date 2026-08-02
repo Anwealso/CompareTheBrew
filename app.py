@@ -494,4 +494,4 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 80))
     parser.add_argument('--port', type=int, default=port, help='Port to run the server on')
     args = parser.parse_args()
-    app.run(host='0.0.0.0', port=args.port, debug=False)
+    app.run(host='127.0.0.1', port=args.port, debug=True)
