@@ -138,7 +138,7 @@ def search_page():
     price_min = request.args.get("price_min", "")
     price_max = request.args.get("price_max", "")
     store_filter = request.args.get("store", "all")
-    scraped_age = request.args.get("scraped_age", "7")
+    scraped_age = request.args.get("scraped_age", "")
     zero_alc_filter = parse_zero_alc_flag(request.args.get("zero-alc", ""))
     if scraped_age is not None and scraped_age != "":
         try:
