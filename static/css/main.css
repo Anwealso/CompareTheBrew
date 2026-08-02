@@ -150,9 +150,9 @@ input[type="search"]::-webkit-search-results-decoration {
 /* ---- Site Logo ---- */
 #siteLogo {
   position: fixed;
-  top: 25px;
+  top: 16px;
   left: 30px;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: bold;
   color: var(--color-gold);
   z-index: 100;
@@ -244,8 +244,8 @@ input[type="search"]::-webkit-search-results-decoration {
 
 #searchHeader {
   width: var(--search-width);
-  padding-top: 16px;
-  padding-bottom: 15px;
+  padding-top: 10px;
+  padding-bottom: 8px;
   display: block;
   justify-self: center;
   position: relative;
@@ -258,16 +258,17 @@ input[type="search"]::-webkit-search-results-decoration {
   transition: height .075s ease-in-out;
   position: absolute;
   left: 0px;
-  top: 47px;
+  top: 34px;
   margin-top: -2px;
   width: 100%;
   border-radius: 25px;
 }
 
 #searchButton {
-  margin-top: -0.4% !important;
-  padding: 1%;
-  font-size: 28px !important;
+  margin-top: 0 !important;
+  padding: 0;
+  top: 2px;
+  font-size: 24px !important;
   color: #cda20b;
   position: absolute;
   right: 0;
@@ -284,7 +285,7 @@ input[type="search"]::-webkit-search-results-decoration {
   display: inline;
   width: 85%;
   font-family: 'louis_george_cafe', Arial, sans-serif;
-  font-size: 40px;
+  font-size: 28px;
   font-weight: 500;
   font-style: normal;
   color: var(--color-dark);
@@ -313,27 +314,39 @@ input[type="search"]::-webkit-search-results-decoration {
 #options {
   display: block;
   width: 100%;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
   color: var(--color-maroon);
 }
 
 .optionItem {
-  margin-top: 7px;
+  margin-top: 5px;
   display: flex;
   align-items: center;
 }
 
+/* Groups several .optionItem blocks onto a single row */
+.optionRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.optionRow .optionItem {
+  margin-top: 5px;
+}
+
 .sortbytext {
-  margin-right: 10px;
+  margin-right: 8px;
 }
 
 .buttonSort {
   border: none;
   /* padding: 5px 10px; */
-  padding: 11px 20px;
-  margin-right: 10px;
-  font-size: 16px;
+  padding: 7px 14px;
+  margin-right: 8px;
+  font-size: 14px;
   background-color: var(--color-yellow);
   color: var(--color-gold);
   border-radius: 9px;
@@ -348,18 +361,21 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 #priceRange {
-  /* margin-top: 11px; */
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
   color: var(--color-maroon);
-  right: 0;
-  position: absolute;
-  display: inline;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  /* Pushed to the right of .optionRow; wraps to its own line when the row
+     runs out of space instead of overlapping the other filters. */
+  margin-left: auto;
 }
 
 .filterInput {
-  padding: 9px 14px;
-  font-size: 16px;
+  padding: 6px 10px;
+  width: 74px;
+  font-size: 14px;
   color: var(--color-maroon);
   border: 2px solid var(--color-gold);
   border-radius: 9px;
@@ -385,8 +401,8 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 .filterSelect {
-  padding: 9px 14px;
-  font-size: 16px;
+  padding: 6px 10px;
+  font-size: 14px;
   color: var(--color-maroon);
   border: 2px solid var(--color-gold);
   border-radius: 9px;
@@ -398,8 +414,8 @@ input[type="search"]::-webkit-search-results-decoration {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23722f37' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 34px;
+  background-position: right 9px center;
+  padding-right: 26px;
 }
 
 .filterSelect:focus {
@@ -408,8 +424,8 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 .filterApplyBtn {
-  padding: 9px 20px;
-  font-size: 16px;
+  padding: 6px 16px;
+  font-size: 14px;
   background-color: var(--color-maroon);
   color: var(--color-white);
   border: 2px solid var(--color-maroon);
@@ -424,10 +440,11 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 .filterLabel {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
   color: var(--color-maroon);
   margin-right: 4px;
+  white-space: nowrap;
 }
 
 .zero-alc-faux-button {
@@ -441,25 +458,25 @@ input[type="search"]::-webkit-search-results-decoration {
   align-items: center;
   gap: 6px;
   font-weight: bold;
-  font-size: 16px;
+  font-size: 14px;
   color: var(--color-gold);
   cursor: pointer;
 }
 
 .zero-alc-label input {
-  width: 18px;
-  height: 18px;
+  width: 15px;
+  height: 15px;
   accent-color: var(--color-maroon);
 }
 
 .zero-alc-toggle {
-  padding: 8px 18px;
+  padding: 5px 14px;
   border-radius: 9px;
   border: 2px solid var(--color-maroon);
   background-color: var(--color-bg);
   color: var(--color-maroon);
   font-weight: bold;
-  font-size: 16px;
+  font-size: 14px;
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
@@ -528,15 +545,15 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 #resultsCounter {
-  padding-top: 10px; /* 50px */
-  font-size: 14px;
+  padding-top: 4px; /* 50px */
+  font-size: 13px;
   color: var(--color-light);
 }
 
 #helpTooltip {
   fill: #a7a7a7;
   vertical-align: middle;
-  width: 50px;
+  width: 34px;
   float: right;
   display: inline-flex;
   align-items: center;

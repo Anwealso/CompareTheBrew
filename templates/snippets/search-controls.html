@@ -1,19 +1,5 @@
 <form class="query" method="GET" action="/search">
-  <i
-    id="searchButton"
-    class="material-icons"
-    style="
-      padding: 1%;
-      font-size: 80px;
-      color: #cda20b;
-      right: 0;
-      position: absolute;
-      margin-right: -1%;
-      margin-top: 1%;
-      cursor: pointer;
-    "
-    >search</i
-  >
+  <i id="searchButton" class="material-icons">search</i>
   <input
     name="q"
     id="searchDrink"
@@ -109,44 +95,14 @@
       >Greatest Quantity</a
     >
   </div>
-  <div id="priceRange" class="optionItem">
-    <span class="filterLabel">Price:</span>
-    <span class="filterLabel">$</span>
-    <input
-      type="number"
-      id="priceMin"
-      name="price_min"
-      min="0"
-      step="1"
-      placeholder="Min"
-      value="{{ price_min if price_min else '' }}"
-      class="filterInput"
-    />
-    <span class="filterLabel">- $</span>
-    <input
-      type="number"
-      id="priceMax"
-      name="price_max"
-      min="0"
-      step="1"
-      placeholder="Max"
-      value="{{ price_max if price_max else '' }}"
-      class="filterInput"
-    />
-    <button
-      onclick="applySearchFilters()"
-      class="filterApplyBtn"
-    >
-      Apply
-    </button>
-  </div>
-  <div id="retailerFilter" class="optionItem">
-    <span class="filterLabel">Retailer:</span>
-    <select
-      id="storeSelect"
-      onchange="applySearchFilters()"
-      class="filterSelect"
-    >
+  <div class="optionRow">
+    <div id="retailerFilter" class="optionItem">
+      <span class="filterLabel">Retailer:</span>
+      <select
+        id="storeSelect"
+        onchange="applySearchFilters()"
+        class="filterSelect"
+      >
       <option
         value="all"
         {%
@@ -175,15 +131,15 @@
       >
         Liquorland
       </option>
-    </select>
-  </div>
-  <div id="scrapedAgeFilter" class="optionItem">
-    <span class="filterLabel">Scraped:</span>
-    <select
-      id="scrapedAgeSelect"
-      onchange="applySearchFilters()"
-      class="filterSelect"
-    >
+      </select>
+    </div>
+    <div id="scrapedAgeFilter" class="optionItem">
+      <span class="filterLabel">Scraped:</span>
+      <select
+        id="scrapedAgeSelect"
+        onchange="applySearchFilters()"
+        class="filterSelect"
+      >
       <option value="" {% if not scraped_age %}selected{% endif %}>
         Any age
       </option>
@@ -202,6 +158,35 @@
       <option value="30" {% if scraped_age == 30 %}selected{% endif %}>
         Within a month
       </option>
-    </select>
+      </select>
+    </div>
+    <div id="priceRange" class="optionItem">
+      <span class="filterLabel">Price:</span>
+      <span class="filterLabel">$</span>
+      <input
+        type="number"
+        id="priceMin"
+        name="price_min"
+        min="0"
+        step="1"
+        placeholder="Min"
+        value="{{ price_min if price_min else '' }}"
+        class="filterInput"
+      />
+      <span class="filterLabel">- $</span>
+      <input
+        type="number"
+        id="priceMax"
+        name="price_max"
+        min="0"
+        step="1"
+        placeholder="Max"
+        value="{{ price_max if price_max else '' }}"
+        class="filterInput"
+      />
+      <button onclick="applySearchFilters()" class="filterApplyBtn">
+        Apply
+      </button>
+    </div>
   </div>
 </div>
