@@ -16,3 +16,7 @@ logging/logs/
 *.log
 temp/
 .gstack/
+
+# Scraped/derived drink imagery - not source, re-fetchable via scraper
+static/images/drinkimages/
+static/images/uncompressed/
