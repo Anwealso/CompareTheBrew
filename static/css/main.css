@@ -67,8 +67,10 @@
   --search-width: 68%;
   --results-width: 68%;
 
-  --result-card-height: 216px;
-  --result-card-width: 360px;
+  /* Card width is sized so three cards + two 12px gaps fit inside
+     --results-width (68% ≈ 979px at a 1440px viewport). */
+  --result-card-height: 190px;
+  --result-card-width: 314px;
 
   --footer-height: 58px;
 }
@@ -730,18 +732,20 @@ input[type="search"]::-webkit-search-results-decoration {
 
 .brand {
   font-weight: bold;
-  font-size: 20px;
+  font-size: 17px;
   color: var(--color-gold);
   float: left;
-  margin-top: 20px;
+  margin-top: 14px;
   margin-bottom: 2px;
 }
 
 .name {
   font-weight: bolder;
-  font-size: 26px;
+  font-size: 22px;
   color: var(--color-maroon);
-  height: 60px;
+  /* Exactly two lines at line-height 1.1, so a third line is fully
+     clipped rather than showing as a sliver. */
+  height: 48px;
   overflow: hidden;
   margin-top: 2px;
   margin-bottom: 2px;
@@ -755,7 +759,7 @@ input[type="search"]::-webkit-search-results-decoration {
 .details {
   margin-top: 2px;
   font-weight: bolder;
-  font-size: 18px;
+  font-size: 15px;
   color: var(--color-light);
 }
 
@@ -779,7 +783,7 @@ input[type="search"]::-webkit-search-results-decoration {
 
 .scoreContainer {
   font-weight: bolder;
-  font-size: 40px;
+  font-size: 34px;
   color: var(--color-orange);
   position: relative;
 }
@@ -790,7 +794,7 @@ input[type="search"]::-webkit-search-results-decoration {
 
 .scoreLabel {
   rotate: 90deg;
-  font-size: 12px;
+  font-size: 10px;
   font-family: 'louis_george_cafe', Arial, sans-serif;
   font-weight: bold;
   position: absolute;
@@ -799,12 +803,12 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 .scoreValue {
-  margin-left: 12px;
+  margin-left: 10px;
 }
 
 .price {
   display: inline-block;
-  font-size: 30px;
+  font-size: 25px;
   color: var(--color-gold);
   margin-left: 8px;
   flex: 1;
