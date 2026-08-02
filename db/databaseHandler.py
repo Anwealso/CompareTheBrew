@@ -619,9 +619,6 @@ def select_drink_by_smart_search(conn, terms, thing, price_min="", price_max="",
             "bws": "bws",
             "liquorland": "liquorland",
             "liquor land": "liquorland",
-            "first choice": "firstchoiceliquor",
-            "firstchoice": "firstchoiceliquor",
-            "fc": "firstchoiceliquor"
         }
         store_key = store.lower().strip()
         actual_store = store_mapping.get(store_key, store.lower())

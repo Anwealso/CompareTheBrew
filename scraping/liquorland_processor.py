@@ -15,7 +15,6 @@ from db.databaseHandler import create_connection, get_drink_by_store_link
 
 BRIGHTDATA_ENABLED = False
 LIQOURLAND_MAX_RESULTS_PER_PAGE = 80 if BRIGHTDATA_ENABLED else 60
-FIRSTCHOICE_MAX_RESULTS_PER_PAGE = 60
 
 
 class LiquorlandProcessor(RetailerProcessor):
