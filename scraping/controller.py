@@ -143,11 +143,15 @@ class ScrapingController:
             return None
 
         task_id = task[0]
+        # Columns come back in scrape_tasks schema order (SELECT * in
+        # _claim_next_pending_task): ID(0) retailer(1) url(2) status(3)
+        # task_type(4) metadata(5) run_id(6) attempts(7) created_at(8)
+        # updated_at(9).
         url = task[2]
-        metadata_str = task[4]
-        run_id = task[5] if len(task) > 5 else None
-        current_attempts = task[6] if len(task) > 6 else 0
-        task_type = task[9] if len(task) > 9 else 'page'
+        task_type = task[4] if len(task) > 4 else 'page'
+        metadata_str = task[5] if len(task) > 5 else None
+        run_id = task[6] if len(task) > 6 else None
+        current_attempts = task[7] if len(task) > 7 else 0
         self.last_task_type = task_type
         
         metadata = json.loads(metadata_str) if metadata_str else {}
