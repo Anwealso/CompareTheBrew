@@ -26,47 +26,6 @@ class LiquorlandProcessor(RetailerProcessor):
         super().__init__()
         self.store_id = "liquorland"
 
-    def _infer_category_from_url(self, url: str) -> str:
-        """
-        Derive a product category label from the crawl URL so the search_text includes generic terms
-        like "wine" / "beer" / "spirits". Falls back to "Other" when nothing matches.
-        """
-        if not url:
-            return "Other"
-
-        parsed = urllib.parse.urlparse(url)
-        segments = [segment for segment in parsed.path.split("/") if segment]
-        if not segments:
-            return "Other"
-
-        primary = segments[0].lower()
-        if primary == "spirits" and len(segments) > 1 and segments[1].lower() in {"premixed", "premix"}:
-            return "Premix"
-        else:
-            return primary.capitalize()
-
-    def _extract_pack_quantity(self, name: str) -> int:
-        """
-        Parse pack quantity heuristics from the product name.
-        """
-        text = (name or "").lower()
-        patterns = [
-            r'pack of\s+(\d+)',
-            r'pack\s*(?:of\s*)?\(?\s*(\d+)\s*\)?',
-            r'(\d+)\s*(?:pack|pk|packs|pkgs|carton|case|ctn|bottle|bottles|can|cans)\b',
-            r'(\d+)\s*[x×]\s*\d+',
-        ]
-        for pattern in patterns:
-            match = re.search(pattern, text)
-            if match:
-                try:
-                    qty = int(match.group(1))
-                    if qty >= 1:
-                        return qty
-                except (TypeError, ValueError):
-                    continue
-        return 1
-
     def fetch_url(self, url: str) -> Optional[str]:
         """
         Override fetch_url with multi-strategy approach for Liquorland.
@@ -276,9 +235,8 @@ class LiquorlandProcessor(RetailerProcessor):
 
     def get_items(self, url: str, metadata: Optional[dict] = None) -> Tuple[List[DrinkItem], Optional[dict]]:
         """
-        Extract items from Liquorland using direct HTML extraction.
+        Extract items from Liquorland search results page using direct HTML extraction.
         For 'page' tasks: extracts items and returns drink_detail URLs for enqueuing.
-        For 'drink_detail' tasks: fetches the detail page and updates cached item.
         """        
         result = []
         print(f"[temp_scraper_debug] enter LiquorlandProcessor.get_items(url={url})")  # TODO: Remove this temp_scraper_debug print info.
@@ -394,3 +352,48 @@ class LiquorlandProcessor(RetailerProcessor):
         details = self.get_details_from_item_page(url)
         print(f"[temp_scraper_debug] LiquorlandProcessor.process_drink_detail returning {details}")  # TODO: Remove this temp_scraper_debug print info.
         return details
+
+    def _infer_category_from_url(self, url: str) -> str:
+        """
+        Derive a product category label from the crawl URL so the search_text includes generic terms
+        like "wine" / "beer" / "spirits". Falls back to "Other" when nothing matches.
+        """
+        if not url:
+            return "Other"
+
+        parsed = urllib.parse.urlparse(url)
+        segments = [segment for segment in parsed.path.split("/") if segment]
+        if not segments:
+            return "Other"
+
+        primary = segments[0].lower()
+        if (
+            primary == "spirits"
+            and len(segments) > 1
+            and segments[1].lower() in {"premixed", "premix"}
+        ):
+            return "Premix"
+        else:
+            return primary.capitalize()
+
+    def _extract_pack_quantity(self, name: str) -> int:
+        """
+        Parse pack quantity heuristics from the product name.
+        """
+        text = (name or "").lower()
+        patterns = [
+            r"pack of\s+(\d+)",
+            r"pack\s*(?:of\s*)?\(?\s*(\d+)\s*\)?",
+            r"(\d+)\s*(?:pack|pk|packs|pkgs|carton|case|ctn|bottle|bottles|can|cans)\b",
+            r"(\d+)\s*[x×]\s*\d+",
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, text)
+            if match:
+                try:
+                    qty = int(match.group(1))
+                    if qty >= 1:
+                        return qty
+                except (TypeError, ValueError):
+                    continue
+        return 1

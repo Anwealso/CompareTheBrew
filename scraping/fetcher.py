@@ -6,6 +6,13 @@ from urllib.request import Request, urlopen
 from config import Config
 
 
+"""
+Fetcher interface and implementations for fetching URLs using different services.
+- FetcherImpl: Abstract base class defining the fetch_url method.
+- ScrapingBeeFetcherImpl: Implementation using ScrapingBee API.
+- BrightDataFetcherImpl: Implementation using BrightData API with Playwright.
+- Fetcher: Singleton class that uses the selected implementation to fetch URLs.
+"""
 class FetcherImpl(ABC):
     @abstractmethod
     def fetch_url(self, url: str) -> Optional[str]:

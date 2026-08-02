@@ -74,7 +74,6 @@ class ScrapingController:
         if self._event_queue is not None:
             self._event_queue.put(event)
 
-
     def discover(self, retailer_name: str = None, category: str = None, run_id: str = None):
         """
         Discovery Phase: Hits the retailer's seed URLs once to seed the task queue.
