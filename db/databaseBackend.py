@@ -2,12 +2,18 @@
 Database backend module that handles connection to either SQLite (local) or PostgreSQL (Supabase).
 """
 
+import os
 import sqlite3
 from pathlib import Path
 from config import Config
 
 
 def _get_db_path():
+    # Allow tests (and other tooling) to point at a throwaway SQLite file via
+    # SQLITE_DB_PATH so they never touch the real dev database.
+    override = os.environ.get("SQLITE_DB_PATH")
+    if override:
+        return Path(override)
     return Path(__file__).parent / "database.db"
 
 

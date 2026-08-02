@@ -1,0 +1,10 @@
+{
+  "_note": "Small, fixed URL set used by refresh_fixtures.py (to capture fixtures) and by the Tier 2 live tests. Keep this tiny — every entry costs ScrapingBee credits when captured/tested. The LL detail URL is derived from the LL listing at capture time; the value here is only a fallback.",
+  "bws": {
+    "listing": "https://api.bws.com.au/apis/ui/Browse?Location=%2Fbeer%2Fall-beer&banner=true&department=beer&pageNumber=1&pageSize=12&sortType=Browse_Relevance_LocalSales&subDepartment=all+beer"
+  },
+  "ll": {
+    "listing": "https://www.liquorland.com.au/beer",
+    "detail_fallback": "https://www.liquorland.com.au/beer-and-cider/10-toes-lucid-dreams-can-375ml_3898733?uom=PACK4"
+  }
+}

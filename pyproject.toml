@@ -19,6 +19,15 @@ where = ["."]
 include = ["db*", "scripts*", "search*"]
 exclude = ["logging/logs*", "static*", "templates*", "scraping*"]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Live tests hit real retailer endpoints via ScrapingBee (costs credits).
+# They are opt-in only: run with `pytest -m live`. Plain `pytest` skips them.
+addopts = "-m 'not live'"
+markers = [
+    "live: hits real retailer endpoints via ScrapingBee (opt-in, costs credits)",
+]
+
 [tool.black]
 line-length = 79
 target-version = ['py310']
